@@ -1,0 +1,50 @@
+{
+  "variables": {
+    "lod_rest_version": "v1.1.1",
+    "lod_rest_release_type": "rc",
+    "lod_rest_release_type_sequence": "1"
+  },
+  "builders": [
+  {
+    "type": "amazon-ebs",
+    "region": "us-east-1",
+    "instance_type": "t2.medium",
+    "ssh_keypair_name": "pd-cicd-devolopment",
+    "ssh_private_key_file" : "pd-cicd-devolopment.pem",
+    "iam_instance_profile": "cicd-admin-role",
+    "source_ami_filter": {
+			"filters": {
+				"virtualization-type": "hvm",
+				"name": "Windows_Server-2012-R2_RTM-English-64Bit-Base-*",
+				"root-device-type": "ebs"
+			},
+			"most_recent": true
+		},
+    "ami_name": "BaseRestWindowsImage-{{isotime | clean_ami_name}}",
+    "user_data_file": "userdata/windows-aws.txt",
+    "communicator": "winrm",
+    "winrm_username": "administrator",
+    "winrm_use_ssl": false,
+    "winrm_insecure": true,
+    "winrm_timeout": "12h"
+  }],
+  "provisioners": [{
+    "type": "powershell",
+    "inline": [
+      "dir c:\\"
+    ]
+  },
+  {
+  "type": "file",
+  "source": "./files/oracleInstall.ps1",
+  "destination": "c:/build/deployment-artifacts/common/"
+  },
+  {
+      "type":  "ansible",
+      "playbook_file": "./loyaltyOnDemandRest-windows.yml",
+      "extra_arguments": [
+        "--connection", "packer", "-vvv",
+        "--extra-vars", "ansible_shell_type=powershell ansible_shell_executable=None lod_rest_version={{user `lod_rest_version`}} lod_rest_release_type={{user `lod_rest_release_type`}} lod_rest_release_type_sequence={{user `lod_rest_release_type_sequence`}}"
+      ]
+  }]
+}
