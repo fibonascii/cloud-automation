@@ -1,0 +1,5 @@
+template_path: templates/vpc.py
+parameters:
+    VpcCidr: 10.0.0.0/16
+    VpcName: DevVPC
+    IgwName: DevInternetGateway
