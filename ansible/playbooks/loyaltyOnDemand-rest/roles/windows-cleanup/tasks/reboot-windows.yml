@@ -1,0 +1,4 @@
+---
+- name: Reboot Instance to ensure all installations are complete.
+  win_reboot:
+    reboot_timeout: 3600
