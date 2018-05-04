@@ -1,0 +1,11 @@
+- name: Enable Ec2 Config Dynamic Password Creation and UserData Execution for Windows
+  win_shell: |
+    Write-Output "$(Get-Date -format T) - Updating Ec2 Config Service to Enable Dynamic Passwords and UserData Execution"
+    $ec2ServiceConfigurationFilePath = 'C:\Program Files\Amazon\Ec2ConfigService\Settings\config.xml'
+    $ec2ServiceConfigurationFileObject = (Get-Content $ec2ServiceConfigurationFilePath) -as [Xml]
+    $ec2HandlePasswordObject = $ec2ServiceConfigurationFileObject.Ec2ConfigurationSettings.Plugins.Plugin | where {$_.name -eq 'Ec2SetPassword'}
+    $ec2HandlePasswordObject.State = "Enabled"
+    $ec2HandleUserDataObject = $ec2ServiceConfigurationFileObject.Ec2ConfigurationSettings.Plugins.Plugin | where {$_.name -eq 'Ec2HandleUserData'}
+    $ec2HandleUserDataObject.State = "Enabled"
+    $ec2ServiceConfigurationFileObject.Save($ec2ServiceConfigurationFilePath)
+    Write-Output "$(Get-Date -format T) - Ec2 Config Service Updated! Dynamic Passwords and UserData Execution Enabled!"

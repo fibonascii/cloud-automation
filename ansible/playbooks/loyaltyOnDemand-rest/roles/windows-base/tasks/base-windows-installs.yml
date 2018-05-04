@@ -1,0 +1,84 @@
+---
+- name: Download all Windows Common Installers from S3 Bucket to Instance
+  win_shell: |
+    $installerRepository = 'pd-dev-cicd-artifacts'
+
+    $region = 'us-east-1'
+    $keyPrefix = 'build/deployment-artifacts/common/'
+
+    $localPath = 'C:/build/deployment-artifacts/common'
+
+    if (-Not (Test-Path -Path $localPath)){New-Item -Path $localPath -ItemType directory -Force | out-null}
+    $artifacts = Get-S3Object -BucketName $installerRepository -KeyPrefix $keyPrefix -Region $region
+    foreach($artifact in $artifacts) {$localFileName = $artifact.Key -replace $keyPrefix, ''
+    if ($localFileName -ne '') {$localFilePath = Join-Path $localPath $localFileName
+    Copy-S3Object -BucketName $installerRepository -Key $artifact.Key -LocalFile $localFilePath -Region $region}}
+
+
+- name: Install Microsoft Visual C++ 2010 x64 Redistributable Setup
+  win_shell: Start-Process -FilePath ./vcredist_x64.exe -ArgumentList "/q /norestart" -Wait -Verb RunAs
+  args:
+    chdir: c:\build\deployment-artifacts\common
+
+- name: Install .Net 4.6.1
+  win_shell: Start-Process -FilePath ./NDP461-KB3102436-x86-x64-AllOS-ENU.exe -ArgumentList "/q /norestart" -Wait -Verb RunAs
+  args:
+    chdir: c:\build\deployment-artifacts\common
+
+- name: Unzip the Oracle Data Access Components Zip
+  win_unzip:
+    src: c:\build\deployment-artifacts\common\winx64_12102_client.zip
+    dest: c:\build\deployment-artifacts\common\OracleInstaller
+    creates: c:\build\deployment-artifacts\common\OracleInstaller
+
+- name: Create Task to Install Oracle
+  win_shell: |
+    $taskName = 'OracleInstall'
+    $taskExists = Get-ScheduledTask | Where-Object {$_.TaskName -like $taskName }
+    if (!$taskExists)
+    {
+    $principal = New-ScheduledTaskPrincipal -UserID "NT AUTHORITY\SYSTEM" -LogonType ServiceAccount -RunLevel Highest
+    $action = New-ScheduledTaskAction -Execute 'Powershell.exe' -Argument '-ExecutionPolicy ByPass C:\build\deployment-artifacts\common\oracleInstall.ps1'
+    $newTask = New-ScheduledTask -Action $action -Principal $principal
+    Register-ScheduledTask 'OracleInstall' -InputObject $newTask
+    }
+
+- pause: minutes=1
+
+- name: Initiate Oracle Install
+  win_shell: Start-ScheduledTask -TaskName "OracleInstall"
+
+- name: Wait for Oracle Install Succcess
+  win_shell: |
+    $installSuccessful = $false
+    while (-Not ($installSuccessful))
+    {
+    if (Test-Path 'C:/Program Files/Oracle/Inventory/logs/')
+    {
+    $logFileName = Get-ChildItem -Path 'C:/Program Files/Oracle/Inventory/logs/' -Include silentInstall* -recurse | Select-String -pattern "The installation of Oracle Client 12c was successful." | group path | select name
+    if ($logFileName)
+    {
+    $installSuccessful = $true
+    Write-Host "Installation is successful."
+    }
+    else
+    {
+    Write-Host "Installation is still in Progress...Pausing for 1 minute."
+    Start-Sleep -Milliseconds 60000;
+    }
+    }
+    else
+    {
+    Write-Host "Installation is still in Progress...Pausing for 1 minute."
+    Start-Sleep -Milliseconds 60000;
+    }
+    }
+
+- name: Pause for all installations to complete
+  pause: minutes=2
+
+- name: Delete all Scripts, Installers, and Scheduled Tasks
+  win_shell: |
+    Remove-Item -Recurse -Force  c:\build\deployment-artifacts\common
+    Unregister-ScheduledTask -TaskName "OracleInstall" -Confirm:$false
+

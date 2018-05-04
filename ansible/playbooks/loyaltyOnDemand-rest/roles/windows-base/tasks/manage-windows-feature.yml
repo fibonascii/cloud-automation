@@ -1,0 +1,10 @@
+---
+- name: Manage Windows Feature {{item.DisplayName}}
+  win_feature:
+    name: '{{item.FeatureName}}'
+    include_sub_features: '{{item.IncludeSubFeatures}}'
+    state: '{{item.State}}'
+  retries: 3
+  delay: 10
+  register: result
+  until: result.success == true

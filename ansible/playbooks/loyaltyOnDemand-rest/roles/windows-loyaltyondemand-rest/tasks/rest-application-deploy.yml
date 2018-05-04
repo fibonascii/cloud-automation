@@ -1,0 +1,113 @@
+
+- debug: var=lod_rest_version
+- debug: var=lod_rest_release_type
+- debug: var=lod_rest_release_type_sequence
+
+
+- name: Identify the S3 Zip needed based on request filter
+  debug: var=lod_rest_version
+
+- name: Copy S3 Zip to Remote Machine
+  set_fact: 
+    releaseZip: '{{lod_rest_version}}-{{lod_rest_release_type}}.{{lod_rest_release_type_sequence}}.zip'
+  when: lod_rest_release_type != 'release'
+
+- name: Copy S3 Zip to Remote Machine
+  set_fact:
+    releaseZip: '{{lod_rest_version}}.zip'
+  when: lod_rest_release_type == 'release'
+
+ 
+- name: Download Release Zip to Machine
+  win_shell: |
+    $installerRepository = 'pd-dev-cicd-artifacts'
+
+    $region = 'us-east-1'
+    $keyPrefix = '/releases/lod-rest/{{releaseZip}}'
+
+    $localPath = 'C:/'
+
+    if (-Not (Test-Path -Path $localPath)){New-Item -Path $localPath -ItemType directory -Force | out-null}
+    $artifacts = Get-S3Object -BucketName $installerRepository -KeyPrefix $keyPrefix -Region $region
+    foreach($artifact in $artifacts) {$localFileName = $artifact.Key -replace $keyPrefix, ''
+    if ($localFileName -ne '') {$localFilePath = Join-Path $localPath $localFileName
+    Copy-S3Object -BucketName $installerRepository -Key $artifact.Key -LocalFile $localFilePath -Region $region}}
+
+
+- name: Create new directories for Application
+  win_file: 
+    path: C:\inetpub\wwwroot\loyaltyware-rest
+    state: directory
+
+
+- name: Unzip the Application into new Directory
+  win_unzip:
+    src: 'c:\releases\lod-rest\{{releaseZip}}'
+    dest: c:\inetpub\wwwroot\loyaltyware-rest
+
+- name: Set Permissions on Directories
+  win_acl:
+    path: C:\inetpub\wwwroot\loyaltyware-rest
+    user: IIS_IUSRS
+    rights: FullControl
+    type: allow
+    state: present
+    inherit: ContainerInherit, ObjectInherit
+    propagation: 'None'
+
+- name: Remove Default IIS Site
+  win_shell: |
+    $webSiteName = "Default Web Site"
+    $appPoolName = "DefaultAppPool"
+    $iisPath = "IIS:Sites\$webSiteName"
+    $webSite = get-website | where-object { $_.name -eq $webSiteName }
+    if ($webSite)
+    {
+    Remove-WebSite -Name $webSiteName
+    Remove-WebAppPool -Name $appPoolName
+    }
+    else
+    {
+    write-output "$(Get-Date -format T) - Already removed IIS Site: $webSiteName"
+    }
+
+
+
+- name: Create Application Pools and Websites in IIS
+  win_shell: |
+    Import-Module WebAdministration
+    $iisAppPoolName = "Rest API"
+    $iisAppPoolDotNetVersion = "v4.0"
+    $iisSiteName = "Rest API"
+    $directoryPath = "C:\inetpub\wwwroot\loyaltyware-rest"
+
+    #navigate to the app pools root
+    cd IIS:\AppPools\
+
+    #check if the app pool exists
+    if (!(Test-Path $iisAppPoolName -pathType container))
+    {
+    #create the app pool
+    $appPool = New-Item $iisAppPoolName
+    $appPool | Set-ItemProperty -Name "managedRuntimeVersion" -Value $iisAppPoolDotNetVersion
+    }
+
+    #navigate to the sites root
+    cd IIS:\Sites\
+
+    #check if the site exists
+    if (!(Test-Path $iisSiteName -pathType container))
+    {
+    #create the site
+    $port = "80"
+    $ip = "*"
+    $bindings = @{protocol="http";bindingInformation=$ip + ":"+ $port + ":"}
+    $iisApp = New-Item $iisSiteName  -physicalPath $directoryPath -bindings $bindings
+    $iisApp | Set-ItemProperty -Name "applicationPool" -Value $iisAppPoolName
+    }
+
+- name: Start Websites in IIS
+  win_shell: Start-WebSite 'Rest API'
+
+
+
