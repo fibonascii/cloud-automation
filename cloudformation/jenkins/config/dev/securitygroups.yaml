@@ -1,0 +1,5 @@
+template_path: templates/securitygroups.py
+parameters:
+    NatGateway: !stack_output vpc::NatGateway
+    VPCId: !stack_output vpc::VPCId
+    

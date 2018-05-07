@@ -148,6 +148,12 @@ class VPC(BaseCloudFormation):
             Value=Ref(self.public_subnet),
         ))
 
+        self.NatGateway = self.template.add_output(Output(
+            "NatGateway",
+            Description="NatGateway",
+            Value=Ref(self.nat),
+        ))
+
 
 
 def sceptre_handler(sceptre_user_data):
