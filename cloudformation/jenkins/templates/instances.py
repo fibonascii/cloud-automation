@@ -80,7 +80,7 @@ class Instances(BaseCloudFormation):
             Listeners=[
                 elasticloadbalancing.Listener(
                     LoadBalancerPort="443",
-                    InstancePort="80",
+                    InstancePort="8080",
                     Protocol="HTTPS",
                     InstanceProtocol="HTTP",
                     ),
