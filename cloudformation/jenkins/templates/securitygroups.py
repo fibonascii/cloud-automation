@@ -28,7 +28,7 @@ class SecurityGroups(BaseCloudFormation):
     def add_resources(self):
         self.LoadBalancerSecurityGroup = self.template.add_resource(ec2.SecurityGroup(
             "LoadBalancerSecurityGroup",
-            GroupDescription="Test2",
+            GroupDescription="Jenkins Load Balancer Security Group",
             VpcId=Ref(self.VPCId),
             SecurityGroupIngress=[
                 ec2.SecurityGroupRule(

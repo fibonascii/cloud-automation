@@ -9,7 +9,6 @@ class Instances(BaseCloudFormation):
         self.add_outputs()
 
     def add_parameters(self):
-        self.Slave = False
 
         self.LoadBalancerName = self.template.add_parameter(Parameter(
             "LoadBalancerName",
@@ -24,26 +23,22 @@ class Instances(BaseCloudFormation):
             Description="SecurityGroup for Development LoadBalancer",
         ))
         
-        self.ScaleCapacity = self.template.add_parameter(Parameter(
-            "ScaleCapacity",
-            Default="1",
-            Type="String",
-            Description="Number of servers to run in scale group",
-        ))
-
         self.AMIID = self.template.add_parameter(Parameter(
             "AMIID",
+            Default="ami-bb8209ad",
             Type="String",
         ))
 
         self.availability_zone1 = self.template.add_parameter(Parameter(
             "AvailabilityZone1",
             Type="String",
+            Default="us-east-1a",
         ))
 
         self.availability_zone2 = self.template.add_parameter(Parameter(
             "AvailabilityZone2",
             Type="String",
+            Default="us-east-1-b",
         ))
 
         self.PublicSubnet1 = self.template.add_parameter(Parameter(
@@ -61,8 +56,26 @@ class Instances(BaseCloudFormation):
             Type="String",
         ))
 
+        self.InstanceSecurityGroup = self.template.add_parameter(Parameter(
+            "InstanceSecurityGroup",
+            Type="String",
+        ))
+
 
     def add_resources(self):
+        self.instance = self.template.add_resource(ec2.Instance(
+            "JenkinsInstance",
+            ImageId=Ref(self.AMIID),
+            InstanceType="t2.micro",
+            Tags=self.default_tags,
+            KeyName=Ref(self.KeyPair),
+            SecurityGroupIds=[Ref(self.InstanceSecurityGroup)],
+            SubnetId=Ref(self.PrivateSubnet1),
+
+            AvailabilityZone="us-east-1a",
+                ))
+
+
         self.LoadBalancer = self.template.add_resource(elasticloadbalancing.LoadBalancer(
             "LoadBalancer",
             ConnectionDrainingPolicy=elasticloadbalancing.ConnectionDrainingPolicy(
@@ -71,7 +84,7 @@ class Instances(BaseCloudFormation):
                 ),
             Subnets=[Ref(self.PublicSubnet1)],
             HealthCheck=elasticloadbalancing.HealthCheck(
-                Target="HTTP:80/",
+                Target="TCP:22/",
                 HealthyThreshold="5",
                 UnhealthyThreshold="2",
                 Interval="20",
@@ -79,9 +92,9 @@ class Instances(BaseCloudFormation):
                 ),
             Listeners=[
                 elasticloadbalancing.Listener(
-                    LoadBalancerPort="443",
+                    LoadBalancerPort="80",
                     InstancePort="8080",
-                    Protocol="HTTPS",
+                    Protocol="HTTP",
                     InstanceProtocol="HTTP",
                     ),
                 ],
@@ -89,52 +102,9 @@ class Instances(BaseCloudFormation):
             SecurityGroups=[Ref(self.LoadBalancerSecurityGroup)],
             LoadBalancerName=Ref(self.LoadBalancerName),
             Scheme="internet-facing",
+            Instances=Ref(self.instance),
          ))
 
-        self.instance = self.template.add_resource(ec2.Instance(
-            "JenkinsInstance",
-            ImageId=Ref(self.AMIID),
-            InstanceType="m1.small",
-            Tags=self.default_tags,
-            KeyName=Ref(self.KeyPair),
-            NetworkInterfaces=[
-               ec2.NetworkInterfaceProperty(
-                GroupSet=[
-                    Ref(self.PrivateSubnet1)],
-                AssociatePublicIpAddress='false',
-                DeviceIndex='0',
-                DeleteOnTermination='true',
-                SubnetId=Ref(self.PrivateSubnet1))],
-                ))
-        if self.Slave == True:
-            self.LaunchConfiguration = self.template.add_resource(autoscaling.LaunchConfiguration(
-                "LaunchConfiguration",
-                ImageId=Ref(self.AMIID),
-                SecurityGroups=[Ref(self.LoadBalancerSecurityGroup)],
-                BlockDeviceMappings=[
-                    ec2.BlockDeviceMapping(
-                        DeviceName="/dev/sda1",
-                        Ebs=ec2.EBSBlockDevice(
-                            VolumeSize="50"
-                            )
-                        ),
-                    ],
-                InstanceType="m1.small",
-                ))
-            
-
-            self.AutoScalingGroup = self.template.add_resource(autoscaling.AutoScalingGroup(
-                "AutoScalingGroup",
-               DesiredCapacity=Ref(self.ScaleCapacity),
-               Tags=self.default_tags,
-               LaunchConfigurationName=Ref(self.LaunchConfiguration),
-               MinSize=Ref(self.ScaleCapacity),
-               MaxSize=Ref(self.ScaleCapacity),
-               LoadBalancerNames=[Ref(self.LoadBalancer)],
-               AvailabilityZones=[Ref(self.availability_zone1), Ref(self.availability_zone2)],
-               HealthCheckType="EC2",
-               ))
-           
 
     def add_outputs(self):
         return

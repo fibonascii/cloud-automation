@@ -65,7 +65,7 @@ class VPC(BaseCloudFormation):
             "PublicSubnet",
             CidrBlock=Ref(self.public_subnetA),
             VpcId=Ref(self.vpc),
-            AvailabilityZone=Ref(self.availability_zone1),
+            AvailabilityZone="us-east-1a",
             MapPublicIpOnLaunch=True,
         ))
 
@@ -73,7 +73,7 @@ class VPC(BaseCloudFormation):
             "PrivateSubnet",
             CidrBlock=Ref(self.private_subnetA),
             VpcId=Ref(self.vpc),
-            AvailabilityZone=Ref(self.availability_zone2),
+            AvailabilityZone="us-east-1a",
             MapPublicIpOnLaunch=True,
         ))
 
@@ -138,13 +138,13 @@ class VPC(BaseCloudFormation):
 
         self.private_subnet = self.template.add_output(Output(
             "PrivateSubnetA",
-            Description="PrivateSubnet",
+            Description="Jenkins PrivateSubnet",
             Value=Ref(self.private_subnet),
         ))
 
         self.public_subnet = self.template.add_output(Output(
             "PublicSubnetA",
-            Description="PublicSubnet",
+            Description="Jenkins PublicSubnet",
             Value=Ref(self.public_subnet),
         ))
 
