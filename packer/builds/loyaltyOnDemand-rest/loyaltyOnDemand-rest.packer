@@ -21,7 +21,7 @@
 			},
 			"most_recent": true
 		},
-    "ami_name": "RestWindowsImage-{{user `lod_rest_release_name`}}-{{isotime | clean_ami_name}}",
+    "ami_name": "LoyaltyOnDemandRestWindowsImage-{{user `lod_rest_release_name`}}-{{isotime | clean_ami_name}}",
     "user_data_file": "userdata/windows-aws.txt",
     "communicator": "winrm",
     "winrm_username": "administrator",
