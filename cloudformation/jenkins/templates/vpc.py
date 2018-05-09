@@ -110,11 +110,18 @@ class VPC(BaseCloudFormation):
              SubnetId=Ref(self.public_subnet),
         ))
 
-        self.public_route = self.template.add_resource(ec2.Route(
+        self.nat_route = self.template.add_resource(ec2.Route(
             "PublicRoute",
             RouteTableId=Ref(self.private_route_table),
             DestinationCidrBlock='0.0.0.0/0',
             NatGatewayId=Ref(self.nat),
+        ))
+
+        self.igw_route = self.template.add_resource(ec2.Route(
+            "InternetGatewayRoute",
+            RouteTableId=Ref(self.public_route_table),
+            DestinationCidrBlock='0.0.0.0/0',
+            GatewayId=Ref(self.igw),
         ))
 
         self.private_subnet_association = self.template.add_resource(ec2.SubnetRouteTableAssociation(

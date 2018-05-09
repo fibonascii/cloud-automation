@@ -83,26 +83,26 @@ class Instances(BaseCloudFormation):
                 Timeout=120,
                 ),
             Subnets=[Ref(self.PublicSubnet1)],
-            HealthCheck=elasticloadbalancing.HealthCheck(
-                Target="TCP:22/",
-                HealthyThreshold="5",
-                UnhealthyThreshold="2",
-                Interval="20",
-                Timeout="15",
-                ),
+            #HealthCheck=elasticloadbalancing.HealthCheck(
+            #    Target="TCP:22/",
+            #    HealthyThreshold="5",
+            #    UnhealthyThreshold="2",
+            #    Interval="20",
+            #    Timeout="15",
+            #    ),
             Listeners=[
                 elasticloadbalancing.Listener(
-                    LoadBalancerPort="80",
-                    InstancePort="8080",
-                    Protocol="HTTP",
-                    InstanceProtocol="HTTP",
+                    LoadBalancerPort="22",
+                    InstancePort="22",
+                    Protocol="tcp",
+                    InstanceProtocol="tcp",
                     ),
                 ],
             CrossZone=True,
             SecurityGroups=[Ref(self.LoadBalancerSecurityGroup)],
             LoadBalancerName=Ref(self.LoadBalancerName),
             Scheme="internet-facing",
-            Instances=Ref(self.instance),
+            Instances=[Ref(self.instance)],
          ))
 
 

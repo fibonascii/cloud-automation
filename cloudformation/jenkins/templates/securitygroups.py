@@ -12,7 +12,7 @@ class SecurityGroups(BaseCloudFormation):
         self.PublicIP = self.template.add_parameter(Parameter(
             "PublicIP",
             Type="String",
-            Default='204.57.87.153/32',
+            Default='204.57.87.152/32',
         ))
 
         self.NatGateway = self.template.add_parameter(Parameter(
@@ -35,13 +35,19 @@ class SecurityGroups(BaseCloudFormation):
                     IpProtocol='tcp',
                     FromPort=80,
                     ToPort=80,
-                    CidrIp='0.0.0.0/0',
+                    CidrIp=Ref(self.PublicIP),
                 ),
                 ec2.SecurityGroupRule(
                     IpProtocol='tcp',
                     FromPort=443,
                     ToPort=443,
-                    CidrIp='0.0.0.0/0',
+                    CidrIp=Ref(self.PublicIP),
+                ),
+                ec2.SecurityGroupRule(
+                    IpProtocol='tcp',
+                    FromPort=22,
+                    ToPort=22,
+                    CidrIp=Ref(self.PublicIP),
                 ),
             ]
         )
@@ -61,7 +67,7 @@ class SecurityGroups(BaseCloudFormation):
                     IpProtocol='tcp',
                     FromPort=22,
                     ToPort=22,
-                    CidrIp=Ref(self.PublicIP),
+                    SourceSecurityGroupId=Ref(self.LoadBalancerSecurityGroup),
                 ),
             ]
         )
