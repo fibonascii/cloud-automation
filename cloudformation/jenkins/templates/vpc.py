@@ -67,6 +67,7 @@ class VPC(BaseCloudFormation):
             VpcId=Ref(self.vpc),
             AvailabilityZone=Ref(self.AvailabilityZoneA),
             MapPublicIpOnLaunch=True,
+            Tags=self.default_tags,
         ))
 
         self.private_subnet = self.template.add_resource(ec2.Subnet(
@@ -75,16 +76,19 @@ class VPC(BaseCloudFormation):
             VpcId=Ref(self.vpc),
             AvailabilityZone=Ref(self.AvailabilityZoneA),
             MapPublicIpOnLaunch=True,
+            Tags=self.default_tags,
         ))
 
         self.private_route_table = self.template.add_resource(ec2.RouteTable(
              "PrivateRouteTable",
               VpcId=Ref(self.vpc), 
+              Tags=self.default_tags,
         ))
 
         self.public_route_table = self.template.add_resource(ec2.RouteTable(
             "PublicRouteTable",
              VpcId=Ref(self.vpc),
+             Tags=self.default_tags,
         ))
 
         self.igw = self.template.add_resource(ec2.InternetGateway(
@@ -93,7 +97,7 @@ class VPC(BaseCloudFormation):
                                         Name=Ref(self.IgwName)),
         ))
 
-        self.attach_internet_gateway = self.template.add_resource(ec2.VPCGatewayAttachment(
+        self.attach_igw = self.template.add_resource(ec2.VPCGatewayAttachment(
              "IGWAttachment",
              VpcId=Ref(self.vpc),
              InternetGatewayId=Ref(self.igw),
@@ -108,6 +112,7 @@ class VPC(BaseCloudFormation):
              "Nat",
              AllocationId=GetAtt(self.nat_eip, 'AllocationId'),
              SubnetId=Ref(self.public_subnet),
+             Tags=self.default_tags
         ))
 
         self.nat_route = self.template.add_resource(ec2.Route(
@@ -122,6 +127,7 @@ class VPC(BaseCloudFormation):
             RouteTableId=Ref(self.public_route_table),
             DestinationCidrBlock='0.0.0.0/0',
             GatewayId=Ref(self.igw),
+
         ))
 
         self.private_subnet_association = self.template.add_resource(ec2.SubnetRouteTableAssociation(
@@ -137,21 +143,21 @@ class VPC(BaseCloudFormation):
         ))
 
     def add_outputs(self):
-        self.vpcid = self.template.add_output(Output(
-             "VPCId",
+        self.VpcId = self.template.add_output(Output(
+             "VpcId",
              Description="The ID for the created VPC",
              Value=Ref(self.vpc),
         ))
 
-        self.private_subnet = self.template.add_output(Output(
+        self.PrivateSubnetA = self.template.add_output(Output(
             "PrivateSubnetA",
-            Description="Jenkins PrivateSubnet",
+            Description="Jenkins PrivateSubnetA",
             Value=Ref(self.private_subnet),
         ))
 
-        self.public_subnet = self.template.add_output(Output(
+        self.PrivateSubnetA = self.template.add_output(Output(
             "PublicSubnetA",
-            Description="Jenkins PublicSubnet",
+            Description="Jenkins PublicSubnetA",
             Value=Ref(self.public_subnet),
         ))
 
