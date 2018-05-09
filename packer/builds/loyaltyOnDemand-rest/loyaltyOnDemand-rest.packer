@@ -2,7 +2,8 @@
   "variables": {
     "lod_rest_version": "v1.1.1",
     "lod_rest_release_type": "rc",
-    "lod_rest_release_type_sequence": "1"
+    "lod_rest_release_type_sequence": "1",
+    "lod_rest_release_name": "v1.1.1-rc.1"
   },
   "builders": [
   {
@@ -20,7 +21,7 @@
 			},
 			"most_recent": true
 		},
-    "ami_name": "BaseRestWindowsImage-{{isotime | clean_ami_name}}",
+    "ami_name": "LoyaltyOnDemandRestWindowsImage-{{user `lod_rest_release_name`}}-{{isotime | clean_ami_name}}",
     "user_data_file": "userdata/windows-aws.txt",
     "communicator": "winrm",
     "winrm_username": "administrator",
