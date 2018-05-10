@@ -12,7 +12,6 @@ class SecurityGroups(BaseCloudFormation):
         self.PublicIP = self.template.add_parameter(Parameter(
             "PublicIP",
             Type="String",
-            Default='204.57.87.152/32',
         ))
 
         self.NatGateway = self.template.add_parameter(Parameter(
@@ -20,8 +19,8 @@ class SecurityGroups(BaseCloudFormation):
             Type="String",
         ))
 
-        self.VPCId = self.template.add_parameter(Parameter(
-            "VPCId",
+        self.VpcId = self.template.add_parameter(Parameter(
+            "VpcId",
             Type="String",
         ))
 
@@ -29,7 +28,7 @@ class SecurityGroups(BaseCloudFormation):
         self.LoadBalancerSecurityGroup = self.template.add_resource(ec2.SecurityGroup(
             "LoadBalancerSecurityGroup",
             GroupDescription="Jenkins Load Balancer Security Group",
-            VpcId=Ref(self.VPCId),
+            VpcId=Ref(self.VpcId),
             SecurityGroupIngress=[
                 ec2.SecurityGroupRule(
                     IpProtocol='tcp',
@@ -55,7 +54,7 @@ class SecurityGroups(BaseCloudFormation):
         self.InstanceSecurityGroup = self.template.add_resource(ec2.SecurityGroup(
             "InstanceSecurityGroup",
             GroupDescription="Security Group For Dev Jenkins Instance",
-            VpcId=Ref(self.VPCId),
+            VpcId=Ref(self.VpcId),
             SecurityGroupIngress=[
                 ec2.SecurityGroupRule(
                     IpProtocol='tcp',
