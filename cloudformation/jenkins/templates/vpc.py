@@ -41,13 +41,13 @@ class VPC(BaseCloudFormation):
         ))
 
          self.AvailabilityZoneA = self.template.add_parameter(Parameter(
-             "AvailabilityZone1",
+             "AvailabilityZoneA",
              Default="us-east-1a",
              Type="String",
         ))
 
          self.AvailabilityZoneB = self.template.add_parameter(Parameter(
-             "AvailabilityZone2",
+             "AvailabilityZoneB",
              Default="us-east-1b",
              Type="String",
         ))
