@@ -7,3 +7,5 @@ parameters:
     KeyPair: jenkins-development
     LoadBalancerSecurityGroup: !stack_output securitygroups::LoadBalancerSecurityGroup
     InstanceSecurityGroup: !stack_output securitygroups::InstanceSecurityGroup
+    AvailabilityZoneA: us-east-1a
+    AvailabilityZoneB: us-east-1b
