@@ -1,0 +1,33 @@
+{
+	"builders": [{
+		"type": "amazon-ebs",
+		"region": "us-east-1",
+		"instance_type": "t2.micro",
+		"ssh_username": "ec2-user",
+		"ssh_keypair_name": "jenkins-development",
+		"ssh_private_key_file" : "jenkins-development.pem",
+		"ami_name": "Jenkins-Development-{{isotime | clean_ami_name}}",
+		"ami_description": "Jenkins Master running on Base Amazon Linux AMI",
+		"source_ami_filter": {
+			"filters": {
+				"virtualization-type": "hvm",
+				"name": "amzn-ami-hvm-*-x86_64-gp2",
+				"root-device-type": "ebs"
+			},
+			"most_recent": true
+		},
+		"tags": {
+			"role": "middleTier"
+		},
+		"run_tags": {
+			"role": "buildSystem"
+		}
+	}],
+	"provisioners": [
+                {
+                        "type": "shell",
+                        "script": "install-jenkins.sh"
+                }
+	]
+
+}
