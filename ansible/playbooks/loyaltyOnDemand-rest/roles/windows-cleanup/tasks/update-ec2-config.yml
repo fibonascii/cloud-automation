@@ -1,3 +1,4 @@
+---
 - name: Enable Ec2 Config Dynamic Password Creation and UserData Execution for Windows
   win_shell: |
     Write-Output "$(Get-Date -format T) - Updating Ec2 Config Service to Enable Dynamic Passwords and UserData Execution"

@@ -13,7 +13,8 @@
     foreach($artifact in $artifacts) {$localFileName = $artifact.Key -replace $keyPrefix, ''
     if ($localFileName -ne '') {$localFilePath = Join-Path $localPath $localFileName
     Copy-S3Object -BucketName $installerRepository -Key $artifact.Key -LocalFile $localFilePath -Region $region}}
-
+  retries: 3
+  delay: 10
 
 - name: Install Microsoft Visual C++ 2010 x64 Redistributable Setup
   win_shell: Start-Process -FilePath ./vcredist_x64.exe -ArgumentList "/q /norestart" -Wait -Verb RunAs

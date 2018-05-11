@@ -1,3 +1,4 @@
+---
 - name: Download all LoyaltyOnDemand Rest Installers from S3 Bucket to Instance
   win_shell: |
     $installerRepository = 'pd-dev-cicd-artifacts'
@@ -12,20 +13,18 @@
     foreach($artifact in $artifacts) {$localFileName = $artifact.Key -replace $keyPrefix, ''
     if ($localFileName -ne '') {$localFilePath = Join-Path $localPath $localFileName
     Copy-S3Object -BucketName $installerRepository -Key $artifact.Key -LocalFile $localFilePath -Region $region}}
-
-
+  retries: 3
+  delay: 10
 
 - name: Install .Net Core 2.0.0
   win_shell: Start-Process -FilePath ./dotnet-runtime-2.0.0-win-x64 -ArgumentList "/q /norestart" -Wait -Verb RunAs
   args:
     chdir: c:\build\deployment-artifacts\rest-api
 
-
 - name: Install .Net Core Web Hosting 1.0.4
   win_shell: Start-Process -FilePath ./DotNetCore.1.0.4_1.1.1-WindowsHosting -ArgumentList "/q /norestart" -Wait -Verb RunAs
   args:
     chdir: c:\build\deployment-artifacts\rest-api
-
 
 - name: Install .Net Core Web Hosting 2.0.5
   win_shell: Start-Process -FilePath ./DotNetCore.2.0.5-WindowsHosting -ArgumentList "/q /norestart" -Wait -Verb RunAs
