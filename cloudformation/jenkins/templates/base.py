@@ -7,7 +7,9 @@ class BaseCloudFormation(ABC):
         self.default_tags = Tags(
                   ResourceOwner="ProductDevelopment",
                   Environment="Development",
-                  Developer="Reagan Kirby")
+                  Developer="Reagan Kirby",
+                  )
+        self.environment_name = "R1KIRB-JENKINS"
    
     @abstractmethod
     def add_parameters(self):

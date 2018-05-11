@@ -16,16 +16,7 @@ class VPC(BaseCloudFormation):
               Description="CIDR Address for instantiated VPC", 
         ))
           
-         self.VpcName = self.template.add_parameter(Parameter(
-            "VpcName",
-            Type="String"
-        ))  
 
-         self.IgwName = self.template.add_parameter(Parameter(
-           "IgwName",
-           Type="String"
-        ))
-       
          self.PublicSubnetA = self.template.add_parameter(Parameter(
              "PublicSubnetA",
               Default="10.0.10.0/24",
@@ -58,7 +49,7 @@ class VPC(BaseCloudFormation):
              "VPC",
              CidrBlock=Ref(self.VpcCidr),
              Tags=self.default_tags + Tags(
-                                        Name=Ref(self.VpcName)),
+                                        Name=self.environment_name + "-VPC"),
         ))
 
         self.public_subnet = self.template.add_resource(ec2.Subnet(
@@ -67,7 +58,8 @@ class VPC(BaseCloudFormation):
             VpcId=Ref(self.vpc),
             AvailabilityZone=Ref(self.AvailabilityZoneA),
             MapPublicIpOnLaunch=True,
-            Tags=self.default_tags,
+            Tags=self.default_tags + Tags(
+                                       Name=self.environment_name + "-PUBSUBA"),
         ))
 
         self.private_subnet = self.template.add_resource(ec2.Subnet(
@@ -76,25 +68,28 @@ class VPC(BaseCloudFormation):
             VpcId=Ref(self.vpc),
             AvailabilityZone=Ref(self.AvailabilityZoneA),
             MapPublicIpOnLaunch=True,
-            Tags=self.default_tags,
+            Tags=self.default_tags + Tags(
+                                       Name=self.environment_name + "-PRIVSUBA"),
         ))
 
         self.private_route_table = self.template.add_resource(ec2.RouteTable(
              "PrivateRouteTable",
               VpcId=Ref(self.vpc), 
-              Tags=self.default_tags,
+              Tags=self.default_tags + Tags(
+                                         Name=self.environment_name + "-PRIVRTBL"),
         ))
 
         self.public_route_table = self.template.add_resource(ec2.RouteTable(
             "PublicRouteTable",
              VpcId=Ref(self.vpc),
-             Tags=self.default_tags,
+             Tags=self.default_tags + Tags(
+                                        Name=self.environment_name + "-PUBRTBL"),
         ))
 
         self.igw = self.template.add_resource(ec2.InternetGateway(
              "InternetGateway", 
              Tags=self.default_tags + Tags(
-                                        Name=Ref(self.IgwName)),
+                                        Name=self.environment_name + "-IGW"),
         ))
 
         self.attach_igw = self.template.add_resource(ec2.VPCGatewayAttachment(
@@ -112,7 +107,8 @@ class VPC(BaseCloudFormation):
              "Nat",
              AllocationId=GetAtt(self.nat_eip, 'AllocationId'),
              SubnetId=Ref(self.public_subnet),
-             Tags=self.default_tags
+             Tags=self.default_tags + Tags(
+                                        Name=self.environment_name + "-NAT"),
         ))
 
         self.nat_route = self.template.add_resource(ec2.Route(

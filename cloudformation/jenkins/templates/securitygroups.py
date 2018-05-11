@@ -1,4 +1,4 @@
-from troposphere import ec2, Ref, Output, Parameter
+from troposphere import ec2, Ref, Output, Parameter, Tags
 from base import BaseCloudFormation
 
 class SecurityGroups(BaseCloudFormation):
@@ -48,7 +48,9 @@ class SecurityGroups(BaseCloudFormation):
                     ToPort=22,
                     CidrIp=Ref(self.PublicIP),
                 ),
-            ]
+            ],
+            Tags=self.default_tags + Tags(
+                                       Name=self.environment_name + "-LOADBALANCERSG"),
         )
     )
         self.InstanceSecurityGroup = self.template.add_resource(ec2.SecurityGroup(
@@ -68,7 +70,10 @@ class SecurityGroups(BaseCloudFormation):
                     ToPort=22,
                     SourceSecurityGroupId=Ref(self.LoadBalancerSecurityGroup),
                 ),
-            ]
+            ],
+            Tags=self.default_tags + Tags(
+                                       Name=self.environment_name + "-INSTANCESG"),
+
         )
     )
 

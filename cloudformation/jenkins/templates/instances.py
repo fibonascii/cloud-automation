@@ -1,5 +1,5 @@
 from base import BaseCloudFormation
-from troposphere import ec2, Ref, Parameter, Output, elasticloadbalancing, autoscaling
+from troposphere import ec2, Ref, Parameter, Output, elasticloadbalancing, autoscaling, Tags
 
 class Instances(BaseCloudFormation):
     def __init__(self, sceptre_user_data):
@@ -12,7 +12,7 @@ class Instances(BaseCloudFormation):
 
         self.LoadBalancerName = self.template.add_parameter(Parameter(
             "LoadBalancerName",
-            Default="DevLoadBalancer",
+            Default=self.environment_name + "-LOADBALANCER",
             Type="String",
             Description="Name of Development Load Balancer",
         ))
@@ -65,7 +65,8 @@ class Instances(BaseCloudFormation):
             "JenkinsInstance",
             ImageId=Ref(self.AMIID),
             InstanceType="t2.micro",
-            Tags=self.default_tags,
+            Tags=self.default_tags + Tags(
+                                       Name=self.environment_name + "-INSTANCE"),
             KeyName=Ref(self.KeyPair),
             SecurityGroupIds=[Ref(self.InstanceSecurityGroup)],
             SubnetId=Ref(self.PrivateSubnet1),
