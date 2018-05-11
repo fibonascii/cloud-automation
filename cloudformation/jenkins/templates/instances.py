@@ -29,14 +29,14 @@ class Instances(BaseCloudFormation):
             Type="String",
         ))
 
-        self.availability_zone1 = self.template.add_parameter(Parameter(
-            "AvailabilityZone1",
+        self.AvilabilityZoneA = self.template.add_parameter(Parameter(
+            "AvailabilityZoneA",
             Type="String",
             Default="us-east-1a",
         ))
 
-        self.availability_zone2 = self.template.add_parameter(Parameter(
-            "AvailabilityZone2",
+        self.AvailabilityZoneB = self.template.add_parameter(Parameter(
+            "AvailabilityZoneB",
             Type="String",
             Default="us-east-1-b",
         ))
@@ -83,14 +83,13 @@ class Instances(BaseCloudFormation):
                 Timeout=120,
                 ),
             Subnets=[Ref(self.PublicSubnet1)],
-            #HealthCheck=elasticloadbalancing.HealthCheck(
-            #    Target="TCP:22/",
-            #    HealthyThreshold="5",
-            #    UnhealthyThreshold="2",
-            #    Interval="20",
-            #    Timeout="15",
-            #    ),
             Listeners=[
+                elasticloadbalancing.Listener(
+                    LoadBalancerPort="80",
+                    InstancePort="8080",
+                    Protocol="tcp",
+                    InstanceProtocol="tcp",
+                    ),
                 elasticloadbalancing.Listener(
                     LoadBalancerPort="22",
                     InstancePort="22",
