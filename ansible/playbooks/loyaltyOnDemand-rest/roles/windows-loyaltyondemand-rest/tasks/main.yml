@@ -2,7 +2,5 @@
 - name: Install Loyalty On Demand Windows Prerequisites
   include_tasks: rest-windows-installs.yml
 
-
 - name: Deploy Loyalty On Demand Rest Application
   include_tasks: rest-application-deploy.yml 
-

@@ -1,7 +1,7 @@
 ---
-- name: Manage Windows Features
+- name: Manage Windows Features (Install/Uninstall)
   include_tasks: manage-windows-feature.yml
   with_items: "{{ WINDOWS_FEATURES }}"
 
-- name: Install Base Windows Prerequisites 
+- name: Install Base Windows Software 
   include_tasks: base-windows-installs.yml
