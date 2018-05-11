@@ -29,16 +29,14 @@ class Instances(BaseCloudFormation):
             Type="String",
         ))
 
-        self.AvilabilityZoneA = self.template.add_parameter(Parameter(
+        self.AvailabilityZoneA = self.template.add_parameter(Parameter(
             "AvailabilityZoneA",
             Type="String",
-            Default="us-east-1a",
         ))
 
         self.AvailabilityZoneB = self.template.add_parameter(Parameter(
             "AvailabilityZoneB",
             Type="String",
-            Default="us-east-1-b",
         ))
 
         self.PublicSubnet1 = self.template.add_parameter(Parameter(
@@ -71,9 +69,8 @@ class Instances(BaseCloudFormation):
             KeyName=Ref(self.KeyPair),
             SecurityGroupIds=[Ref(self.InstanceSecurityGroup)],
             SubnetId=Ref(self.PrivateSubnet1),
-
-            AvailabilityZone="us-east-1a",
-                ))
+            AvailabilityZone=Ref(self.AvailabilityZoneA),
+        ))
 
 
         self.LoadBalancer = self.template.add_resource(elasticloadbalancing.LoadBalancer(
