@@ -11,8 +11,8 @@
     "type": "amazon-ebs",
     "region": "us-east-1",
     "instance_type": "t2.medium",
-    "ssh_keypair_name": "pd-cicd-devolopment",
-    "ssh_private_key_file" : "pd-cicd-devolopment.pem",
+    "ssh_keypair_name": "",
+    "ssh_private_key_file" : "",
     "iam_instance_profile": "cicd-admin-role",
     "source_ami_filter": {
 			"filters": {
