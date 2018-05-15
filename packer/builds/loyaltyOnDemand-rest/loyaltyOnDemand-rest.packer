@@ -1,15 +1,18 @@
 {
   "variables": {
-    "lod_rest_version": "v1.1.1",
-    "lod_rest_release_type": "rc",
-    "lod_rest_release_type_sequence": "1",
-    "lod_rest_release_name": "v1.1.1-rc.1"
+    "lod_rest_version": "v1.1.0",
+    "lod_rest_release_type": "hotfix",
+    "lod_rest_release_type_sequence": "2",
+    "lod_rest_release_name": "v1.1.0-hotfix.2",
+    "cylance_token": ""
   },
   "builders": [
   {
     "type": "amazon-ebs",
     "region": "us-east-1",
     "instance_type": "t2.medium",
+    "ssh_keypair_name": "",
+    "ssh_private_key_file" : "",
     "iam_instance_profile": "cicd-admin-role",
     "source_ami_filter": {
 			"filters": {
@@ -43,7 +46,7 @@
       "playbook_file": "../../ansible/playbooks/loyaltyOnDemand-rest/loyaltyOnDemandRest-windows.yml",
       "extra_arguments": [
         "--connection", "packer", "-vvv",
-        "--extra-vars", "ansible_shell_type=powershell ansible_shell_executable=None lod_rest_version={{user `lod_rest_version`}} lod_rest_release_type={{user `lod_rest_release_type`}} lod_rest_release_type_sequence={{user `lod_rest_release_type_sequence`}}"
+        "--extra-vars", "ansible_shell_type=powershell ansible_shell_executable=None lod_rest_version={{user `lod_rest_version`}} lod_rest_release_type={{user `lod_rest_release_type`}} lod_rest_release_type_sequence={{user `lod_rest_release_type_sequence`}} cylance_token={{user `cylance_token`}}"
       ]
   }]
 }
