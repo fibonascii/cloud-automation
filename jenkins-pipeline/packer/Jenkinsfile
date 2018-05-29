@@ -6,7 +6,7 @@ pipeline {
             steps {
                 echo 'Setup Environment'
                 echo "${IMAGE_TYPE}"
-                sh 'rsync -vaP /home/jenkins/"${KEY_NAME}" packer/builds/"${IMAGE_TYPE}"'
+                sh 'rsync -vaP /home/jenkins/.ssh/"${KEY_NAME}" packer/builds/"${IMAGE_TYPE}"'
             }
         }    
         stage('Build') {

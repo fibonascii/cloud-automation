@@ -1,0 +1,137 @@
+ - name: Create New Jenkins Home Directory
+   file: 
+     path: /home/jenkins
+     state: directory
+     owner: jenkins
+     group: jenkins
+   become: True
+
+ - name: Create AWS Directory
+   file:
+     path: /home/ec2-user/.aws
+     state: directory
+     owner: ec2-user
+     group: ec2-user
+   become: True
+
+ - name: Copy AWS Credentials to AWS Directory
+   copy:  
+     src: files/aws_credentials
+     dest: /home/ec2-user/.aws/credentials
+     owner: ec2-user
+     group: ec2-user
+   become: True
+
+ - name: Copy AWS Config to AWS Directory
+   copy:
+     src: files/aws_config
+     dest: /home/ec2-user/.aws/config
+     owner: ec2-user
+     group: ec2-user
+   become: True
+
+ - name: Download SSH Keys from S3
+   shell: aws s3 sync s3://pd-dev-cicd-artifacts/secure /home/ec2-user/.ssh/
+
+ - name: Change Permissions of Private Key File
+   file:
+     path: /home/ec2-user/.ssh/jenkins-development.pem
+     owner: ec2-user
+     group: ec2-user
+     mode: 0400
+
+ - name: Eval SSH Agent
+   shell: eval "$(ssh-agent -s)"
+
+ - name: Add Jenkins Key to SSH Identity
+   shell: ssh-add /home/ec2-user/.ssh/jenkins-development.pem
+
+ - name: Set Git Config For Username
+   git_config:
+     name: user.name
+     scope: global
+     value: "Reagan Kirby"
+
+ - name: Set Git Config for Email
+   git_config:
+     name: user.email
+     scope: global
+     value: "rkirby@brierley.com"
+
+ - name: Clone Cloud Automation Repository
+   git:
+     repo: git@github.com:brierley/cloud-automation.git
+     dest: /opt/cloud-automation
+     clone: yes
+     accept_hostkey: yes
+     version: task/LW-5928
+     key_file: /home/ec2-user/.ssh/jenkins-development.pem
+   become: True
+
+ - name: Change Permissions of Cloud Automation Repository
+   file: 
+     path: /opt/cloud-automation
+     owner: jenkins
+     group: jenkins
+     recurse: yes
+   become: True
+     
+ - name: Copy Jenkins Sysconfig to Remote System
+   copy:
+     src: files/jenkins
+     dest: /etc/sysconfig/jenkins
+     owner: root
+     group: root
+   become: True
+
+ - name: Symlink Jenkins Configuration to Jenkins Home
+   file:
+     src: /opt/cloud-automation/configuration/jenkins
+     dest: /home/jenkins
+     owner: jenkins
+     group: jenkins
+     state: link
+     force: yes
+   become: True
+
+ - name: Copy Jenkins Users Folder to Jenkins Home
+   copy:
+     src: files/users/admin
+     dest: /home/jenkins/users
+     owner: jenkins
+     group: jenkins
+   become: True
+
+ - name: Create SSH Folder in Jenkins Home
+   file:
+     path: /home/jenkins/.ssh
+     owner: jenkins
+     group: jenkins
+     state: directory
+   become: True
+
+ - name: Copy SSH Keys to Jenkins SSH Folder
+   shell: rsync -vaP /home/ec2-user/.ssh/ /home/jenkins/.ssh/
+   become: True
+
+ - name: Change Permissions of Jenkins SSH Directory
+   file:
+     path: /home/jenkins/.ssh
+     owner: jenkins
+     group: jenkins
+     recurse: yes
+   become: True
+
+ - name: Copy Credentials File to Jenkins Server
+   copy:
+     src: files/credentials.xml
+     dest: /home/jenkins/credentials.xml
+     owner: jenkins
+     group: jenkins
+   become: True
+ 
+ - name: Start Jenkins Service
+   service:
+     name: jenkins
+     state: started
+   become: true

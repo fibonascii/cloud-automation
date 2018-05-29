@@ -1,0 +1,82 @@
+ - name: Update Repository List
+   shell: yum update -y
+   become: true 
+
+ - name: Install Python3
+   yum:
+     name: python36
+     state: latest
+   become: True
+
+ - name: Install Python3 Development Tools
+   yum:
+     name: python36-devel
+     state: latest
+   become: True
+
+ - name: Install Python3 Pip
+   yum:
+     name: python36-pip
+     state: latest
+   become: True
+
+ - name: Install Boto3
+   pip: 
+     name: boto3
+   become: True
+
+ - name: Install Git
+   yum:
+     name: git
+     state: latest
+   become: true
+
+ - name: Install Ansible
+   pip:
+     name: ansible
+     version: 2.5.3
+   become: True
+
+ - name: Install Java 8
+   yum:
+     name: java-1.8.0-openjdk
+     state: latest
+   become: true
+
+ - name: Remove Old Version of Java
+   yum:
+     name: java-1.7.0-openjdk
+     state: absent
+   become: true
+
+ - name: Download Packer
+   get_url: 
+     url: https://releases.hashicorp.com/packer/1.2.4/packer_1.2.4_linux_amd64.zip
+     dest: /opt/packer.zip
+     checksum: sha256:258d1baa23498932baede9b40f2eca4ac363b86b32487b36f48f5102630e9fbb
+     owner: ec2-user
+     group: ec2-user
+   become: True
+    
+ - name: Unzip Packer
+   unarchive:
+     src: /opt/packer.zip
+     dest: /opt/
+     remote_src: yes 
+   become: True
+
+ - name: Change Permissions of Packer
+   file:
+     path: /opt/packer
+     owner: ec2-user
+     group: ec2-user
+   become: True
+
+ - name: Create Symbolic Link
+   file: 
+     src: /opt/packer
+     dest: /usr/local/bin/packer.io
+     owner: ec2-user
+     group: ec2-user
+     state: link
+   become: True

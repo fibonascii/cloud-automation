@@ -11,9 +11,10 @@
 		"source_ami_filter": {
 			"filters": {
 				"virtualization-type": "hvm",
-				"name": "amzn-ami-hvm-*-x86_64-gp2",
+				"name": "amzn-ami*-ebs",
 				"root-device-type": "ebs"
 			},
+                        "owners": ["137112412989", "591542846629", "801119661308", "102837901569", "013907871322", "206029621532", "286198878708", "443319210888"],
 			"most_recent": true
 		},
 		"tags": {
@@ -23,11 +24,12 @@
 			"role": "buildSystem"
 		}
 	}],
-	"provisioners": [
-                {
-                        "type": "shell",
-                        "script": "install-jenkins.sh"
-                }
-	]
-
+	"provisioners": [{
+                 "type": "ansible",
+                 "playbook_file": "../../../ansible/playbooks/jenkins/jenkins.yml",
+                 "extra_arguments": [
+                   "--vault-password-file", "../../../ansible/playbooks/jenkins/roles/jenkins-install/.vault_pass"
+                ]
+                            
+	}]
 }
