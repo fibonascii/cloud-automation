@@ -1,0 +1,24 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Setup') {
+            steps {
+                echo 'Setup Environment'
+                echo "${IMAGE_TYPE}"
+                sh 'rsync -vaP /home/jenkins/"${KEY_NAME}" packer/builds/"${IMAGE_TYPE}"'
+            }
+        }    
+        stage('Build') {
+            steps {
+               echo 'Build Packer Image'
+               sh 'cd packer/builds/"${IMAGE_TYPE}" && packer.io build "${IMAGE_TYPE}".packer'
+            }
+        }
+        stage('Notify') {
+          steps { 
+             echo '''\""${IMAGE_TYPE}" AMI created successfully by jenkins\" | hipchat_room_message -t HIPCHAT_API_TOKEN -r 4600588 -f "Jenkins"'''
+          }
+     }
+  } 
+}

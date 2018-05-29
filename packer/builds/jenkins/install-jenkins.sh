@@ -12,3 +12,10 @@ sudo service jenkins start
 sudo chkconfig jenkins on
 #Remove outdated Java
 sudo yum remove -y java-1.7.0-openjdk
+#Grab jenkins secret
+sudo cat /var/lib/jenkins/secrets/initialAdminPassword
+#Install Git
+sudo yum install -y git
+#Install hipchat-cli
+git clone https://github.com/hipchat/hipchat-cli.git
+
