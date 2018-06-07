@@ -64,7 +64,7 @@
      dest: /opt/cloud-automation
      clone: yes
      accept_hostkey: yes
-     version: task/LW-5928
+     version: master
      key_file: /home/ec2-user/.ssh/jenkins-development.pem
    become: True
 

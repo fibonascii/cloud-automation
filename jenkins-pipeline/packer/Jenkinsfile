@@ -5,14 +5,16 @@ pipeline {
         stage('Setup') {
             steps {
                 echo 'Setup Environment'
-                echo "${IMAGE_TYPE}"
                 sh 'rsync -vaP /home/jenkins/.ssh/"${KEY_NAME}" packer/builds/"${IMAGE_TYPE}"'
+                sh 'echo ${VERSION_NUMBER}'
+                sh 'echo ${RELEASE_TYPE}'
+                sh 'echo ${RELEASE_SEQUENCE}'
             }
         }    
         stage('Build') {
             steps {
                echo 'Build Packer Image'
-               sh 'cd packer/builds/"${IMAGE_TYPE}" && packer.io build "${IMAGE_TYPE}".packer'
+               sh '''cd packer/builds/"${IMAGE_TYPE}" && packer.io build -var lod_rest_version="${VERSION_NUMBER}" -var lod_rest_release_type="${RELEASE_TYPE}" -var lod_rest_release_type_sequence="${RELEASE_SEQUENCE}" ${IMAGE_TYPE}.packer'''
             }
         }
         stage('Notify') {
