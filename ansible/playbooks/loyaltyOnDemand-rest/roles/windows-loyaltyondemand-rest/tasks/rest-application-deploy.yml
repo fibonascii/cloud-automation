@@ -9,12 +9,12 @@
 - name: Copy S3 Zip to Remote Machine
   set_fact: 
     releaseZip: '{{lod_rest_version}}-{{lod_rest_release_type}}.{{lod_rest_release_type_sequence}}.zip'
-  when: lod_rest_release_type != 'release'
+  when: lod_rest_release_type is defined
 
 - name: Copy S3 Zip to Remote Machine
   set_fact:
     releaseZip: '{{lod_rest_version}}.zip'
-  when: lod_rest_release_type == 'release'
+  when: lod_rest_release_type is not defined
  
 - name: Download Release Zip to Machine
   win_shell: |
