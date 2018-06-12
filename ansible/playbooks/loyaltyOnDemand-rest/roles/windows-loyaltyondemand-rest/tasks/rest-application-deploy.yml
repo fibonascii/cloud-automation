@@ -31,6 +31,9 @@
 
     $s3FilePath = "$($keyPrefix)$($fileName )"
 
+    if (-Not (Test-Path -Path $localPath))
+    {New-Item -Path $localPath -ItemType directory -Force | out-null}
+
     $releasePackage = Get-S3Object -BucketName $cicdS3Bucket -Key $s3FilePath -Region $region
     $localFileName = $artifact.Key -replace $keyPrefix, ''
     $localFilePath = Join-Path $localPath $localFileName
