@@ -2,34 +2,42 @@
 - debug: var=lod_rest_version
 - debug: var=lod_rest_release_type
 - debug: var=lod_rest_release_type_sequence
+- debug: var=lod_cicd_s3_bucket
+- debug: var=lod_rest_release_upload_key
 
 - name: Identify the S3 Zip needed based on request filter
   debug: var=lod_rest_version
 
-- name: Copy S3 Zip to Remote Machine
-  set_fact: 
+- name: Determine S3 Zip Name with Release Type
+  set_fact:
     releaseZip: '{{lod_rest_version}}-{{lod_rest_release_type}}.{{lod_rest_release_type_sequence}}.zip'
   when: lod_rest_release_type is defined
 
-- name: Copy S3 Zip to Remote Machine
+- name: Determine S3 Zip Name without Release Type
   set_fact:
     releaseZip: '{{lod_rest_version}}.zip'
-  when: lod_rest_release_type is not defined
- 
+  when: lod_rest_release_type is not defined or lod_rest_release_type == ""
+
+
+- pause: minutes=30
+
 - name: Download Release Zip to Machine
   win_shell: |
-    $installerRepository = 'pd-dev-cicd-artifacts'
+    $cicdS3Bucket = '{{lod_cicd_s3_bucket}}'
 
     $region = 'us-east-1'
-    $keyPrefix = '/releases/lod-rest/{{releaseZip}}'
+    $keyPrefix = '{{lod_rest_release_upload_key}}'
+    $fileName = '{{releaseZip}}'
 
-    $localPath = 'C:/'
+    $localPath = 'C:/releases/lod-rest/'
+    $localFilePath = Join-Path $localPath $fileName
 
-    if (-Not (Test-Path -Path $localPath)){New-Item -Path $localPath -ItemType directory -Force | out-null}
-    $artifacts = Get-S3Object -BucketName $installerRepository -KeyPrefix $keyPrefix -Region $region
-    foreach($artifact in $artifacts) {$localFileName = $artifact.Key -replace $keyPrefix, ''
-    if ($localFileName -ne '') {$localFilePath = Join-Path $localPath $localFileName
-    Copy-S3Object -BucketName $installerRepository -Key $artifact.Key -LocalFile $localFilePath -Region $region}}
+    $s3FilePath = "$($keyPrefix)$($fileName )"
+
+    $releasePackage = Get-S3Object -BucketName $cicdS3Bucket -Key $s3FilePath -Region $region
+    $localFileName = $artifact.Key -replace $keyPrefix, ''
+    $localFilePath = Join-Path $localPath $localFileName
+    Copy-S3Object -BucketName $cicdS3Bucket -Key $releasePackage.Key -LocalFile $localFilePath -Region $region
   retries: 3
   delay: 10
 
