@@ -3,3 +3,5 @@
 *.pem
 .vault_pass
 jenkins-development
+jenkins/org.jenkinsci.plugins.workflow.flow.FlowExecutionList.xml
+queue.xml

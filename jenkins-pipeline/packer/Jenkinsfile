@@ -14,7 +14,7 @@ pipeline {
         stage('Build') {
             steps {
                echo 'Build Packer Image'
-               sh '''cd packer/builds/"${IMAGE_TYPE}" && packer.io build -var lod_rest_version="${VERSION_NUMBER}" -var lod_rest_release_type="${RELEASE_TYPE}" -var lod_rest_release_type_sequence="${RELEASE_SEQUENCE}" ${IMAGE_TYPE}.packer'''
+               sh '''cd packer/builds/"${IMAGE_TYPE}" && packer.io build -var lod_rest_version="${VERSION_NUMBER}" -var lod_rest_release_type="${RELEASE_TYPE}" -var lod_rest_release_type_sequence="${RELEASE_SEQUENCE}" -var lod_rest_release_name="${RELEASE_NAME}" -var lod_cicd_s3_bucket="${S3_BUCKET_NAME}" -var lod_rest_release_upload_key="${KEY_PREFIX}" ${IMAGE_TYPE}.packer'''
             }
         }
         stage('Notify') {
