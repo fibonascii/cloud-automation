@@ -1,6 +1,7 @@
 from troposphere import ec2, Ref, Output, Parameter, Tags
 from base import BaseCloudFormation
 
+
 class SecurityGroups(BaseCloudFormation):
     def __init__(self, sceptre_user_data):
         super().__init__()
@@ -53,6 +54,7 @@ class SecurityGroups(BaseCloudFormation):
                                        Name=self.environment_name + "-LOADBALANCERSG"),
         )
     )
+
         self.InstanceSecurityGroup = self.template.add_resource(ec2.SecurityGroup(
             "InstanceSecurityGroup",
             GroupDescription="Security Group For Dev Jenkins Instance",
@@ -70,6 +72,12 @@ class SecurityGroups(BaseCloudFormation):
                     ToPort=22,
                     SourceSecurityGroupId=Ref(self.LoadBalancerSecurityGroup),
                 ),
+                ec2.SecurityGroupRule(
+                    IpProtocol='tcp',
+                    FromPort=0,
+                    ToPort=65535,
+                    CidrIp="10.0.0.0/16",
+                ),
             ],
             Tags=self.default_tags + Tags(
                                        Name=self.environment_name + "-INSTANCESG"),
@@ -77,7 +85,30 @@ class SecurityGroups(BaseCloudFormation):
         )
     )
 
-            
+        self.SlaveInstanceSecurityGroup = self.template.add_resource(ec2.SecurityGroup(
+            "SlaveInstanceSecurityGroup",
+            GroupDescription="Security Group For Dev Jenkins Instance",
+            VpcId=Ref(self.VpcId),
+            SecurityGroupIngress=[
+                ec2.SecurityGroupRule(
+                    IpProtocol='tcp',
+                    FromPort=0,
+                    ToPort=65535,
+                    SourceSecurityGroupId=Ref(self.InstanceSecurityGroup),
+                ),
+                ec2.SecurityGroupRule(
+                    IpProtocol='tcp',
+                    FromPort=22,
+                    ToPort=22,
+                    SourceSecurityGroupId=Ref(self.InstanceSecurityGroup),
+                ),
+            ],
+            Tags=self.default_tags + Tags(
+                Name=self.environment_name + "-SLAVEINSTANCESG"),
+
+        )
+        )
+
     def add_outputs(self):
         self.LoadBalancerSecurityGroup = self.template.add_output(Output(
              "LoadBalancerSecurityGroup",
@@ -91,9 +122,15 @@ class SecurityGroups(BaseCloudFormation):
             Value=Ref(self.InstanceSecurityGroup),
         ))
 
+        self.SlaveInstanceSecurityGroup = self.template.add_output(Output(
+            "SlaveInstanceSecurityGroup",
+            Description="Slave instance Securty Group",
+            Value=Ref(self.SlaveInstanceSecurityGroup),
+        ))
+
         
 def sceptre_handler(sceptre_user_data):
     securitygroups = SecurityGroups(sceptre_user_data)
     return securitygroups.template.to_json()        
 
-        
+

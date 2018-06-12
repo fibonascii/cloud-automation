@@ -5,3 +5,15 @@
 jenkins-development
 jenkins/org.jenkinsci.plugins.workflow.flow.FlowExecutionList.xml
 queue.xml
+jdk-tool.jpi
+-version.hwm
+-version.pwd
+-version.pwi
+build.hwm
+build.pwd
+build.pwil
+build.pwi
+failed-boot-attempts.txt
+identity.key.enc
+.idea
+jenkins-dev-ohio

@@ -1,0 +1,4 @@
+---
+ - name: Setup Common Dependencies for Jenkins Nodes
+   include: setup.yml
+   tags: setup

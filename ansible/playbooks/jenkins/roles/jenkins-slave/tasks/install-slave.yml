@@ -1,0 +1,57 @@
+ - name: Copy Swarm Client to slave node
+   copy:
+     src: files/swarm-client-3.9.jar
+     dest: /home/ec2-user/swarm-client.jar
+     owner: ec2-user
+     group: ec2-user
+   become: True
+
+# - name: Get Private IP of Jenkins Master
+#   ec2_instance_facts:
+#     filters:
+#       "tag:Name": R1KIRB-JENKINS-MASTERINSTANCE
+#     region: us-east-2
+#   register: output
+
+# - name: Set Private IP To Fact
+#   set_fact:
+#     private_ip: "{{ output.instances.0.private_ip_address }}"
+
+ - name: Copy Swarm Service File To Server
+   template:
+     src: templates/swarm-client.service.j2
+     dest: /etc/init.d/swarm-service
+     owner: root
+     group: root
+   become: True
+
+ - name: Copy Swarm Script To Server
+   template:
+     src: templates/swarm-client.sh.j2
+     dest: /usr/local/bin/swarm-client.sh
+     owner: root
+     group: root
+   become: True
+
+ - name: Set Permissions Of Service Script
+   file:
+     path: /etc/init.d/swarm-service
+     state: touch
+     mode: "u+x"
+   become: True
+
+ - name: Set Permissions of Swarm Script
+   file:
+     path: /usr/local/bin/swarm-client.sh
+     state: touch
+     mode: "u+x"
+   become: True
+
+ - name: Add Script to ChkConfig
+   shell: chkconfig --add swarm-service
+   become: True
+
+ - name: Enable Service On Boot
+   shell: chkconfig --level 2345 swarm-service on
+   become: True
+

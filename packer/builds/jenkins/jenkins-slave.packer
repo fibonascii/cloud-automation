@@ -6,8 +6,8 @@
 		"ssh_username": "ec2-user",
 		"ssh_keypair_name": "jenkins-development",
 		"ssh_private_key_file" : "jenkins-development",
-		"ami_name": "Jenkins-Development-Master{{isotime | clean_ami_name}}",
-		"ami_description": "Jenkins Master running on Base Amazon Linux AMI",
+		"ami_name": "Jenkins-Development-Slave{{isotime | clean_ami_name}}",
+		"ami_description": "Jenkins Slave running on Base Amazon Linux AMI",
 		"source_ami_filter": {
 			"filters": {
 				"virtualization-type": "hvm",
@@ -26,10 +26,9 @@
 	}],
 	"provisioners": [{
                  "type": "ansible",
-                 "playbook_file": "../../../ansible/playbooks/jenkins/jenkins-master.yml",
+                 "playbook_file": "../../../ansible/playbooks/jenkins/jenkins-slave.yml",
                  "extra_arguments": [
-                   "--vault-password-file", "../../../ansible/playbooks/jenkins/roles/jenkins-master/.vault_pass"
-                ]
-                            
-	}]
+                 "--vault-password-file", "../../../ansible/playbooks/jenkins/roles/jenkins-slave/.vault_pass"
+              ]
+           }]
 }

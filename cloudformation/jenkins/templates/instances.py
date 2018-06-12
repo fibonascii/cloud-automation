@@ -1,5 +1,17 @@
 from base import BaseCloudFormation
-from troposphere import ec2, Ref, Parameter, Output, elasticloadbalancing, autoscaling, Tags
+from troposphere import ec2, Ref, Parameter, Output, elasticloadbalancing, Tags, GetAtt
+from troposphere import Base64, Join
+from troposphere.autoscaling import AutoScalingGroup, Tag
+from troposphere.autoscaling import LaunchConfiguration
+from troposphere.policies import (
+    AutoScalingReplacingUpdate, AutoScalingRollingUpdate, UpdatePolicy
+)
+
+
+import os
+username = os.environ['JENKINS_USERNAME']
+password = os.environ['JENKINS_PASSWORD']
+
 
 class Instances(BaseCloudFormation):
     def __init__(self, sceptre_user_data):
@@ -17,6 +29,13 @@ class Instances(BaseCloudFormation):
             Description="Name of Development Load Balancer",
         ))
 
+        self.SlaveLoadBalancerName = self.template.add_parameter(Parameter(
+            "SlaveLoadBalancerName",
+            Default=self.environment_name + "-SLAVELB",
+            Type="String",
+            Description="Name of Slave Development Load Balancer"
+        ))
+
         self.LoadBalancerSecurityGroup = self.template.add_parameter(Parameter(
             "LoadBalancerSecurityGroup",
             Type="String",
@@ -26,6 +45,12 @@ class Instances(BaseCloudFormation):
         self.AMIID = self.template.add_parameter(Parameter(
             "AMIID",
             Default="ami-bb8209ad",
+            Type="String",
+        ))
+
+        self.SLAVEAMIID = self.template.add_parameter(Parameter(
+            "SLAVEAMIID",
+            Default="ami-27003e42",
             Type="String",
         ))
 
@@ -59,22 +84,25 @@ class Instances(BaseCloudFormation):
             Type="String",
         ))
 
+        self.SlaveInstanceSecurityGroup = self.template.add_parameter(Parameter(
+            "SlaveInstanceSecurityGroup",
+            Type="String",
+        ))
 
     def add_resources(self):
-        self.instance = self.template.add_resource(ec2.Instance(
+        self.master_instance = self.template.add_resource(ec2.Instance(
             "JenkinsInstance",
             ImageId=Ref(self.AMIID),
             InstanceType="t2.micro",
             Tags=self.default_tags + Tags(
-                                       Name=self.environment_name + "-INSTANCE"),
+                                       Name=self.environment_name + "-MASTERINSTANCE"),
             KeyName=Ref(self.KeyPair),
             SecurityGroupIds=[Ref(self.InstanceSecurityGroup)],
             SubnetId=Ref(self.PrivateSubnet1),
             AvailabilityZone=Ref(self.AvailabilityZoneA),
         ))
 
-
-        self.LoadBalancer = self.template.add_resource(elasticloadbalancing.LoadBalancer(
+        self.master_loadbalancer = self.template.add_resource(elasticloadbalancing.LoadBalancer(
             "LoadBalancer",
             ConnectionDrainingPolicy=elasticloadbalancing.ConnectionDrainingPolicy(
                 Enabled=True,
@@ -99,12 +127,55 @@ class Instances(BaseCloudFormation):
             SecurityGroups=[Ref(self.LoadBalancerSecurityGroup)],
             LoadBalancerName=Ref(self.LoadBalancerName),
             Scheme="internet-facing",
-            Instances=[Ref(self.instance)],
+            Instances=[Ref(self.master_instance)],
          ))
+
+        self.slave_loadbalancer = self.template.add_resource(elasticloadbalancing.LoadBalancer(
+            "SlaveLoadBalancer",
+            ConnectionDrainingPolicy=elasticloadbalancing.ConnectionDrainingPolicy(
+                Enabled=True,
+                Timeout=120,
+                ),
+            Subnets=[Ref(self.PrivateSubnet1)],
+            Listeners=[
+                elasticloadbalancing.Listener(
+                    LoadBalancerPort="22",
+                    InstancePort="22",
+                    Protocol="tcp",
+                    InstanceProtocol="tcp",
+                    ),
+                ],
+            CrossZone=True,
+            SecurityGroups=[Ref(self.LoadBalancerSecurityGroup)],
+            LoadBalancerName=Ref(self.SlaveLoadBalancerName),
+            Scheme="internal",
+         ))
+
+        self.LaunchConfig = self.template.add_resource(LaunchConfiguration(
+            "LaunchConfiguration",
+            ImageId=Ref(self.SLAVEAMIID),
+            KeyName=Ref(self.KeyPair),
+            InstanceType="t2.medium",
+            LaunchConfigurationName="R1KIRB-JENKINS-SLAVELC",
+            SecurityGroups=[Ref(self.SlaveInstanceSecurityGroup)],
+        ))
+
+        self.AutoscalingGroup = self.template.add_resource(AutoScalingGroup(
+            "AutoscalingGroup",
+            DesiredCapacity=1,
+            LaunchConfigurationName=Ref(self.LaunchConfig),
+            MinSize=1,
+            MaxSize=2,
+            VPCZoneIdentifier=[Ref(self.PrivateSubnet1)],
+            LoadBalancerNames=[Ref(self.slave_loadbalancer)],
+            AvailabilityZones=['us-east-2a'],
+            HealthCheckType="EC2",
+        ))
 
 
     def add_outputs(self):
         return
+
 
 def sceptre_handler(sceptre_user_data):
     instances = Instances(sceptre_user_data)

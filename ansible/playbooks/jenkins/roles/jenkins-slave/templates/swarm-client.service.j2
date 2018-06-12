@@ -1,0 +1,16 @@
+#!/bin/bash
+#chkconfig: - 99 10
+#/etc/rc.d/init.d/
+#
+#
+#
+#
+# Source function library
+. /etc/init.d/functions
+
+start() { 
+          /usr/local/bin/swarm-client.sh
+          return
+         }
+start
+

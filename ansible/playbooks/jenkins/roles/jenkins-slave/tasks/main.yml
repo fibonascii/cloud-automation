@@ -1,0 +1,4 @@
+---
+ - name: Install Slave
+   include: install-slave.yml
+   tags: install

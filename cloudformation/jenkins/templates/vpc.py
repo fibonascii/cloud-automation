@@ -1,6 +1,7 @@
 from base import BaseCloudFormation
 from troposphere import ec2, Ref, Tags, Parameter, GetAtt, Output
 
+
 class VPC(BaseCloudFormation):
     def __init__(self, sceptre_user_data):
         super().__init__()
@@ -15,7 +16,6 @@ class VPC(BaseCloudFormation):
               Type="String",
               Description="CIDR Address for instantiated VPC", 
         ))
-          
 
          self.PublicSubnetA = self.template.add_parameter(Parameter(
              "PublicSubnetA",
@@ -31,15 +31,29 @@ class VPC(BaseCloudFormation):
               Description="CIDR Address for Private Subnet",
         ))
 
+         self.PublicSubnetB = self.template.add_parameter(Parameter(
+             "PublicSubnetB",
+             Default="10.0.30.0/24",
+             Type="String",
+             Description="CIDR Address for Public Subnet",
+         ))
+
+         self.PrivateSubnetB = self.template.add_parameter(Parameter(
+             "PrivateSubnetB",
+             Default="10.0.40.0/24",
+             Type="String",
+             Description="CIDR Address for Private Subnet",
+         ))
+
          self.AvailabilityZoneA = self.template.add_parameter(Parameter(
              "AvailabilityZoneA",
-             Default="us-east-1a",
+             Default="us-east-2a",
              Type="String",
         ))
 
          self.AvailabilityZoneB = self.template.add_parameter(Parameter(
              "AvailabilityZoneB",
-             Default="us-east-1b",
+             Default="us-east-2b",
              Type="String",
         ))
 
@@ -52,7 +66,7 @@ class VPC(BaseCloudFormation):
                                         Name=self.environment_name + "-VPC"),
         ))
 
-        self.public_subnet = self.template.add_resource(ec2.Subnet(
+        self.public_subneta = self.template.add_resource(ec2.Subnet(
             "PublicSubnet",
             CidrBlock=Ref(self.PublicSubnetA),
             VpcId=Ref(self.vpc),
@@ -62,7 +76,7 @@ class VPC(BaseCloudFormation):
                                        Name=self.environment_name + "-PUBSUBA"),
         ))
 
-        self.private_subnet = self.template.add_resource(ec2.Subnet(
+        self.private_subneta = self.template.add_resource(ec2.Subnet(
             "PrivateSubnet",
             CidrBlock=Ref(self.PrivateSubnetA),
             VpcId=Ref(self.vpc),
@@ -70,6 +84,27 @@ class VPC(BaseCloudFormation):
             MapPublicIpOnLaunch=True,
             Tags=self.default_tags + Tags(
                                        Name=self.environment_name + "-PRIVSUBA"),
+        ))
+
+        self.public_subnetb = self.template.add_resource(ec2.Subnet(
+            "PublicSubnet2",
+            CidrBlock=Ref(self.PublicSubnetB),
+            VpcId=Ref(self.vpc),
+            AvailabilityZone=Ref(self.AvailabilityZoneB),
+            MapPublicIpOnLaunch=True,
+            Tags=self.default_tags + Tags(
+                                       name=self.environment_name + "-PUBSUBB"
+            ),
+        ))
+
+        self.private_subnetb = self.template.add_resource(ec2.Subnet(
+            "PrivateSubnet2",
+            CidrBlock=Ref(self.PrivateSubnetB),
+            VpcId=Ref(self.vpc),
+            AvailabilityZone=Ref(self.AvailabilityZoneB),
+            MapPublicIpOnLaunch=True,
+            Tags=self.default_tags + Tags(
+                Name=self.environment_name + "-PRIVSUBB"),
         ))
 
         self.private_route_table = self.template.add_resource(ec2.RouteTable(
@@ -106,7 +141,7 @@ class VPC(BaseCloudFormation):
         self.nat = self.template.add_resource(ec2.NatGateway(
              "Nat",
              AllocationId=GetAtt(self.nat_eip, 'AllocationId'),
-             SubnetId=Ref(self.public_subnet),
+             SubnetId=Ref(self.public_subneta),
              Tags=self.default_tags + Tags(
                                         Name=self.environment_name + "-NAT"),
         ))
@@ -128,15 +163,64 @@ class VPC(BaseCloudFormation):
 
         self.private_subnet_association = self.template.add_resource(ec2.SubnetRouteTableAssociation(
             "PriSubnetAssociation",
-            SubnetId=Ref(self.private_subnet),
+            SubnetId=Ref(self.private_subneta),
             RouteTableId=Ref(self.private_route_table),
         ))
 
         self.public_subnet_association = self.template.add_resource(ec2.SubnetRouteTableAssociation(
             "PubSubnetAssociation",
-            SubnetId=Ref(self.public_subnet),
+            SubnetId=Ref(self.public_subneta),
             RouteTableId=Ref(self.public_route_table),
         ))
+        """Start Block for Second group of Subnets"""
+
+        self.private_route_tableb = self.template.add_resource(ec2.RouteTable(
+            "PrivateRouteTableB",
+            VpcId=Ref(self.vpc),
+            Tags=self.default_tags + Tags(
+                Name=self.environment_name + "-PRIVRTBLB"),
+        ))
+
+        self.public_route_tableb = self.template.add_resource(ec2.RouteTable(
+            "PublicRouteTableB",
+            VpcId=Ref(self.vpc),
+            Tags=self.default_tags + Tags(
+                Name=self.environment_name + "-PUBRTBLB"),
+        ))
+
+
+        self.nat_eipb = self.template.add_resource(ec2.EIP(
+            "NatEIPB",
+            Domain="vpc",
+        ))
+
+        self.natb = self.template.add_resource(ec2.NatGateway(
+            "NatB",
+            AllocationId=GetAtt(self.nat_eipb, 'AllocationId'),
+            SubnetId=Ref(self.public_subnetb),
+            Tags=self.default_tags + Tags(
+                Name=self.environment_name + "-NATB"),
+        ))
+
+        self.nat_routeb = self.template.add_resource(ec2.Route(
+            "PublicRouteB",
+            RouteTableId=Ref(self.private_route_tableb),
+            DestinationCidrBlock='0.0.0.0/0',
+            NatGatewayId=Ref(self.natb),
+        ))
+
+        self.private_subnet_associationb = self.template.add_resource(ec2.SubnetRouteTableAssociation(
+            "PriSubnetAssociationB",
+            SubnetId=Ref(self.private_subnetb),
+            RouteTableId=Ref(self.private_route_tableb),
+        ))
+
+        self.public_subnet_associationb = self.template.add_resource(ec2.SubnetRouteTableAssociation(
+            "PubSubnetAssociationB",
+            SubnetId=Ref(self.public_subnetb),
+            RouteTableId=Ref(self.public_route_tableb),
+        ))
+
 
     def add_outputs(self):
         self.VpcId = self.template.add_output(Output(
@@ -148,13 +232,25 @@ class VPC(BaseCloudFormation):
         self.PrivateSubnetA = self.template.add_output(Output(
             "PrivateSubnetA",
             Description="Jenkins PrivateSubnetA",
-            Value=Ref(self.private_subnet),
+            Value=Ref(self.private_subneta),
         ))
 
-        self.PrivateSubnetA = self.template.add_output(Output(
+        self.PrivateSubnetB = self.template.add_output(Output(
+            "PrivateSubnet2",
+            Description="Jenkins PrivateSubnetB",
+            Value=Ref(self.private_subnetb),
+        ))
+
+        self.PublicSubnetA = self.template.add_output(Output(
             "PublicSubnetA",
             Description="Jenkins PublicSubnetA",
-            Value=Ref(self.public_subnet),
+            Value=Ref(self.public_subneta),
+        ))
+
+        self.PublicSubnetB = self.template.add_output(Output(
+            "PublicSubnet2",
+            Description="Jenkins PublicSubnetB",
+            Value=Ref(self.public_subnetb),
         ))
 
         self.NatGateway = self.template.add_output(Output(
@@ -163,6 +259,23 @@ class VPC(BaseCloudFormation):
             Value=Ref(self.nat),
         ))
 
+        self.NatGatewayB = self.template.add_output(Output(
+            "NatGatewayB",
+            Description="NatGateway",
+            Value=Ref(self.natb),
+        ))
+
+        self.AvailabilityZoneA = self.template.add_output(Output(
+            "AvailabilityZone1",
+            Description="AvailabilityZone1",
+            Value=Ref(self.AvailabilityZoneA)
+        ))
+
+        self.AvailabilityZoneB = self.template.add_output(Output(
+            "AvailabilityZone2",
+            Description="AvailabilityZone2",
+            Value=Ref(self.AvailabilityZoneB)
+        ))
 
 
 def sceptre_handler(sceptre_user_data):

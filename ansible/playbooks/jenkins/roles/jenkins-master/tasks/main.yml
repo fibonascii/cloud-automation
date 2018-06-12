@@ -1,12 +1,8 @@
 ---
- - name: Setup Base Software for Server
-   include: setup.yml
-   tags: setup
-
  - name: Install Jenkins
    include: install-jenkins.yml
    tags: install
 
- - name: Confiogure Jenkins
+ - name: Configure Jenkins
    include: configure-jenkins.yml
    tags: configure

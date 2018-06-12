@@ -1,0 +1,4 @@
+#!/bin/bash
+mv /home/ec2-user/.aws /root/
+private_ip="$(aws ec2 describe-instances --query 'Reservations[].Instances[].NetworkInterfaces[].PrivateIpAddresses[].PrivateIpAddress[]' --filter Name=tag:Name,Values=R1KIRB-JENKINS-MASTERINSTANCE --output text)"
+java -server -Djava.awt.headless=true -jar /home/ec2-user/swarm-client.jar -fsroot /home/jenkins/ -labels swarm -master http://"${private_ip}":8080 -username "{{ username }}" -password "{{ password }}" -name Jenkins-Slave
