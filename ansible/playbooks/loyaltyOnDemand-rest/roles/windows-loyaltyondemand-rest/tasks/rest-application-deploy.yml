@@ -18,9 +18,6 @@
     releaseZip: '{{lod_rest_version}}.zip'
   when: lod_rest_release_type is not defined or lod_rest_release_type == ""
 
-
-- pause: minutes=30
-
 - name: Download Release Zip to Machine
   win_shell: |
     $cicdS3Bucket = '{{lod_cicd_s3_bucket}}'
