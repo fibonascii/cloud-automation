@@ -1,0 +1,1469 @@
+{
+	"AWSTemplateFormatVersion": "2010-09-09",
+	"Parameters": {
+		"NameTagValue": {
+			"Type": "String",
+			"Default": "PD-CICD-DEV",
+			"Description": "The Name Tag Value Suffix"
+		},
+		"ResourceOwner": {
+			"Type": "String",
+			"Default": "ProductDevelopment",
+			"Description": "The Cost Allocation Tag Value"
+		},
+		"Environment": {
+			"Type": "String",
+			"Default": "Development",
+			"Description": "The Cost Allocation Tag Value"
+		},
+		"AdminCidrBlock": {
+			"Type": "String",
+			"Default": "204.57.87.152/32",
+			"Description": "The VPC Cidr Block"
+		},
+		"GrafanaImageId": {
+			"Type": "String",
+			"Default": "ami-8fff4ff0",
+			"Description": "The Grafana AMI ID"
+		},
+		"GrafanaServerKeyName": {
+			"Type": "String",
+			"Default": "pd-cicd-devolopment",
+			"Description": "The Control Server Key Name"
+		},
+		"GrafanaIAMInstanceProfile": {
+			"Type": "String",
+			"Default": "cicd-admin-role",
+			"Description": "The Control Server IAM Instance Profile"
+		},
+		"GrafanaInstanceType": {
+			"Type": "String",
+			"Default": "t2.micro",
+			"Description": "The Grafana Instance Type"
+		},
+		"JenkinsImageId": {
+			"Type": "String",
+			"Default": "ami-626e1e1d",
+			"Description": "The Jenkins AMI ID"
+		},
+		"JenkinsServerKeyName": {
+			"Type": "String",
+			"Default": "pd-cicd-devolopment",
+			"Description": "The Control Server Key Name"
+		},
+		"JenkinsIAMInstanceProfile": {
+			"Type": "String",
+			"Default": "cicd-admin-role",
+			"Description": "The Control Server IAM Instance Profile"
+		},
+		"JenkinsInstanceType": {
+			"Type": "String",
+			"Default": "t2.medium",
+			"Description": "The Jenkins Instance Type"
+		},
+		"QueryServerImageId": {
+			"Type": "String",
+			"Default": "ami-e0538f9f",
+			"Description": "The QueryServer AMI ID"
+		},
+		"QueryServerServerKeyName": {
+			"Type": "String",
+			"Default": "pd-cicd-devolopment",
+			"Description": "The Control Server Key Name"
+		},
+		"QueryServerIAMInstanceProfile": {
+			"Type": "String",
+			"Default": "cicd-admin-role",
+			"Description": "The Control Server IAM Instance Profile"
+		},
+		"QueryServerInstanceType": {
+			"Type": "String",
+			"Default": "t2.medium",
+			"Description": "The QueryServer Instance Type"
+		},
+		"CICDDBName": {
+			"Type": "String",
+			"Default": "CICDDB",
+			"Description": "The Oracle DB Name"
+		},
+		"CICDDBUsername": {
+			"Type": "String",
+			"Default": "brier_admin",
+			"Description": "The Oracle Db Admin Username"
+		},
+		"CICDDBPassword": {
+			"Type": "String",
+			"Default": "reX7They!",
+			"Description": "The Oracle DB Admin Pw"
+		},
+		"CICDDBClass": {
+			"Type": "String",
+			"Default": "db.t2.micro",
+			"Description": "The Oracle DB Class"
+		},
+		"CICDDBAllocatedStorage": {
+			"Type": "String",
+			"Default": "10",
+			"Description": "The Oracle DB Allocated Storage"
+		},
+		"CICDDBSnapshotArn": {
+			"Type": "String",
+			"Default": "",
+			"Description": "The Oracle DB Snapshot ARN"
+		},
+		"CICDDBStorageType": {
+			"Type": "String",
+			"Default": "standard",
+			"Description": "The Oracle DB Storage Type"
+		},
+		"CICDDBIOPS": {
+			"Type": "Number",
+			"Default": "0",
+			"Description": "The Oracle DB Storage Type"
+		},
+		"CICDDBParameterGroup": {
+			"Type": "String",
+			"Default": "",
+			"Description": "The Oracle DB Parameter Group"
+		},
+		"CICDDBRequested": {
+			"Type": "String",
+			"Default": "false",
+			"Description": "The CICD DB Requested flag"
+		},
+		"GrafanaRequested": {
+			"Type": "String",
+			"Default": "false",
+			"Description": "The Oracle DB Requested flag"
+		},
+		"JenkinsRequested": {
+			"Type": "String",
+			"Default": "false",
+			"Description": "The Jenkins Requested flag"
+		},
+		"QueryServerRequested": {
+			"Type": "String",
+			"Default": "false",
+			"Description": "The Query Server Requested flag"
+		}
+	},
+	"Conditions": {
+		"CreateCICDDatabase": {
+			"Fn::Equals": [{
+				"Ref": "CICDDBRequested"
+			}, "true"]
+		},
+		"CreateGrafana": {
+			"Fn::Equals": [{
+				"Ref": "GrafanaRequested"
+			}, "true"]
+		},
+		"CreateJenkinsMaster": {
+			"Fn::Equals": [{
+				"Ref": "JenkinsRequested"
+			}, "true"]
+		},
+		"CreateQueryServer": {
+			"Fn::Equals": [{
+				"Ref": "QueryServerRequested"
+			}, "true"]
+		}
+	},
+	"Resources": {
+		"CICDVPC": {
+			"Type": "AWS::EC2::VPC",
+			"Properties": {
+				"CidrBlock": "10.0.1.0/24",
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"VPC-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"CICDPubSubnet1": {
+			"Type": "AWS::EC2::Subnet",
+			"DependsOn": "CICDVPC",
+			"Properties": {
+				"CidrBlock": "10.0.1.0/26",
+				"AvailabilityZone": {
+					"Fn::Select": ["2", {
+						"Fn::GetAZs": ""
+					}]
+				},
+				"VpcId": {
+					"Ref": "CICDVPC"
+				},
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"SBNET-PUB-1-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"CICDPubSubnet2": {
+			"Type": "AWS::EC2::Subnet",
+			"DependsOn": "CICDVPC",
+			"Properties": {
+				"CidrBlock": "10.0.1.64/26",
+				"AvailabilityZone": {
+					"Fn::Select": ["3", {
+						"Fn::GetAZs": ""
+					}]
+				},
+				"VpcId": {
+					"Ref": "CICDVPC"
+				},
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"SBNET-PUB-2-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"CICDPrivSubnet1": {
+			"Type": "AWS::EC2::Subnet",
+			"DependsOn": "CICDVPC",
+			"Properties": {
+				"CidrBlock": "10.0.1.128/26",
+				"AvailabilityZone": {
+					"Fn::Select": ["2", {
+						"Fn::GetAZs": ""
+					}]
+				},
+				"VpcId": {
+					"Ref": "CICDVPC"
+				},
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"SBNET-PRIV-1-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"CICDPrivSubnet2": {
+			"Type": "AWS::EC2::Subnet",
+			"DependsOn": "CICDVPC",
+			"Properties": {
+				"CidrBlock": "10.0.1.192/26",
+				"AvailabilityZone": {
+					"Fn::Select": ["3", {
+						"Fn::GetAZs": ""
+					}]
+				},
+				"VpcId": {
+					"Ref": "CICDVPC"
+				},
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"SBNET-PRIV-2-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"CICDIGW": {
+			"Type": "AWS::EC2::InternetGateway",
+			"DependsOn": "CICDVPC",
+			"Properties": {}
+		},
+		"CICDInternetGatewayAttachment": {
+			"Type": "AWS::EC2::VPCGatewayAttachment",
+			"DependsOn": "CICDIGW",
+			"Properties": {
+				"VpcId": {
+					"Ref": "CICDVPC"
+				},
+				"InternetGatewayId": {
+					"Ref": "CICDIGW"
+				}
+			}
+		},
+		"CICDEIP1": {
+			"Type": "AWS::EC2::EIP",
+			"DependsOn": "CICDVPC",
+			"Properties": {
+				"Domain": "vpc"
+			}
+		},
+		"CICDNAT1": {
+			"Type": "AWS::EC2::NatGateway",
+			"DependsOn": "CICDPubSubnet1",
+			"Properties": {
+				"AllocationId": {
+					"Fn::GetAtt": ["CICDEIP1", "AllocationId"]
+				},
+				"SubnetId": {
+					"Ref": "CICDPubSubnet1"
+				},
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"NGW-1-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"CICDNatRoute": {
+			"Type": "AWS::EC2::Route",
+			"DependsOn": "CICDNAT1",
+			"Properties": {
+				"RouteTableId": {
+					"Ref": "CICDPrivRT1"
+				},
+				"DestinationCidrBlock": "0.0.0.0/0",
+				"NatGatewayId": {
+					"Ref": "CICDNAT1"
+				}
+			}
+		},
+		"CICDPrivRT1": {
+			"Type": "AWS::EC2::RouteTable",
+			"DependsOn": "CICDPrivSubnet1",
+			"Properties": {
+				"VpcId": {
+					"Ref": "CICDVPC"
+				},
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"RT-PRIV-1-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"CICDPrivRT1Association": {
+			"Type": "AWS::EC2::SubnetRouteTableAssociation",
+			"DependsOn": "CICDPrivRT1",
+			"Properties": {
+				"RouteTableId": {
+					"Ref": "CICDPrivRT1"
+				},
+				"SubnetId": {
+					"Ref": "CICDPrivSubnet1"
+				}
+			}
+		},
+		"CICDPrivRT2Association": {
+			"Type": "AWS::EC2::SubnetRouteTableAssociation",
+			"DependsOn": "CICDPrivRT1",
+			"Properties": {
+				"RouteTableId": {
+					"Ref": "CICDPrivRT1"
+				},
+				"SubnetId": {
+					"Ref": "CICDPrivSubnet2"
+				}
+			}
+		},
+		"CICDPubRT1IGWAttachment": {
+			"Type": "AWS::EC2::Route",
+			"DependsOn": "CICDPubRT1",
+			"Properties": {
+				"RouteTableId": {
+					"Ref": "CICDPubRT1"
+				},
+				"DestinationCidrBlock": "0.0.0.0/0",
+				"GatewayId": {
+					"Ref": "CICDIGW"
+				}
+			}
+		},
+		"CICDPubRT1": {
+			"Type": "AWS::EC2::RouteTable",
+			"DependsOn": "CICDPubSubnet1",
+			"Properties": {
+				"VpcId": {
+					"Ref": "CICDVPC"
+				},
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"RT-PUB-1-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"CICDPubRT1Association": {
+			"Type": "AWS::EC2::SubnetRouteTableAssociation",
+			"DependsOn": "CICDPubRT1",
+			"Properties": {
+				"RouteTableId": {
+					"Ref": "CICDPubRT1"
+				},
+				"SubnetId": {
+					"Ref": "CICDPubSubnet1"
+				}
+			}
+		},
+		"CICDPubRT2Association": {
+			"Type": "AWS::EC2::SubnetRouteTableAssociation",
+			"DependsOn": "CICDPubRT1",
+			"Properties": {
+				"RouteTableId": {
+					"Ref": "CICDPubRT1"
+				},
+				"SubnetId": {
+					"Ref": "CICDPubSubnet2"
+				}
+			}
+		},
+		"GrafanaPublicLBSG": {
+			"Type": "AWS::EC2::SecurityGroup",
+			"Condition": "CreateGrafana",
+			"DependsOn": "CICDPubRT1Association",
+			"Properties": {
+				"GroupDescription": "Allow access to Control Server Load Balancer",
+				"VpcId": {
+					"Ref": "CICDVPC"
+				},
+				"SecurityGroupIngress": [{
+						"IpProtocol": "tcp",
+						"FromPort": "22",
+						"ToPort": "22",
+						"CidrIp": {
+							"Ref": "AdminCidrBlock"
+						}
+					},
+					{
+						"IpProtocol": "tcp",
+						"FromPort": "80",
+						"ToPort": "80",
+						"CidrIp": {
+							"Ref": "AdminCidrBlock"
+						}
+					}
+				],
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"GRAFANA-PUB-LB-SG-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"GrafanaSG": {
+			"Type": "AWS::EC2::SecurityGroup",
+			"Condition": "CreateGrafana",
+			"DependsOn": "GrafanaPublicLBSG",
+			"Properties": {
+				"GroupDescription": "Allow access to Grafana instance",
+				"VpcId": {
+					"Ref": "CICDVPC"
+				},
+				"SecurityGroupIngress": [{
+						"IpProtocol": "tcp",
+						"FromPort": "22",
+						"ToPort": "22",
+						"SourceSecurityGroupId": {
+							"Ref": "GrafanaPublicLBSG"
+						}
+					},
+					{
+						"IpProtocol": "tcp",
+						"FromPort": "3000",
+						"ToPort": "3000",
+						"SourceSecurityGroupId": {
+							"Ref": "GrafanaPublicLBSG"
+						}
+					}
+				],
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"GRAFANA-EC2-SG-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"GrafanaPublicLB": {
+			"Type": "AWS::ElasticLoadBalancing::LoadBalancer",
+			"Condition": "CreateGrafana",
+			"DependsOn": "GrafanaPublicLBSG",
+			"Properties": {
+				"LoadBalancerName": {
+					"Fn::Join": [
+						"", [
+							"GRAFANA-PUB-LB-",
+							{
+								"Ref": "NameTagValue"
+							}
+						]
+					]
+				},
+				"Scheme": "internet-facing",
+				"Listeners": [{
+						"LoadBalancerPort": "22",
+						"InstancePort": "22",
+						"Protocol": "TCP",
+						"InstanceProtocol": "TCP"
+					},
+					{
+						"LoadBalancerPort": "80",
+						"InstancePort": "3000",
+						"Protocol": "HTTP",
+						"InstanceProtocol": "HTTP"
+					}
+				],
+				"Instances": [],
+				"ConnectionSettings": {
+					"IdleTimeout": "300"
+				},
+				"SecurityGroups": [{
+					"Ref": "GrafanaPublicLBSG"
+				}],
+				"Subnets": [{
+					"Ref": "CICDPubSubnet1"
+				}],
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"GRAFANA-PUB-LB-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"GrafanaLaunchConfiguration": {
+			"Type": "AWS::AutoScaling::LaunchConfiguration",
+			"Condition": "CreateGrafana",
+			"DependsOn": "GrafanaPublicLB",
+			"Properties": {
+				"ImageId": {
+					"Ref": "GrafanaImageId"
+				},
+				"IamInstanceProfile": {
+					"Ref": "GrafanaIAMInstanceProfile"
+				},
+				"InstanceType": {
+					"Ref": "GrafanaInstanceType"
+				},
+				"KeyName": {
+					"Ref": "GrafanaServerKeyName"
+				},
+				"SecurityGroups": [{
+					"Ref": "GrafanaSG"
+				}]
+			}
+		},
+		"GrafanaAutoScalingGroup": {
+			"Type": "AWS::AutoScaling::AutoScalingGroup",
+			"Condition": "CreateGrafana",
+			"DependsOn": "GrafanaLaunchConfiguration",
+			"Properties": {
+				"AvailabilityZones": [{
+					"Fn::Select": ["2", {
+						"Fn::GetAZs": ""
+					}]
+				}],
+				"LaunchConfigurationName": {
+					"Ref": "GrafanaLaunchConfiguration"
+				},
+				"LoadBalancerNames": [{
+					"Ref": "GrafanaPublicLB"
+				}],
+				"MaxSize": "1",
+				"MinSize": "1",
+				"DesiredCapacity": "1",
+				"VPCZoneIdentifier": [{
+					"Ref": "CICDPrivSubnet1"
+				}],
+				"Tags": [{
+						"Key": "Name",
+						"PropagateAtLaunch": "true",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"GRAFANA-EC2-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"PropagateAtLaunch": "true",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"PropagateAtLaunch": "true",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"JenkinsPublicLBSG": {
+			"Type": "AWS::EC2::SecurityGroup",
+			"Condition": "CreateJenkinsMaster",
+			"DependsOn": "CICDPubRT1Association",
+			"Properties": {
+				"GroupDescription": "Allow access to Jenkins Server Load Balancer",
+				"VpcId": {
+					"Ref": "CICDVPC"
+				},
+				"SecurityGroupIngress": [{
+						"IpProtocol": "tcp",
+						"FromPort": "22",
+						"ToPort": "22",
+						"CidrIp": {
+							"Ref": "AdminCidrBlock"
+						}
+					},
+					{
+						"IpProtocol": "tcp",
+						"FromPort": "80",
+						"ToPort": "80",
+						"CidrIp": {
+							"Ref": "AdminCidrBlock"
+						}
+					}
+				],
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"JENKINS-PUB-LB-SG-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"JenkinsSG": {
+			"Type": "AWS::EC2::SecurityGroup",
+			"Condition": "CreateJenkinsMaster",
+			"DependsOn": "JenkinsPublicLBSG",
+			"Properties": {
+				"GroupDescription": "Allow access to Jenkins instance",
+				"VpcId": {
+					"Ref": "CICDVPC"
+				},
+				"SecurityGroupIngress": [{
+						"IpProtocol": "tcp",
+						"FromPort": "22",
+						"ToPort": "22",
+						"SourceSecurityGroupId": {
+							"Ref": "JenkinsPublicLBSG"
+						}
+					},
+					{
+						"IpProtocol": "tcp",
+						"FromPort": "8080",
+						"ToPort": "8080",
+						"SourceSecurityGroupId": {
+							"Ref": "JenkinsPublicLBSG"
+						}
+					}
+				],
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"JENKINS-EC2-SG-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"JenkinsPublicLB": {
+			"Type": "AWS::ElasticLoadBalancing::LoadBalancer",
+			"Condition": "CreateJenkinsMaster",
+			"DependsOn": "JenkinsPublicLBSG",
+			"Properties": {
+				"LoadBalancerName": {
+					"Fn::Join": [
+						"", [
+							"JENKINS-PUB-LB-",
+							{
+								"Ref": "NameTagValue"
+							}
+						]
+					]
+				},
+				"Scheme": "internet-facing",
+				"Listeners": [{
+						"LoadBalancerPort": "22",
+						"InstancePort": "22",
+						"Protocol": "TCP",
+						"InstanceProtocol": "TCP"
+					},
+					{
+						"LoadBalancerPort": "80",
+						"InstancePort": "8080",
+						"Protocol": "HTTP",
+						"InstanceProtocol": "HTTP"
+					}
+				],
+				"Instances": [],
+				"ConnectionSettings": {
+					"IdleTimeout": "300"
+				},
+				"SecurityGroups": [{
+					"Ref": "JenkinsPublicLBSG"
+				}],
+				"Subnets": [{
+					"Ref": "CICDPubSubnet1"
+				}],
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"JENKINS-PUB-LB-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"JenkinsLaunchConfiguration": {
+			"Type": "AWS::AutoScaling::LaunchConfiguration",
+			"Condition": "CreateJenkinsMaster",
+			"DependsOn": "JenkinsPublicLB",
+			"Properties": {
+				"ImageId": {
+					"Ref": "JenkinsImageId"
+				},
+				"IamInstanceProfile": {
+					"Ref": "JenkinsIAMInstanceProfile"
+				},
+				"InstanceType": {
+					"Ref": "JenkinsInstanceType"
+				},
+				"KeyName": {
+					"Ref": "JenkinsServerKeyName"
+				},
+				"SecurityGroups": [{
+					"Ref": "JenkinsSG"
+				}]
+			}
+		},
+		"JenkinsAutoScalingGroup": {
+			"Type": "AWS::AutoScaling::AutoScalingGroup",
+			"Condition": "CreateJenkinsMaster",
+			"DependsOn": "JenkinsLaunchConfiguration",
+			"Properties": {
+				"AvailabilityZones": [{
+					"Fn::Select": ["2", {
+						"Fn::GetAZs": ""
+					}]
+				}],
+				"LaunchConfigurationName": {
+					"Ref": "JenkinsLaunchConfiguration"
+				},
+				"LoadBalancerNames": [{
+					"Ref": "JenkinsPublicLB"
+				}],
+				"MaxSize": "1",
+				"MinSize": "1",
+				"DesiredCapacity": "1",
+				"VPCZoneIdentifier": [{
+					"Ref": "CICDPrivSubnet1"
+				}],
+				"Tags": [{
+						"Key": "Name",
+						"PropagateAtLaunch": "true",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"JENKINS-EC2-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"PropagateAtLaunch": "true",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"PropagateAtLaunch": "true",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"QueryServerPublicLBSG": {
+			"Type": "AWS::EC2::SecurityGroup",
+			"Condition": "CreateQueryServer",
+			"DependsOn": "CICDPubRT1Association",
+			"Properties": {
+				"GroupDescription": "Allow access to QueryServer Server Load Balancer",
+				"VpcId": {
+					"Ref": "CICDVPC"
+				},
+				"SecurityGroupIngress": [{
+						"IpProtocol": "tcp",
+						"FromPort": "3389",
+						"ToPort": "3389",
+						"CidrIp": {
+							"Ref": "AdminCidrBlock"
+						}
+					},
+					{
+						"IpProtocol": "tcp",
+						"FromPort": "80",
+						"ToPort": "80",
+						"CidrIp": {
+							"Ref": "AdminCidrBlock"
+						}
+					}
+				],
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"QUERYSERVER-PUB-LB-SG-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"QueryServerSG": {
+			"Type": "AWS::EC2::SecurityGroup",
+			"Condition": "CreateQueryServer",
+			"DependsOn": "QueryServerPublicLBSG",
+			"Properties": {
+				"GroupDescription": "Allow access to QueryServer instance",
+				"VpcId": {
+					"Ref": "CICDVPC"
+				},
+				"SecurityGroupIngress": [{
+					"IpProtocol": "tcp",
+					"FromPort": "3389",
+					"ToPort": "3389",
+					"SourceSecurityGroupId": {
+						"Ref": "QueryServerPublicLBSG"
+					}
+				}],
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"QUERYSERVER-EC2-SG-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"QueryServerPublicLB": {
+			"Type": "AWS::ElasticLoadBalancing::LoadBalancer",
+			"Condition": "CreateQueryServer",
+			"DependsOn": "QueryServerPublicLBSG",
+			"Properties": {
+				"LoadBalancerName": {
+					"Fn::Join": [
+						"", [
+							"QUERYSERVER-PUB-LB-",
+							{
+								"Ref": "NameTagValue"
+							}
+						]
+					]
+				},
+				"Scheme": "internet-facing",
+				"Listeners": [{
+					"LoadBalancerPort": "3389",
+					"InstancePort": "3389",
+					"Protocol": "TCP",
+					"InstanceProtocol": "TCP"
+				}],
+				"Instances": [],
+				"ConnectionSettings": {
+					"IdleTimeout": "300"
+				},
+				"SecurityGroups": [{
+					"Ref": "QueryServerPublicLBSG"
+				}],
+				"Subnets": [{
+					"Ref": "CICDPubSubnet1"
+				}],
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"QUERYSERVER-PUB-LB-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"QueryServerLaunchConfiguration": {
+			"Type": "AWS::AutoScaling::LaunchConfiguration",
+			"Condition": "CreateQueryServer",
+			"DependsOn": "QueryServerPublicLB",
+			"Properties": {
+				"ImageId": {
+					"Ref": "QueryServerImageId"
+				},
+				"IamInstanceProfile": {
+					"Ref": "QueryServerIAMInstanceProfile"
+				},
+				"InstanceType": {
+					"Ref": "QueryServerInstanceType"
+				},
+				"KeyName": {
+					"Ref": "QueryServerServerKeyName"
+				},
+				"SecurityGroups": [{
+					"Ref": "QueryServerSG"
+				}]
+			}
+		},
+		"QueryServerAutoScalingGroup": {
+			"Type": "AWS::AutoScaling::AutoScalingGroup",
+			"Condition": "CreateQueryServer",
+			"DependsOn": "QueryServerLaunchConfiguration",
+			"Properties": {
+				"AvailabilityZones": [{
+					"Fn::Select": ["2", {
+						"Fn::GetAZs": ""
+					}]
+				}],
+				"LaunchConfigurationName": {
+					"Ref": "QueryServerLaunchConfiguration"
+				},
+				"LoadBalancerNames": [{
+					"Ref": "QueryServerPublicLB"
+				}],
+				"MaxSize": "1",
+				"MinSize": "1",
+				"DesiredCapacity": "1",
+				"VPCZoneIdentifier": [{
+					"Ref": "CICDPrivSubnet1"
+				}],
+				"Tags": [{
+						"Key": "Name",
+						"PropagateAtLaunch": "true",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"QUERYSERVER-EC2-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"PropagateAtLaunch": "true",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"PropagateAtLaunch": "true",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"CICDDBSecurityGroup": {
+			"Type": "AWS::EC2::SecurityGroup",
+			"Condition": "CreateCICDDatabase",
+			"DependsOn": "CICDPubRT1Association",
+			"DeletionPolicy": "Delete",
+			"Properties": {
+				"VpcId": {
+					"Ref": "CICDVPC"
+				},
+				"GroupDescription": "Allow Access to DB"
+			}
+		},
+		"GrafanaToDBCommunicationIngress": {
+			"Type": "AWS::EC2::SecurityGroupIngress",
+			"Condition": "CreateGrafana",
+			"DependsOn": ["GrafanaSG", "CICDDBSecurityGroup"],
+			"Properties": {
+				"GroupId": {
+					"Ref": "CICDDBSecurityGroup"
+				},
+				"IpProtocol": "tcp",
+				"ToPort": "3306",
+				"FromPort": "3306",
+				"SourceSecurityGroupId": {
+					"Ref": "GrafanaSG"
+				}
+			}
+		},
+		"JenkinsToDBCommunicationIngress": {
+			"Type": "AWS::EC2::SecurityGroupIngress",
+			"Condition": "CreateJenkinsMaster",
+			"DependsOn": ["JenkinsSG", "CICDDBSecurityGroup"],
+			"Properties": {
+				"GroupId": {
+					"Ref": "CICDDBSecurityGroup"
+				},
+				"IpProtocol": "tcp",
+				"ToPort": "3306",
+				"FromPort": "3306",
+				"SourceSecurityGroupId": {
+					"Ref": "JenkinsSG"
+				}
+			}
+		},
+		"QueryServerToDBCommunicationIngress": {
+			"Type": "AWS::EC2::SecurityGroupIngress",
+			"Condition": "CreateQueryServer",
+			"DependsOn": ["QueryServerSG", "CICDDBSecurityGroup"],
+			"Properties": {
+				"GroupId": {
+					"Ref": "CICDDBSecurityGroup"
+				},
+				"IpProtocol": "tcp",
+				"ToPort": "3306",
+				"FromPort": "3306",
+				"SourceSecurityGroupId": {
+					"Ref": "QueryServerSG"
+				}
+			}
+		},
+		"CICDDBSubnetGroup": {
+			"Type": "AWS::RDS::DBSubnetGroup",
+			"Condition": "CreateCICDDatabase",
+			"DependsOn": "CICDDBSecurityGroup",
+			"Properties": {
+				"DBSubnetGroupDescription": "RDS DB Subnet Group",
+				"SubnetIds": [{
+						"Ref": "CICDPrivSubnet1"
+					},
+					{
+						"Ref": "CICDPrivSubnet2"
+					}
+				]
+			}
+		},
+		"CICDDBInstance": {
+			"Type": "AWS::RDS::DBInstance",
+			"DependsOn": "CICDDBSubnetGroup",
+			"Condition": "CreateCICDDatabase",
+			"DeletionPolicy": "Delete",
+			"Properties": {
+				"DBName": {
+					"Ref": "CICDDBName"
+				},
+				"Engine": "postgres",
+				"MasterUsername": {
+					"Ref": "CICDDBUsername"
+				},
+				"DBInstanceClass": {
+					"Ref": "CICDDBClass"
+				},
+				"EngineVersion": "10.3",
+				"LicenseModel": "postgresql-license",
+				"BackupRetentionPeriod": "0",
+				"DBSubnetGroupName": {
+					"Ref": "CICDDBSubnetGroup"
+				},
+				"VPCSecurityGroups": [{
+					"Ref": "CICDDBSecurityGroup"
+				}],
+				"AllocatedStorage": {
+					"Ref": "CICDDBAllocatedStorage"
+				},
+				"StorageType": {
+					"Ref": "CICDDBStorageType"
+				},
+				"Iops": {
+					"Ref": "CICDDBIOPS"
+				},
+				"MasterUserPassword": {
+					"Ref": "CICDDBPassword"
+				},
+				"DBSnapshotIdentifier": {
+					"Ref": "CICDDBSnapshotArn"
+				},
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"CICD-RDS-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		}
+	},
+	"Outputs": {
+		"GrafanaLoadBalancerDnsName": {
+			"Description": "Information about the value",
+			"Condition": "CreateGrafana",
+			"Value": {
+				"Fn::GetAtt": ["GrafanaPublicLB", "DNSName"]
+			}
+		},
+		"JenkinsLoadBalancerDnsName": {
+			"Description": "Information about the value",
+			"Condition": "CreateJenkinsMaster",
+			"Value": {
+				"Fn::GetAtt": ["JenkinsPublicLB", "DNSName"]
+			}
+		}
+	}
+}

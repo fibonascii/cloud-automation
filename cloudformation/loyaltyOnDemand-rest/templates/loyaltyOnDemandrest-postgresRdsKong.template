@@ -1,0 +1,2881 @@
+{
+	"AWSTemplateFormatVersion": "2010-09-09",
+	"Parameters": {
+		"NameTagValue": {
+			"Type": "String",
+			"Default": "PD-REST-WIN-DEV",
+			"Description": "The Name Tag Value Suffix"
+		},
+		"ResourceOwner": {
+			"Type": "String",
+			"Default": "ProductDevelopment",
+			"Description": "The Resource Owner Group, Used as a Cost Allocation Tag"
+		},
+		"Environment": {
+			"Type": "String",
+			"Default": "Development",
+			"Description": "The Environment, Used as a Cost Allocation Tag",
+			"AllowedValues": [
+				"Development",
+				"QualityAssurance",
+				"UserAcceptanceTesting",
+				"Production",
+				"Performance",
+				"Spectre"
+			],
+			"ConstraintDescription": "must be a valid Environment type."
+		},
+		"ClientCode": {
+			"Type": "String",
+			"Default": "D1SOO",
+			"Description": "The Resource Owner Group, Used as a Cost Allocation Tag"
+		},
+		"ClientRegion": {
+			"Type": "String",
+			"Default": "us-east-1",
+			"Description": "The Resource Owner Group, Used as a Cost Allocation Tag"
+		},
+		"BootstrapRepository": {
+			"Type": "String",
+			"Default": "pd-dev-cicd-artifacts",
+			"Description": "The Bootstrap Repository"
+		},
+		"RestApiPrefix": {
+			"Type": "String",
+			"Default": "lod",
+			"Description": "The Rest API Prefix"
+		},
+		"KongProvisionKey": {
+			"Type": "String",
+			"Default": "63d87e8a-ee98-4413-9fdf-1f9c5c3a31c0",
+			"Description": "The Kong Provision Key"
+		},
+		"AdminCidrBlock": {
+			"Type": "String",
+			"Default": "204.57.87.152/32",
+			"Description": "The Cidr Block of the Administrator for Access Purposes"
+		},
+		"CassandraSeedNodes": {
+			"Description": "Required- Comma separated Cassandra seed nodes address  ex. example.com[, 123.123.123.123]",
+			"Type": "CommaDelimitedList",
+			"ConstraintDescription": "must be a valid host name, ex. example.com, 123.123.123.123"
+		},
+		"KongPostgresPort": {
+			"Description": "Required- Postgres Port nodes native query port ex. 5432",
+			"Type": "String",
+			"Default": "5432",
+			"ConstraintDescription": "must be a valid port number and all postgres nodes must be listening on the same port"
+		},
+		"KongPostgresDBVersion": {
+			"Description": "Postgres version",
+			"Type": "String",
+			"Default": "9.4.7",
+			"AllowedValues": [
+				"9.5.2",
+				"9.4.7",
+				"9.4.5",
+				"9.4.4",
+				"9.4.1"
+			]
+		},
+		"KongPostgresDBRequested": {
+			"Type": "String",
+			"Default": "false",
+			"Description": "The Postgres DB Requested flag"
+		},
+		"KongPostgresDBName": {
+			"Type": "String",
+			"Default": "KONGDB",
+			"Description": "The Postgres DB Name"
+		},
+		"KongPostgresDBUsername": {
+			"Type": "String",
+			"Default": "kong_admin",
+			"Description": "The Postgres Db Admin Username"
+		},
+		"KongPostgresDBPassword": {
+			"Type": "String",
+			"Default": "reX7They!",
+			"Description": "The Postgres DB Admin Pw"
+		},
+		"KongPostgresDBClass": {
+			"Type": "String",
+			"Default": "db.r4.large",
+			"Description": "The Postgres DB Class"
+		},
+		"KongPostgresDBAllocatedStorage": {
+			"Type": "String",
+			"Default": "20",
+			"Description": "The Postgres DB Allocated Storage"
+		},
+		"KongPostgresDBStorageType": {
+			"Type": "String",
+			"Default": "gp2",
+			"Description": "The Postgres DB Storage Type"
+		},
+		"KongPostgresDBIOPS": {
+			"Type": "Number",
+			"Default": "0",
+			"Description": "The Postgres DB Storage Type"
+		},
+		"KongPostgresDatabaseSnapshotId": {
+			"Type": "String",
+			"Default": "arn:aws:rds:us-east-1:844895670466:snapshot:loyaltyrestconfigured-032320181651",
+			"Description": "The Postgres DB Snapshot ARN"
+		},
+		"CassandraImageId": {
+			"Type": "String",
+			"Default": "ami-fd3ce980"
+		},
+		"CassandraNonSeedCount": {
+			"Type": "Number",
+			"Default": "1",
+			"MinValue": "1"
+		},
+		"CassandraServerKeyName": {
+			"Type": "String",
+			"Default": "pd-cicd-devolopment",
+			"Description": "The Cassandra DB Key Name"
+		},
+		"KongKeyName": {
+			"Type": "String",
+			"Default": "pd-cicd-devolopment",
+			"Description": "The Kong Server Key Name"
+		},
+		"KongSSLCertificate": {
+			"Type": "String",
+			"Default": "arn:aws:acm:us-east-1:844895670466:certificate/cdc97859-e602-4d07-a3db-8120267f1daf",
+			"Description": "The Kong SSL Certificate"
+		},
+		"CassandraServerIAMInstanceProfile": {
+			"Type": "String",
+			"Default": "cicd-admin-role",
+			"Description": "The Cassandra DB IAM Instance Profile"
+		},
+		"CassandraServerInstanceType": {
+			"Type": "String",
+			"Default": "t2.medium",
+			"Description": "The Cassandra DB Instance Type",
+			"AllowedValues": [
+				"t2.small",
+				"t2.micro",
+				"t2.medium",
+				"m4.large",
+				"m4.xlarge"
+			],
+			"ConstraintDescription": "must be a valid EC2 instance type."
+		},
+		"SSHLocation": {
+			"Description": "The IP address range that can be used to SSH to the Kong EC2 instances",
+			"Type": "String",
+			"MinLength": "9",
+			"MaxLength": "18",
+			"Default": "204.57.87.152/32",
+			"AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\/(\\d{1,2})",
+			"ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x\/x."
+		},
+		"KongProxyAccess": {
+			"Description": "The IP address range that can be used to access the Kong proxy port 8000",
+			"Type": "String",
+			"MinLength": "9",
+			"MaxLength": "18",
+			"Default": "204.57.87.152/32",
+			"AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\/(\\d{1,2})",
+			"ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x\/x."
+		},
+		"KongAdminAccess": {
+			"Description": "The IP address range that can be used to access the Kong Admin port 8001",
+			"Type": "String",
+			"MinLength": "9",
+			"MaxLength": "18",
+			"Default": "204.57.87.152/32",
+			"AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\/(\\d{1,2})",
+			"ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x\/x."
+		},
+		"KongInstanceType": {
+			"Description": "Kong EC2 instance type. Note: T2 instance is not supported on the EC2-Classic platform",
+			"Type": "String",
+			"Default": "t2.medium",
+			"AllowedValues": [
+				"t2.small",
+				"t2.micro",
+				"t2.medium",
+				"t2.large",
+				"m3.medium",
+				"m3.large",
+				"m3.xlarge",
+				"m3.2xlarge",
+				"m4.large",
+				"m4.xlarge",
+				"m4.2xlarge",
+				"m4.4xlarge",
+				"m4.10xlarge",
+				"c3.large",
+				"c3.xlarge",
+				"c3.2xlarge",
+				"c3.4xlarge",
+				"c3.8xlarge",
+				"c4.large",
+				"c4.xlarge",
+				"c4.xlarge",
+				"c4.2xlarge",
+				"c4.4xlarge",
+				"c4.8xlarge",
+				"r3.large",
+				"r3.xlarge",
+				"r3.2xlarge",
+				"r3.4xlarge",
+				"r3.8xlarge"
+			],
+			"ConstraintDescription": "must be a valid EC2 instance type."
+		},
+		"KongVersion": {
+			"Description": "Kong version (Only 0.11.x and above supported). Leave it blank to install latest version.",
+			"Type": "String"
+		},
+		"KongMigration": {
+			"Description": "run the Kong migrations by default, set it to false to disable it.",
+			"Type": "String",
+			"Default": "true",
+			"AllowedValues": [
+				"true",
+				"false"
+			]
+		},
+		"KongConfigs": {
+			"Description": "Kong configurations",
+			"Type": "CommaDelimitedList",
+			"ConstraintDescription": "must be in KONG_ENV1=v1[, KONG_ENV2=v2] format"
+		},
+		"KongFleetMaxSize": {
+			"Description": "Max Number of Kong instances",
+			"Type": "Number",
+			"Default": "1",
+			"MinValue": "1"
+		},
+		"KongFleetDesiredSize": {
+			"Description": "Desired Number of Kong instances",
+			"Type": "Number",
+			"Default": "1",
+			"MinValue": "1"
+		},
+		"WindowsServerImageId": {
+			"Type": "String",
+			"Default": "ami-1d43c062",
+			"Description": "The Windows Server AMI ID"
+		},
+		"LoyaltyNavigatorImageId": {
+			"Type": "String",
+			"Default": "ami-e0538f9f",
+			"Description": "The Loyalty Navigator AMI ID"
+		},
+		"WindowsServerKeyName": {
+			"Type": "String",
+			"Default": "pd-cicd-devolopment",
+			"Description": "The Windows Server Key Name"
+		},
+		"WindowsServerIAMInstanceProfile": {
+			"Type": "String",
+			"Default": "cicd-admin-role",
+			"Description": "The Windows Server IAM Instance Profile"
+		},
+		"WindowsServerInstanceType": {
+			"Type": "String",
+			"Default": "m4.xlarge",
+			"Description": "The Windows Server Instance Type"
+		},
+		"LoyaltyNavigatorInstanceType": {
+			"Type": "String",
+			"Default": "t2.medium",
+			"Description": "The Windows Server Instance Type"
+		},
+		"OracleRestDBName": {
+			"Type": "String",
+			"Default": "PDRSTDB",
+			"Description": "The Oracle DB Name"
+		},
+		"OracleRestDBUsername": {
+			"Type": "String",
+			"Default": "brier_admin",
+			"Description": "The Oracle Db Admin Username"
+		},
+		"OracleRestDBPassword": {
+			"Type": "String",
+			"Default": "reX7They!",
+			"Description": "The Oracle DB Admin Pw"
+		},
+		"OracleRestDBClass": {
+			"Type": "String",
+			"Default": "db.m4.large",
+			"Description": "The Oracle DB Class"
+		},
+		"OracleRestDBAllocatedStorage": {
+			"Type": "String",
+			"Default": "100",
+			"Description": "The Oracle DB Allocated Storage"
+		},
+		"OracleDBSnapshotArn": {
+			"Type": "String",
+			"Default": "arn:aws:rds:us-east-1:844895670466:snapshot:loyaltyrestconfigured-032320181651",
+			"Description": "The Oracle DB Snapshot ARN"
+		},
+		"OracleRestDBStorageType": {
+			"Type": "String",
+			"Default": "io1",
+			"Description": "The Oracle DB Storage Type"
+		},
+		"OracleRestDBIOPS": {
+			"Type": "Number",
+			"Default": "1000",
+			"Description": "The Oracle DB Storage Type"
+		},
+		"OracleDBParameterGroup": {
+			"Type": "String",
+			"Default": "bp-m4large-oracle-se2-12-1",
+			"Description": "The Oracle DB Parameter Group"
+		},
+		"OracleDBRequested": {
+			"Type": "String",
+			"Default": "true",
+			"Description": "The Oracle DB Requested flag"
+		},
+		"PostgresDBRequested": {
+			"Type": "String",
+			"Default": "false",
+			"Description": "The Postgres DB Requested flag"
+		}
+	},
+	"Conditions": {
+		"CreateOracleResources": {
+			"Fn::Equals": [{
+				"Ref": "OracleDBRequested"
+			}, "true"]
+		},
+		"CreatePostgresResources": {
+			"Fn::Equals": [{
+				"Ref": "PostgresDBRequested"
+			}, "true"]
+		}
+	},
+	"Mappings": {
+		"RegionKongAmiMap": {
+			"us-east-1": {
+				"HVM": "ami-a4c7edb2"
+			},
+			"us-east-2": {
+				"HVM": "ami-8a7859ef"
+			},
+			"us-west-1": {
+				"HVM": "ami-327f5352"
+			},
+			"us-west-2": {
+				"HVM": "ami-6df1e514"
+			},
+			"eu-west-1": {
+				"HVM": "ami-d7b9a2b1"
+			},
+			"eu-west-2": {
+				"HVM": "ami-ed100689"
+			},
+			"eu-central-1": {
+				"HVM": "ami-87dab1eb"
+			},
+			"ap-southeast-1": {
+				"HVM": "ami-77af2014"
+			},
+			"ap-southeast-2": {
+				"HVM": "ami-10918173"
+			},
+			"sa-east-1": {
+				"HVM": "ami-87dab1eb"
+			}
+		}
+	},
+	"Resources": {
+		"RESTVPC": {
+			"Type": "AWS::EC2::VPC",
+			"Properties": {
+				"CidrBlock": "10.0.1.0/24",
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"VPC-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"RESTPubSubnet1": {
+			"Type": "AWS::EC2::Subnet",
+			"DependsOn": "RESTVPC",
+			"Properties": {
+				"CidrBlock": "10.0.1.0/26",
+				"AvailabilityZone": {
+					"Fn::Select": ["2", {
+						"Fn::GetAZs": ""
+					}]
+				},
+				"VpcId": {
+					"Ref": "RESTVPC"
+				},
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"SBNET-PUB-1-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"RESTPubSubnet2": {
+			"Type": "AWS::EC2::Subnet",
+			"DependsOn": "RESTVPC",
+			"Properties": {
+				"CidrBlock": "10.0.1.64/26",
+				"AvailabilityZone": {
+					"Fn::Select": ["3", {
+						"Fn::GetAZs": ""
+					}]
+				},
+				"VpcId": {
+					"Ref": "RESTVPC"
+				},
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"SBNET-PUB-2-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"RESTPrivSubnet1": {
+			"Type": "AWS::EC2::Subnet",
+			"DependsOn": "RESTVPC",
+			"Properties": {
+				"CidrBlock": "10.0.1.128/26",
+				"AvailabilityZone": {
+					"Fn::Select": ["2", {
+						"Fn::GetAZs": ""
+					}]
+				},
+				"VpcId": {
+					"Ref": "RESTVPC"
+				},
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"SBNET-PRIV-1-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"RESTPrivSubnet2": {
+			"Type": "AWS::EC2::Subnet",
+			"DependsOn": "RESTVPC",
+			"Properties": {
+				"CidrBlock": "10.0.1.192/26",
+				"AvailabilityZone": {
+					"Fn::Select": ["3", {
+						"Fn::GetAZs": ""
+					}]
+				},
+				"VpcId": {
+					"Ref": "RESTVPC"
+				},
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"SBNET-PRIV-2-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"RESTIGW": {
+			"Type": "AWS::EC2::InternetGateway",
+			"DependsOn": "RESTVPC",
+			"Properties": {}
+		},
+		"RESTInternetGatewayAttachment": {
+			"Type": "AWS::EC2::VPCGatewayAttachment",
+			"DependsOn": "RESTIGW",
+			"Properties": {
+				"VpcId": {
+					"Ref": "RESTVPC"
+				},
+				"InternetGatewayId": {
+					"Ref": "RESTIGW"
+				}
+			}
+		},
+		"RESTEIP1": {
+			"Type": "AWS::EC2::EIP",
+			"DependsOn": "RESTVPC",
+			"Properties": {
+				"Domain": "vpc"
+			}
+		},
+		"RESTNAT1": {
+			"Type": "AWS::EC2::NatGateway",
+			"DependsOn": "RESTPubSubnet1",
+			"Properties": {
+				"AllocationId": {
+					"Fn::GetAtt": ["RESTEIP1", "AllocationId"]
+				},
+				"SubnetId": {
+					"Ref": "RESTPubSubnet1"
+				},
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"NGW-1-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"RESTNatRoute": {
+			"Type": "AWS::EC2::Route",
+			"DependsOn": "RESTNAT1",
+			"Properties": {
+				"RouteTableId": {
+					"Ref": "RESTPrivRT1"
+				},
+				"DestinationCidrBlock": "0.0.0.0/0",
+				"NatGatewayId": {
+					"Ref": "RESTNAT1"
+				}
+			}
+		},
+		"RESTPrivRT1": {
+			"Type": "AWS::EC2::RouteTable",
+			"DependsOn": "RESTPrivSubnet1",
+			"Properties": {
+				"VpcId": {
+					"Ref": "RESTVPC"
+				},
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"RT-PRIV-1-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"RESTPrivRT1Association": {
+			"Type": "AWS::EC2::SubnetRouteTableAssociation",
+			"DependsOn": "RESTPrivRT1",
+			"Properties": {
+				"RouteTableId": {
+					"Ref": "RESTPrivRT1"
+				},
+				"SubnetId": {
+					"Ref": "RESTPrivSubnet1"
+				}
+			}
+		},
+		"RESTPrivRT2Association": {
+			"Type": "AWS::EC2::SubnetRouteTableAssociation",
+			"DependsOn": "RESTPrivRT1",
+			"Properties": {
+				"RouteTableId": {
+					"Ref": "RESTPrivRT1"
+				},
+				"SubnetId": {
+					"Ref": "RESTPrivSubnet2"
+				}
+			}
+		},
+		"RESTPubRT1IGWAttachment": {
+			"Type": "AWS::EC2::Route",
+			"DependsOn": "RESTPubRT1",
+			"Properties": {
+				"RouteTableId": {
+					"Ref": "RESTPubRT1"
+				},
+				"DestinationCidrBlock": "0.0.0.0/0",
+				"GatewayId": {
+					"Ref": "RESTIGW"
+				}
+			}
+		},
+		"RESTPubRT1": {
+			"Type": "AWS::EC2::RouteTable",
+			"DependsOn": "RESTPubSubnet1",
+			"Properties": {
+				"VpcId": {
+					"Ref": "RESTVPC"
+				},
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"RT-PUB-1-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"RESTPubRT1Association": {
+			"Type": "AWS::EC2::SubnetRouteTableAssociation",
+			"DependsOn": "RESTPubRT1",
+			"Properties": {
+				"RouteTableId": {
+					"Ref": "RESTPubRT1"
+				},
+				"SubnetId": {
+					"Ref": "RESTPubSubnet1"
+				}
+			}
+		},
+		"RESTPubRT2Association": {
+			"Type": "AWS::EC2::SubnetRouteTableAssociation",
+			"DependsOn": "RESTPubRT1",
+			"Properties": {
+				"RouteTableId": {
+					"Ref": "RESTPubRT1"
+				},
+				"SubnetId": {
+					"Ref": "RESTPubSubnet2"
+				}
+			}
+		},
+		"KongPostgresDBSecurityGroup": {
+			"Type": "AWS::EC2::SecurityGroup",
+			"DependsOn": "RESTPubRT2Association",
+			"DeletionPolicy": "Delete",
+			"Properties": {
+				"VpcId": {
+					"Ref": "RESTVPC"
+				},
+				"SecurityGroupIngress": [{
+					"IpProtocol": "tcp",
+					"FromPort": "22",
+					"ToPort": "22",
+					"CidrIp": {
+						"Ref": "SSHLocation"
+					}
+				}],
+				"GroupDescription": "Allow Access to DB"
+			}
+		},
+		"KongPostgresDBSubnetGroup": {
+			"Type": "AWS::RDS::DBSubnetGroup",
+			"DependsOn": "KongPostgresDBSecurityGroup",
+			"Properties": {
+				"DBSubnetGroupDescription": "RDS DB Subnet Group",
+				"SubnetIds": [{
+						"Ref": "RESTPrivSubnet1"
+					},
+					{
+						"Ref": "RESTPrivSubnet2"
+					}
+				]
+			}
+		},
+		"KongPostgresDB": {
+			"Type": "AWS::RDS::DBInstance",
+			"DependsOn": "KongPostgresDBSubnetGroup",
+			"DeletionPolicy": "Delete",
+			"Properties": {
+				"DBName": {
+					"Ref": "KongPostgresDBName"
+				},
+				"Engine": "postgres",
+				"EngineVersion": {
+					"Ref": "KongPostgresDBVersion"
+				},
+				"DBInstanceClass": {
+					"Ref": "KongPostgresDBClass"
+				},
+				"MasterUsername": {
+					"Ref": "KongPostgresDBUsername"
+				},
+				"MasterUserPassword": {
+					"Ref": "KongPostgresDBPassword"
+				},
+				"LicenseModel": "postgresql-license",
+				"BackupRetentionPeriod": "0",
+				"DBSubnetGroupName": {
+					"Ref": "KongPostgresDBSubnetGroup"
+				},
+				"VPCSecurityGroups": [{
+					"Ref": "KongPostgresDBSecurityGroup"
+				}],
+				"AllocatedStorage": {
+					"Ref": "KongPostgresDBAllocatedStorage"
+				},
+				"StorageType": {
+					"Ref": "KongPostgresDBStorageType"
+				},
+				"Iops": {
+					"Ref": "KongPostgresDBIOPS"
+				},
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"POSTGRES-KONG-RDS-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					},
+					{
+						"Key": "ClientCode",
+						"Value": {
+							"Ref": "ClientCode"
+						}
+					}
+				]
+			}
+		},
+		"KongPublicLoadBalancerSecurityGroup": {
+			"Type": "AWS::EC2::SecurityGroup",
+			"DependsOn": "KongPostgresDB",
+			"Properties": {
+				"GroupDescription": "Enable HTTP access on port 8000 and 8001",
+				"VpcId": {
+					"Ref": "RESTVPC"
+				},
+				"SecurityGroupIngress": [{
+						"IpProtocol": "tcp",
+						"FromPort": "8443",
+						"ToPort": "8443",
+						"CidrIp": {
+							"Ref": "KongProxyAccess"
+						}
+					},
+					{
+						"IpProtocol": "tcp",
+						"FromPort": "8000",
+						"ToPort": "8000",
+						"CidrIp": {
+							"Ref": "KongProxyAccess"
+						}
+					},
+					{
+						"IpProtocol": "tcp",
+						"FromPort": "8444",
+						"ToPort": "8444",
+						"CidrIp": {
+							"Ref": "KongAdminAccess"
+						}
+					},
+					{
+						"IpProtocol": "tcp",
+						"FromPort": "8001",
+						"ToPort": "8001",
+						"CidrIp": {
+							"Ref": "KongAdminAccess"
+						}
+					},
+					{
+						"IpProtocol": "tcp",
+						"FromPort": "22",
+						"ToPort": "22",
+						"CidrIp": {
+							"Ref": "KongAdminAccess"
+						}
+					}
+				],
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"KONG-PUB-LB-SG",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"KongPrivateLoadBalancerSecurityGroup": {
+			"Type": "AWS::EC2::SecurityGroup",
+			"DependsOn": "KongPostgresDB",
+			"Properties": {
+				"GroupDescription": "Enable HTTP access on port 8000 and 8001",
+				"VpcId": {
+					"Ref": "RESTVPC"
+				},
+				"SecurityGroupIngress": [{
+						"IpProtocol": "tcp",
+						"FromPort": "8443",
+						"ToPort": "8443",
+						"CidrIp": {
+							"Ref": "KongProxyAccess"
+						}
+					},
+					{
+						"IpProtocol": "tcp",
+						"FromPort": "8444",
+						"ToPort": "8444",
+						"CidrIp": {
+							"Ref": "KongAdminAccess"
+						}
+					},
+					{
+						"IpProtocol": "tcp",
+						"FromPort": "22",
+						"ToPort": "22",
+						"CidrIp": {
+							"Ref": "KongAdminAccess"
+						}
+					}
+				],
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"KONG-PRIV-LB-SG",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"KongPublicLoadBalancer": {
+			"Type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
+			"DependsOn": "KongPublicLoadBalancerSecurityGroup",
+			"Properties": {
+				"Name": {
+					"Fn::Join": [
+						"", [
+							"KONG-PUB-ALB-",
+							{
+								"Ref": "NameTagValue"
+							}
+						]
+					]
+				},
+				"Scheme": "internet-facing",
+				"Subnets": [{
+					"Ref": "RESTPubSubnet1"
+				}, {
+					"Ref": "RESTPubSubnet2"
+				}],
+				"LoadBalancerAttributes": [{
+					"Key": "idle_timeout.timeout_seconds",
+					"Value": "300"
+				}],
+				"SecurityGroups": [{
+					"Ref": "KongPublicLoadBalancerSecurityGroup"
+				}],
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"KONG-PUB-LB-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"KongPublicSecureProxyTargetGroup": {
+			"Type": "AWS::ElasticLoadBalancingV2::TargetGroup",
+			"DependsOn": "KongPrivateLoadBalancer",
+			"Properties": {
+				"HealthCheckIntervalSeconds": 30,
+				"HealthCheckProtocol": "HTTPS",
+				"HealthCheckTimeoutSeconds": 10,
+				"HealthyThresholdCount": 4,
+				"Matcher": {
+					"HttpCode": "200,404"
+				},
+				"Name": {
+					"Fn::Join": [
+						"", [
+							"KongPubSecProxyTG-",
+							{
+								"Ref": "NameTagValue"
+							}
+						]
+					]
+				},
+				"Port": 8443,
+				"Protocol": "HTTPS",
+				"UnhealthyThresholdCount": 3,
+				"VpcId": {
+					"Ref": "RESTVPC"
+				},
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"KONG-PUB-SSL-PROXY-TG-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"KongPublicSecureAdminTargetGroup": {
+			"Type": "AWS::ElasticLoadBalancingV2::TargetGroup",
+			"DependsOn": "KongPublicSecureProxyTargetGroup",
+			"Properties": {
+				"HealthCheckIntervalSeconds": 30,
+				"HealthCheckProtocol": "HTTPS",
+				"HealthCheckTimeoutSeconds": 10,
+				"HealthyThresholdCount": 4,
+				"Matcher": {
+					"HttpCode": "200"
+				},
+				"Name": {
+					"Fn::Join": [
+						"", [
+							"KongPubSecAdminTG-",
+							{
+								"Ref": "NameTagValue"
+							}
+						]
+					]
+				},
+				"Port": 8444,
+				"Protocol": "HTTPS",
+				"UnhealthyThresholdCount": 3,
+				"VpcId": {
+					"Ref": "RESTVPC"
+				},
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"KONG-PUB-SSL-ADMIN-TG-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"KongPrivateSecureProxyTargetGroup": {
+			"Type": "AWS::ElasticLoadBalancingV2::TargetGroup",
+			"DependsOn": "KongPrivateLoadBalancer",
+			"Properties": {
+				"HealthCheckIntervalSeconds": 30,
+				"HealthCheckProtocol": "HTTPS",
+				"HealthCheckTimeoutSeconds": 10,
+				"HealthyThresholdCount": 4,
+				"Matcher": {
+					"HttpCode": "200,404"
+				},
+				"Name": {
+					"Fn::Join": [
+						"", [
+							"KongPrivSecProxyTG-",
+							{
+								"Ref": "NameTagValue"
+							}
+						]
+					]
+				},
+				"Port": 8443,
+				"Protocol": "HTTPS",
+				"UnhealthyThresholdCount": 3,
+				"VpcId": {
+					"Ref": "RESTVPC"
+				},
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"KONG-PRIV-SSL-PROXY-TG-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"KongPrivateSecureAdminTargetGroup": {
+			"Type": "AWS::ElasticLoadBalancingV2::TargetGroup",
+			"DependsOn": "KongPrivateSecureProxyTargetGroup",
+			"Properties": {
+				"HealthCheckIntervalSeconds": 30,
+				"HealthCheckProtocol": "HTTPS",
+				"HealthCheckTimeoutSeconds": 10,
+				"HealthyThresholdCount": 4,
+				"Matcher": {
+					"HttpCode": "200"
+				},
+				"Name": {
+					"Fn::Join": [
+						"", [
+							"KongPrivSecAdminTG-",
+							{
+								"Ref": "NameTagValue"
+							}
+						]
+					]
+				},
+				"Port": 8444,
+				"Protocol": "HTTPS",
+				"UnhealthyThresholdCount": 3,
+				"VpcId": {
+					"Ref": "RESTVPC"
+				},
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"KONG-PRIV-SSL-ADMIN-TG-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"KongPublicNonSecureAdminTargetGroup": {
+			"Type": "AWS::ElasticLoadBalancingV2::TargetGroup",
+			"DependsOn": "KongPublicSecureProxyTargetGroup",
+			"Properties": {
+				"HealthCheckIntervalSeconds": 30,
+				"HealthCheckProtocol": "HTTP",
+				"HealthCheckTimeoutSeconds": 10,
+				"HealthyThresholdCount": 4,
+				"Matcher": {
+					"HttpCode": "200"
+				},
+				"Name": {
+					"Fn::Join": [
+						"", [
+							"KongPubNonSecAdminTG-",
+							{
+								"Ref": "NameTagValue"
+							}
+						]
+					]
+				},
+				"Port": 8001,
+				"Protocol": "HTTP",
+				"UnhealthyThresholdCount": 3,
+				"VpcId": {
+					"Ref": "RESTVPC"
+				},
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"KONG-PUB-NONSSL-ADMIN-TG-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"KongPrivateLoadBalancer": {
+			"Type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
+			"DependsOn": "KongPublicLoadBalancer",
+			"Properties": {
+				"Name": {
+					"Fn::Join": [
+						"", [
+							"KONG-PRIV-ALB-",
+							{
+								"Ref": "NameTagValue"
+							}
+						]
+					]
+				},
+				"Scheme": "internal",
+				"Subnets": [{
+					"Ref": "RESTPrivSubnet1"
+				}, {
+					"Ref": "RESTPrivSubnet2"
+				}],
+				"LoadBalancerAttributes": [{
+					"Key": "idle_timeout.timeout_seconds",
+					"Value": "300"
+				}],
+				"SecurityGroups": [{
+					"Ref": "KongPrivateLoadBalancerSecurityGroup"
+				}],
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"KONG-PRIV-LB-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"KongPublicSecureProxyListener": {
+			"Type": "AWS::ElasticLoadBalancingV2::Listener",
+			"Properties": {
+				"DefaultActions": [{
+					"Type": "forward",
+					"TargetGroupArn": {
+						"Ref": "KongPublicSecureProxyTargetGroup"
+					}
+				}],
+				"LoadBalancerArn": {
+					"Ref": "KongPublicLoadBalancer"
+				},
+				"Port": "8443",
+				"Protocol": "HTTPS",
+				"SslPolicy": "ELBSecurityPolicy-2016-08",
+				"Certificates": [{
+					"CertificateArn": {
+						"Ref": "KongSSLCertificate"
+					}
+				}]
+			}
+		},
+		"KongPublicSecureAdminListener": {
+			"Type": "AWS::ElasticLoadBalancingV2::Listener",
+			"Properties": {
+				"DefaultActions": [{
+					"Type": "forward",
+					"TargetGroupArn": {
+						"Ref": "KongPublicSecureAdminTargetGroup"
+					}
+				}],
+				"LoadBalancerArn": {
+					"Ref": "KongPublicLoadBalancer"
+				},
+				"Port": "8444",
+				"Protocol": "HTTPS",
+				"SslPolicy": "ELBSecurityPolicy-2016-08",
+				"Certificates": [{
+					"CertificateArn": {
+						"Ref": "KongSSLCertificate"
+					}
+				}]
+			}
+		},
+		"KongPrivateSecureProxyListener": {
+			"Type": "AWS::ElasticLoadBalancingV2::Listener",
+			"Properties": {
+				"DefaultActions": [{
+					"Type": "forward",
+					"TargetGroupArn": {
+						"Ref": "KongPrivateSecureProxyTargetGroup"
+					}
+				}],
+				"LoadBalancerArn": {
+					"Ref": "KongPrivateLoadBalancer"
+				},
+				"Port": "8443",
+				"Protocol": "HTTPS",
+				"SslPolicy": "ELBSecurityPolicy-2016-08",
+				"Certificates": [{
+					"CertificateArn": {
+						"Ref": "KongSSLCertificate"
+					}
+				}]
+			}
+		},
+		"KongPrivateSecureAdminListener": {
+			"Type": "AWS::ElasticLoadBalancingV2::Listener",
+			"Properties": {
+				"DefaultActions": [{
+					"Type": "forward",
+					"TargetGroupArn": {
+						"Ref": "KongPrivateSecureAdminTargetGroup"
+					}
+				}],
+				"LoadBalancerArn": {
+					"Ref": "KongPrivateLoadBalancer"
+				},
+				"Port": "8444",
+				"Protocol": "HTTPS",
+				"SslPolicy": "ELBSecurityPolicy-2016-08",
+				"Certificates": [{
+					"CertificateArn": {
+						"Ref": "KongSSLCertificate"
+					}
+				}]
+			}
+		},
+		"KongPublicNonSecureAdminListener": {
+			"Type": "AWS::ElasticLoadBalancingV2::Listener",
+			"Properties": {
+				"DefaultActions": [{
+					"Type": "forward",
+					"TargetGroupArn": {
+						"Ref": "KongPublicNonSecureAdminTargetGroup"
+					}
+				}],
+				"LoadBalancerArn": {
+					"Ref": "KongPublicLoadBalancer"
+				},
+				"Port": "8001",
+				"Protocol": "HTTP"
+			}
+		},
+		"KongEC2SecurityGroup": {
+			"Type": "AWS::EC2::SecurityGroup",
+			"DependsOn": "KongPrivateLoadBalancer",
+			"Properties": {
+				"GroupDescription": "Enable SSH access and HTTP access on the inbound port",
+				"VpcId": {
+					"Ref": "RESTVPC"
+				},
+				"SecurityGroupIngress": [{
+						"IpProtocol": "tcp",
+						"FromPort": "8000",
+						"ToPort": "8001",
+						"SourceSecurityGroupId": {
+							"Ref": "KongPublicLoadBalancerSecurityGroup"
+						}
+					},
+					{
+						"IpProtocol": "tcp",
+						"FromPort": "8443",
+						"ToPort": "8444",
+						"SourceSecurityGroupId": {
+							"Ref": "KongPublicLoadBalancerSecurityGroup"
+						}
+					},
+					{
+						"IpProtocol": "tcp",
+						"FromPort": "8000",
+						"ToPort": "8001",
+						"SourceSecurityGroupId": {
+							"Ref": "KongPrivateLoadBalancerSecurityGroup"
+						}
+					},
+					{
+						"IpProtocol": "tcp",
+						"FromPort": "8443",
+						"ToPort": "8444",
+						"SourceSecurityGroupId": {
+							"Ref": "KongPrivateLoadBalancerSecurityGroup"
+						}
+					},
+					{
+						"IpProtocol": "tcp",
+						"FromPort": "22",
+						"ToPort": "22",
+						"SourceSecurityGroupId": {
+							"Ref": "KongPublicLoadBalancerSecurityGroup"
+						}
+					}
+				],
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"KONG-EC2-SG",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"PostgresSGKongCommunicationIngress": {
+			"Type": "AWS::EC2::SecurityGroupIngress",
+			"Properties": {
+				"GroupId": {
+					"Ref": "KongPostgresDBSecurityGroup"
+				},
+				"IpProtocol": "tcp",
+				"ToPort": {
+					"Ref": "KongPostgresPort"
+				},
+				"FromPort": {
+					"Ref": "KongPostgresPort"
+				},
+				"SourceSecurityGroupId": {
+					"Ref": "KongEC2SecurityGroup"
+				}
+			},
+			"DependsOn": "KongEC2SecurityGroup"
+		},
+		"ASGUpdateRole": {
+			"Type": "AWS::IAM::Role",
+			"DependsOn": "KongEC2SecurityGroup",
+			"Properties": {
+				"Path": "/",
+				"Policies": [{
+					"PolicyName": "ASGUpdateRole",
+					"PolicyDocument": {
+						"Version": "2012-10-17",
+						"Statement": [{
+								"Action": [
+									"ec2:Describe*",
+									"cloudformation:DescribeStackResource"
+								],
+								"Resource": [
+									"*"
+								],
+								"Effect": "Allow"
+							},
+							{
+								"Effect": "Allow",
+								"Action": "autoscaling:UpdateAutoScalingGroup",
+								"Resource": [
+									"*"
+								]
+							}
+						]
+					}
+				}],
+				"AssumeRolePolicyDocument": {
+					"Statement": [{
+						"Action": [
+							"sts:AssumeRole"
+						],
+						"Effect": "Allow",
+						"Principal": {
+							"Service": [
+								"ec2.amazonaws.com"
+							]
+						}
+					}]
+				}
+			}
+		},
+		"ASGUpdateProfile": {
+			"Type": "AWS::IAM::InstanceProfile",
+			"DependsOn": "ASGUpdateRole",
+			"Properties": {
+				"Path": "/",
+				"Roles": [{
+					"Ref": "ASGUpdateRole"
+				}]
+			}
+		},
+		"KongLaunchConfig": {
+			"Type": "AWS::AutoScaling::LaunchConfiguration",
+			"DependsOn": "ASGUpdateProfile",
+			"Properties": {
+				"AssociatePublicIpAddress": true,
+				"ImageId": {
+					"Fn::FindInMap": [
+						"RegionKongAmiMap",
+						{
+							"Ref": "AWS::Region"
+						},
+						"HVM"
+					]
+				},
+				"InstanceType": {
+					"Ref": "KongInstanceType"
+				},
+				"KeyName": {
+					"Ref": "KongKeyName"
+				},
+				"SecurityGroups": [{
+					"Ref": "KongEC2SecurityGroup"
+				}],
+				"IamInstanceProfile": {
+					"Ref": "ASGUpdateProfile"
+				},
+				"UserData": {
+					"Fn::Base64": {
+						"Fn::Join": [
+							"", [
+								"#!\/bin\/bash\n",
+								"yum update -y aws-cfn-bootstrap\n",
+								"echo '* soft nofile 65000' >> \/etc\/security\/limits.conf\n",
+								"echo '* hard nofile 65000' >> \/etc\/security\/limits.conf\n",
+								"kong_version=", {
+									"Ref": "KongVersion"
+								}, "\n",
+								"if [ \"$kong_version\" != \"\" ]\n",
+								"then\n",
+								"   kong_version=\"-$kong_version\"\n",
+								"fi\n",
+								"kong_migrations=", {
+									"Ref": "KongMigration"
+								}, "\n",
+								"KONG_ENV=\"", {
+									"Fn::Join": [" ", {
+										"Ref": "KongConfigs"
+									}]
+								}, "\"\n",
+								"export $KONG_ENV\n",
+								"export KONG_DATABASE=postgres\n",
+								"export KONG_PG_HOST=", {
+									"Fn::GetAtt": ["KongPostgresDB", "Endpoint.Address"]
+								}, "\n",
+								"export KONG_PG_PORT=", {
+									"Fn::GetAtt": ["KongPostgresDB", "Endpoint.Port"]
+								}, "\n",
+								"export KONG_PG_USER=", {
+									"Ref": "KongPostgresDBUsername"
+								}, "\n",
+								"export KONG_PG_DATABASE=", {
+									"Ref": "KongPostgresDBName"
+								}, "\n",
+								"export KONG_PG_PASSWORD=", {
+									"Ref": "KongPostgresDBPassword"
+								}, "\n",
+								"export KONG_ADMIN_LISTEN='0.0.0.0:8001, 0.0.0.0:8444 ssl'\n",
+								"echo \"[kong] installing Kong with following environments:\" \n",
+								"env\n",
+								"mkdir \/usr\/local\/kong && chown ec2-user \/usr\/local\/kong \n",
+								"wget https://bintray.com/kong/kong-community-edition-aws/rpm -O bintray-kong-kong-community-edition-aws.repo\n",
+								"if [ \"$?\" -ne \"0\" ]\n",
+								"then\n",
+								"   /opt/aws/bin/cfn-signal -e 1 --stack ", {
+									"Ref": "AWS::StackName"
+								}, " --resource KongScalingGroup ", " --region ", {
+									"Ref": "AWS::Region"
+								}, " --reason \"failed to install kong-community-edition$kong_version\" \n",
+								"   echo \"[kong] failed to install kong-community-edition$kong_version, exiting...\" \n",
+								"   exit\n",
+								"fi\n",
+								"mv bintray-kong-kong-community-edition-aws.repo /etc/yum.repos.d/\n",
+								"yum update -y\n",
+								"yum install -y epel-release\n",
+								"yum install -y kong-community-edition$kong_version --nogpgcheck\n",
+								"if [ \"$?\" -ne \"0\" ]\n",
+								"then\n",
+								"   /opt/aws/bin/cfn-signal -e 1 --stack ", {
+									"Ref": "AWS::StackName"
+								}, " --resource KongScalingGroup ", " --region ", {
+									"Ref": "AWS::Region"
+								}, " --reason \"failed to install kong-community-edition$kong_version\" \n",
+								"   echo \"[kong] failed to install kong-community-edition$kong_version, exiting...\" \n",
+								"   exit\n",
+								"fi\n",
+								"echo \"admin_listen=0.0.0.0:8001,0.0.0.0:8444 ssl\n",
+								"database=postgres\n",
+								"KONG_PG_HOST=", {
+									"Fn::GetAtt": ["KongPostgresDB", "Endpoint.Address"]
+								}, "\n",
+								"KONG_PG_PORT=", {
+									"Fn::GetAtt": ["KongPostgresDB", "Endpoint.Port"]
+								}, "\n",
+								"KONG_PG_USER=", {
+									"Ref": "KongPostgresDBUsername"
+								},
+								"\n",
+								"KONG_PG_DATABASE=", {
+									"Ref": "KongPostgresDBName"
+								},
+								"\n",
+								"KONG_PG_PASSWORD=", {
+									"Ref": "KongPostgresDBPassword"
+								},
+								"\" >> /etc/kong/kong.conf\n",
+								"if [ \"$kong_migrations\" == \"true\" ]\n",
+								"then\n",
+								"   echo \"[kong] starting migrations...\" \n",
+								"   su -s \/bin\/sh -c \"\/usr\/local\/bin\/kong migrations up\" ec2-user\n",
+								"fi\n",
+								"su -s \/bin\/sh -c \"\/usr\/local\/bin\/kong start\" ec2-user\n",
+								"if ! /usr/local/bin/kong health; then\n",
+								"   echo \"[kong] failed to start kong, exiting...\" \n",
+								"   /opt/aws/bin/cfn-signal -e 1 --stack ", {
+									"Ref": "AWS::StackName"
+								}, " --resource KongScalingGroup ", " --region ", {
+									"Ref": "AWS::Region"
+								}, " --reason \"Failed to start Kong\" \n",
+								"   exit\n",
+								"fi\n",
+								"instance_id=`curl http://169.254.169.254/latest/meta-data/instance-id`\n",
+								"autoscale_group=`aws ec2 describe-tags --filters \"Name=resource-id,Values=$instance_id\"", " --region ", {
+									"Ref": "AWS::Region"
+								}, " \"Name=key,Values=aws:autoscaling:groupName\"", " | sed -ne 's\/[ ]*\"Value\":\\s\"\\(.*\\)\",\/\\1\/p'`\n",
+								"aws autoscaling update-auto-scaling-group --auto-scaling-group-name $autoscale_group", " --region ", {
+									"Ref": "AWS::Region"
+								}, " --max-size ", {
+									"Ref": "KongFleetMaxSize"
+								}, " --desired-capacity ", {
+									"Ref": "KongFleetDesiredSize"
+								}, " \n",
+								"/opt/aws/bin/cfn-signal -e 0 --stack ", {
+									"Ref": "AWS::StackName"
+								}, " --resource KongScalingGroup ", " --region ", {
+									"Ref": "AWS::Region"
+								}, " --reason \"Kong setup completed\" \n"
+							]
+						]
+					}
+				}
+			}
+		},
+		"KongScalingGroup": {
+			"Type": "AWS::AutoScaling::AutoScalingGroup",
+			"CreationPolicy": {
+				"ResourceSignal": {
+					"Count": {
+						"Ref": "KongFleetDesiredSize"
+					},
+					"Timeout": "PT15M"
+				}
+			},
+			"Properties": {
+				"AutoScalingGroupName": {
+					"Fn::Join": [
+						"", [
+							"KONG-ASG-",
+							{
+								"Ref": "NameTagValue"
+							}
+						]
+					]
+				},
+				"AvailabilityZones": [{
+					"Fn::Select": ["2", {
+						"Fn::GetAZs": ""
+					}]
+				}],
+				"VPCZoneIdentifier": [{
+					"Ref": "RESTPrivSubnet1"
+				}],
+				"Tags": [{
+						"Key": "Name",
+						"PropagateAtLaunch": "true",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"KONG-EC2-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"PropagateAtLaunch": "true",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"PropagateAtLaunch": "true",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				],
+				"LaunchConfigurationName": {
+					"Ref": "KongLaunchConfig"
+				},
+				"MinSize": "1",
+				"MaxSize": {
+					"Ref": "KongFleetMaxSize"
+				},
+				"DesiredCapacity": {
+					"Ref": "KongFleetDesiredSize"
+				},
+				"TargetGroupARNs": [{
+						"Ref": "KongPublicNonSecureAdminTargetGroup"
+					}, {
+						"Ref": "KongPrivateSecureAdminTargetGroup"
+					},
+					{
+						"Ref": "KongPrivateSecureProxyTargetGroup"
+					}, {
+						"Ref": "KongPublicSecureAdminTargetGroup"
+					},
+					{
+						"Ref": "KongPublicSecureProxyTargetGroup"
+					}
+				]
+			}
+		},
+		"ApiServerPublicLoadBalancerSecurityGroup": {
+			"Type": "AWS::EC2::SecurityGroup",
+			"DependsOn": "RESTPubRT1",
+			"Properties": {
+				"GroupDescription": "Allow access to Windows Rest Server Load Balancer",
+				"VpcId": {
+					"Ref": "RESTVPC"
+				},
+				"SecurityGroupIngress": [{
+					"IpProtocol": "tcp",
+					"FromPort": "3389",
+					"ToPort": "3389",
+					"CidrIp": {
+						"Ref": "AdminCidrBlock"
+					}
+				}],
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"WIN-REST-PUB-LB-SG-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"ApiServerPrivateLoadBalancerSecurityGroup": {
+			"Type": "AWS::EC2::SecurityGroup",
+			"DependsOn": "RESTPubRT1",
+			"Properties": {
+				"GroupDescription": "Allow access to Windows Rest Server Load Balancer",
+				"VpcId": {
+					"Ref": "RESTVPC"
+				},
+				"SecurityGroupIngress": [{
+					"IpProtocol": "tcp",
+					"FromPort": "3389",
+					"ToPort": "3389",
+					"CidrIp": {
+						"Ref": "AdminCidrBlock"
+					}
+				}, {
+					"IpProtocol": "tcp",
+					"FromPort": "80",
+					"ToPort": "80",
+					"SourceSecurityGroupId": {
+						"Ref": "KongEC2SecurityGroup"
+					}
+				}],
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"WIN-REST-PRIV-LB-SG-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"ApiServerEC2SecurityGroup": {
+			"Type": "AWS::EC2::SecurityGroup",
+			"DependsOn": "ApiServerPublicLoadBalancerSecurityGroup",
+			"Properties": {
+				"GroupDescription": "Allow access to Windows Rest Server instance",
+				"VpcId": {
+					"Ref": "RESTVPC"
+				},
+				"SecurityGroupIngress": [{
+						"IpProtocol": "tcp",
+						"FromPort": "3389",
+						"ToPort": "3389",
+						"SourceSecurityGroupId": {
+							"Ref": "ApiServerPublicLoadBalancerSecurityGroup"
+						}
+					},
+					{
+						"IpProtocol": "tcp",
+						"FromPort": "80",
+						"ToPort": "80",
+						"SourceSecurityGroupId": {
+							"Ref": "ApiServerPublicLoadBalancerSecurityGroup"
+						}
+					},
+					{
+						"IpProtocol": "tcp",
+						"FromPort": "80",
+						"ToPort": "80",
+						"SourceSecurityGroupId": {
+							"Ref": "ApiServerPrivateLoadBalancerSecurityGroup"
+						}
+					}
+				],
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"WIN-REST-EC2-SG-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"ApiEc2ToKongPrivateALBIngress": {
+			"Type": "AWS::EC2::SecurityGroupIngress",
+			"Properties": {
+				"GroupId": {
+					"Ref": "KongPrivateLoadBalancerSecurityGroup"
+				},
+				"IpProtocol": "tcp",
+				"FromPort": "8443",
+				"ToPort": "8444",
+				"SourceSecurityGroupId": {
+					"Ref": "ApiServerEC2SecurityGroup"
+				}
+			},
+			"DependsOn": "KongScalingGroup"
+		},
+		"ApiPublicLoadBalancer": {
+			"Type": "AWS::ElasticLoadBalancing::LoadBalancer",
+			"DependsOn": "ApiServerPublicLoadBalancerSecurityGroup",
+			"Properties": {
+				"LoadBalancerName": {
+					"Fn::Join": [
+						"", [
+							"API-PUB-LB-",
+							{
+								"Ref": "NameTagValue"
+							}
+						]
+					]
+				},
+				"Scheme": "internet-facing",
+				"Listeners": [{
+					"LoadBalancerPort": "3389",
+					"InstancePort": "3389",
+					"Protocol": "TCP",
+					"InstanceProtocol": "TCP"
+				}],
+				"Instances": [],
+				"ConnectionSettings": {
+					"IdleTimeout": "300"
+				},
+				"SecurityGroups": [{
+					"Ref": "ApiServerPublicLoadBalancerSecurityGroup"
+				}],
+				"Subnets": [{
+					"Ref": "RESTPubSubnet1"
+				}],
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"API-PUB-LB-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"ApiPrivateLoadBalancer": {
+			"Type": "AWS::ElasticLoadBalancing::LoadBalancer",
+			"DependsOn": "ApiPublicLoadBalancer",
+			"Properties": {
+				"LoadBalancerName": {
+					"Fn::Join": [
+						"", [
+							"API-PRIV-LB-",
+							{
+								"Ref": "NameTagValue"
+							}
+						]
+					]
+				},
+				"Scheme": "internal",
+				"Listeners": [{
+						"LoadBalancerPort": "3389",
+						"InstancePort": "3389",
+						"Protocol": "TCP",
+						"InstanceProtocol": "TCP"
+					},
+					{
+						"LoadBalancerPort": "80",
+						"InstancePort": "80",
+						"Protocol": "HTTP",
+						"InstanceProtocol": "HTTP"
+					}
+				],
+				"HealthCheck": {
+					"HealthyThreshold": 5,
+					"Interval": 30,
+					"Target": "HTTP:80/swagger/index.html",
+					"Timeout": 15,
+					"UnhealthyThreshold": 2
+				},
+				"ConnectionDrainingPolicy": {
+					"Enabled": "true",
+					"Timeout": "120"
+				},
+				"Instances": [],
+				"ConnectionSettings": {
+					"IdleTimeout": "300"
+				},
+				"SecurityGroups": [{
+					"Ref": "ApiServerPrivateLoadBalancerSecurityGroup"
+				}],
+				"Subnets": [{
+					"Ref": "RESTPrivSubnet1"
+				}],
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"API-PRIV-LB-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"ApiLaunchConfiguration": {
+			"Type": "AWS::AutoScaling::LaunchConfiguration",
+			"DependsOn": "ApiPrivateLoadBalancer",
+			"Properties": {
+				"ImageId": {
+					"Ref": "WindowsServerImageId"
+				},
+				"IamInstanceProfile": {
+					"Ref": "WindowsServerIAMInstanceProfile"
+				},
+				"InstanceType": {
+					"Ref": "WindowsServerInstanceType"
+				},
+				"KeyName": {
+					"Ref": "WindowsServerKeyName"
+				},
+				"SecurityGroups": [{
+					"Ref": "ApiServerEC2SecurityGroup"
+				}],
+				"UserData": {
+					"Fn::Base64": {
+						"Fn::Join": ["", ["<persist>true</persist>\n",
+							"<powershell>\n",
+							"$ClientCode = '",
+							{
+								"Ref": "ClientCode"
+							},
+							"'\n",
+							"$bootstrapRepository = (Get-SSMParameterValue -Names $ClientCode-bootstrapRepository -WithDecryption $true).Parameters[0].Value\n",
+							"\n",
+							"$region = '",
+							{
+								"Ref": "ClientRegion"
+							},
+							"'\n",
+							"$keyPrefix = 'bootstrap/rest/powershell/'\n",
+							"\n",
+							"$localPath = 'C:/bootstrap/rest/powershell'\n",
+							"\n",
+							"if (-Not (Test-Path -Path $localPath)){New-Item -Path $localPath -ItemType directory -Force | out-null}\n",
+							"$artifacts = Get-S3Object -BucketName $bootstrapRepository -KeyPrefix $keyPrefix -Region $region\n",
+							"foreach($artifact in $artifacts) {$localFileName = $artifact.Key -replace $keyPrefix, '' \n",
+							"if ($localFileName -ne '') {$localFilePath = Join-Path $localPath $localFileName \n",
+							"Copy-S3Object -BucketName $bootstrapRepository -Key $artifact.Key -LocalFile $localFilePath -Region $region}} \n",
+							"\n",
+							"$cmdExecuteBootStrapping = 'C:\\bootstrap\\rest\\powershell\\ExecuteScripts.ps1' \n",
+							"Invoke-Expression \"$cmdExecuteBootStrapping\" \n",
+							"</powershell>", "\n"
+						]]
+					}
+				}
+			}
+		},
+		"SSMBootStrapRepository": {
+			"Type": "AWS::SSM::Parameter",
+			"DependsOn": "KongPrivateLoadBalancer",
+			"Properties": {
+				"Name": {
+					"Fn::Join": [
+						"", [{
+								"Ref": "ClientCode"
+							},
+							"-bootstrapRepository"
+						]
+					]
+				},
+				"Type": "String",
+				"Value": {
+					"Ref": "BootstrapRepository"
+				},
+				"Description": "SSM Parameter for the location of the Bootstrap Repository."
+			}
+		},
+		"SSMRestApiPrefix": {
+			"Type": "AWS::SSM::Parameter",
+			"DependsOn": "SSMBootStrapRepository",
+			"Properties": {
+				"Name": {
+					"Fn::Join": [
+						"", [{
+								"Ref": "ClientCode"
+							},
+							"-restApiPrefix"
+						]
+					]
+				},
+				"Type": "String",
+				"Value": {
+					"Ref": "RestApiPrefix"
+				},
+				"Description": "SSM Parameter for the Rest API Prefix."
+			}
+		},
+		"SSMRestKongEndpoint": {
+			"Type": "AWS::SSM::Parameter",
+			"DependsOn": "SSMRestApiPrefix",
+			"Properties": {
+				"Name": {
+					"Fn::Join": [
+						"", [{
+								"Ref": "ClientCode"
+							},
+							"-restKongEndpoint"
+						]
+					]
+				},
+				"Type": "String",
+				"Value": {
+					"Fn::GetAtt": ["KongPrivateLoadBalancer", "DNSName"]
+				},
+				"Description": "SSM Parameter the Rest Kong Endpoint."
+			}
+		},
+		"SSMKongProvisionKey": {
+			"Type": "AWS::SSM::Parameter",
+			"DependsOn": "SSMRestKongEndpoint",
+			"Properties": {
+				"Name": {
+					"Fn::Join": [
+						"", [{
+								"Ref": "ClientCode"
+							},
+							"-restKongProvisionKey"
+						]
+					]
+				},
+				"Type": "String",
+				"Value": {
+					"Ref": "KongProvisionKey"
+				},
+				"Description": "SSM Parameter the Rest Kong Provision Key."
+			}
+		},
+		"SSMOrganization": {
+			"Type": "AWS::SSM::Parameter",
+			"DependsOn": "SSMRestKongEndpoint",
+			"Properties": {
+				"Name": {
+					"Fn::Join": [
+						"", [{
+								"Ref": "ClientCode"
+							},
+							"-loyaltyWareOrganization"
+						]
+					]
+				},
+				"Type": "String",
+				"Value": {
+					"Ref": "ClientCode"
+				},
+				"Description": "SSM Parameter the Loyalty Ware Organization."
+			}
+		},
+		"SSMEnvironment": {
+			"Type": "AWS::SSM::Parameter",
+			"DependsOn": "SSMOrganization",
+			"Properties": {
+				"Name": {
+					"Fn::Join": [
+						"", [{
+								"Ref": "ClientCode"
+							},
+							"-loyaltyWareEnvironment"
+						]
+					]
+				},
+				"Type": "String",
+				"Value": {
+					"Ref": "Environment"
+				},
+				"Description": "SSM Parameter the Loyalty Ware Environment."
+			}
+		},
+		"ApiAutoScalingGroup": {
+			"Type": "AWS::AutoScaling::AutoScalingGroup",
+			"DependsOn": "SSMKongProvisionKey",
+			"Properties": {
+				"AutoScalingGroupName": {
+					"Fn::Join": [
+						"", [
+							"API-ASG-",
+							{
+								"Ref": "NameTagValue"
+							}
+						]
+					]
+				},
+				"AvailabilityZones": [{
+					"Fn::Select": ["2", {
+						"Fn::GetAZs": ""
+					}]
+				}],
+				"LaunchConfigurationName": {
+					"Ref": "ApiLaunchConfiguration"
+				},
+				"LoadBalancerNames": [{
+					"Ref": "ApiPublicLoadBalancer"
+				}, {
+					"Ref": "ApiPrivateLoadBalancer"
+				}],
+				"MaxSize": "1",
+				"MinSize": "1",
+				"DesiredCapacity": "1",
+				"Cooldown": "30",
+				"HealthCheckGracePeriod": 300,
+				"HealthCheckType": "EC2",
+				"VPCZoneIdentifier": [{
+					"Ref": "RESTPrivSubnet1"
+				}],
+				"Tags": [{
+						"Key": "Name",
+						"PropagateAtLaunch": "true",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"API-EC2-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"PropagateAtLaunch": "true",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"PropagateAtLaunch": "true",
+						"Value": {
+							"Ref": "Environment"
+						}
+					},
+					{
+						"Key": "ClientCode",
+						"PropagateAtLaunch": "true",
+						"Value": {
+							"Ref": "ClientCode"
+						}
+					}
+				]
+			}
+		},
+		"ApiAutoScalingLifeCycleHook": {
+			"Type": "AWS::AutoScaling::LifecycleHook",
+			"Properties": {
+				"LifecycleHookName": {
+					"Fn::Join": [
+						"", [{
+								"Ref": "ClientCode"
+							},
+							"-REST-API-LCH"
+						]
+					]
+				},
+				"AutoScalingGroupName": {
+					"Ref": "ApiAutoScalingGroup"
+				},
+				"LifecycleTransition": "autoscaling:EC2_INSTANCE_LAUNCHING",
+				"HeartbeatTimeout": 3600
+			}
+		},
+		"LoyaltyNavigatorPublicLoadBalancerSecurityGroup": {
+			"Type": "AWS::EC2::SecurityGroup",
+			"DependsOn": "RESTPubRT1",
+			"Properties": {
+				"GroupDescription": "Allow access to Windows LoyaltyNavigator Server Load Balancer",
+				"VpcId": {
+					"Ref": "RESTVPC"
+				},
+				"SecurityGroupIngress": [{
+						"IpProtocol": "tcp",
+						"FromPort": "3389",
+						"ToPort": "3389",
+						"CidrIp": {
+							"Ref": "AdminCidrBlock"
+						}
+					},
+					{
+						"IpProtocol": "tcp",
+						"FromPort": "80",
+						"ToPort": "80",
+						"CidrIp": {
+							"Ref": "AdminCidrBlock"
+						}
+					}
+				],
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"WIN-LN-PUB-LB-SG-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"LoyaltyNavigatorEC2SecurityGroup": {
+			"Type": "AWS::EC2::SecurityGroup",
+			"DependsOn": "LoyaltyNavigatorPublicLoadBalancerSecurityGroup",
+			"Properties": {
+				"GroupDescription": "Allow access to Windows LoyaltyNavigator Server instance",
+				"VpcId": {
+					"Ref": "RESTVPC"
+				},
+				"SecurityGroupIngress": [{
+						"IpProtocol": "tcp",
+						"FromPort": "3389",
+						"ToPort": "3389",
+						"SourceSecurityGroupId": {
+							"Ref": "LoyaltyNavigatorPublicLoadBalancerSecurityGroup"
+						}
+					},
+					{
+						"IpProtocol": "tcp",
+						"FromPort": "80",
+						"ToPort": "80",
+						"SourceSecurityGroupId": {
+							"Ref": "LoyaltyNavigatorPublicLoadBalancerSecurityGroup"
+						}
+					}
+				],
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"WIN-LN-EC2-SG-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"LoyaltyNavigatorPublicLoadBalancer": {
+			"Type": "AWS::ElasticLoadBalancing::LoadBalancer",
+			"DependsOn": "LoyaltyNavigatorPublicLoadBalancerSecurityGroup",
+			"Properties": {
+				"LoadBalancerName": {
+					"Fn::Join": [
+						"", [
+							"LN-PUB-LB-",
+							{
+								"Ref": "NameTagValue"
+							}
+						]
+					]
+				},
+				"Scheme": "internet-facing",
+				"Listeners": [{
+						"LoadBalancerPort": "3389",
+						"InstancePort": "3389",
+						"Protocol": "TCP",
+						"InstanceProtocol": "TCP"
+					},
+					{
+						"LoadBalancerPort": "80",
+						"InstancePort": "81",
+						"Protocol": "HTTP",
+						"InstanceProtocol": "HTTP"
+					}
+				],
+				"Instances": [],
+				"ConnectionSettings": {
+					"IdleTimeout": "300"
+				},
+				"SecurityGroups": [{
+					"Ref": "LoyaltyNavigatorPublicLoadBalancerSecurityGroup"
+				}],
+				"Subnets": [{
+					"Ref": "RESTPubSubnet1"
+				}],
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"LN-PUB-LB-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"LoyaltyNavigatorLaunchConfiguration": {
+			"Type": "AWS::AutoScaling::LaunchConfiguration",
+			"DependsOn": "LoyaltyNavigatorPublicLoadBalancer",
+			"Properties": {
+				"ImageId": {
+					"Ref": "LoyaltyNavigatorImageId"
+				},
+				"IamInstanceProfile": {
+					"Ref": "WindowsServerIAMInstanceProfile"
+				},
+				"InstanceType": {
+					"Ref": "LoyaltyNavigatorInstanceType"
+				},
+				"KeyName": {
+					"Ref": "WindowsServerKeyName"
+				},
+				"SecurityGroups": [{
+					"Ref": "LoyaltyNavigatorEC2SecurityGroup"
+				}]
+			}
+		},
+		"LoyaltyNavigatorAutoScalingGroup": {
+			"Type": "AWS::AutoScaling::AutoScalingGroup",
+			"DependsOn": "LoyaltyNavigatorLaunchConfiguration",
+			"Properties": {
+				"AutoScalingGroupName": {
+					"Fn::Join": [
+						"", [
+							"LN-ASG-",
+							{
+								"Ref": "NameTagValue"
+							}
+						]
+					]
+				},
+				"AvailabilityZones": [{
+					"Fn::Select": ["2", {
+						"Fn::GetAZs": ""
+					}]
+				}],
+				"LaunchConfigurationName": {
+					"Ref": "LoyaltyNavigatorLaunchConfiguration"
+				},
+				"LoadBalancerNames": [{
+					"Ref": "LoyaltyNavigatorPublicLoadBalancer"
+				}],
+				"MaxSize": "1",
+				"MinSize": "1",
+				"DesiredCapacity": "1",
+				"Cooldown": "30",
+				"HealthCheckGracePeriod": 300,
+				"HealthCheckType": "EC2",
+				"VPCZoneIdentifier": [{
+					"Ref": "RESTPrivSubnet1"
+				}],
+				"Tags": [{
+						"Key": "Name",
+						"PropagateAtLaunch": "true",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"LN-EC2-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"PropagateAtLaunch": "true",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"PropagateAtLaunch": "true",
+						"Value": {
+							"Ref": "Environment"
+						}
+					},
+					{
+						"Key": "ClientCode",
+						"PropagateAtLaunch": "true",
+						"Value": {
+							"Ref": "ClientCode"
+						}
+					}
+				]
+			}
+		},
+		"OracleRestDBSecurityGroup": {
+			"Type": "AWS::RDS::DBSecurityGroup",
+			"DependsOn": "ApiAutoScalingGroup",
+			"Condition": "CreateOracleResources",
+			"DeletionPolicy": "Delete",
+			"Properties": {
+				"EC2VpcId": {
+					"Ref": "RESTVPC"
+				},
+				"DBSecurityGroupIngress": [{
+					"EC2SecurityGroupId": {
+						"Ref": "ApiServerEC2SecurityGroup"
+					}
+				}, {
+					"EC2SecurityGroupId": {
+						"Ref": "LoyaltyNavigatorEC2SecurityGroup"
+					}
+				}],
+				"GroupDescription": "Allow Access to DB"
+			}
+		},
+		"OracleRestDBSubnetGroup": {
+			"Type": "AWS::RDS::DBSubnetGroup",
+			"DependsOn": "OracleRestDBSecurityGroup",
+			"Condition": "CreateOracleResources",
+			"Properties": {
+				"DBSubnetGroupDescription": "RDS DB Subnet Group",
+				"SubnetIds": [{
+						"Ref": "RESTPrivSubnet1"
+					},
+					{
+						"Ref": "RESTPrivSubnet2"
+					}
+				]
+			}
+		},
+		"OracleRestDBInstance": {
+			"Type": "AWS::RDS::DBInstance",
+			"DependsOn": "KongScalingGroup",
+			"Condition": "CreateOracleResources",
+			"DeletionPolicy": "Delete",
+			"Properties": {
+				"DBName": {
+					"Ref": "OracleRestDBName"
+				},
+				"Engine": "oracle-se2",
+				"MasterUsername": {
+					"Ref": "OracleRestDBUsername"
+				},
+				"DBInstanceClass": {
+					"Ref": "OracleRestDBClass"
+				},
+				"EngineVersion": "12.1.0.2.v8",
+				"LicenseModel": "license-included",
+				"BackupRetentionPeriod": "0",
+				"DBSubnetGroupName": {
+					"Ref": "OracleRestDBSubnetGroup"
+				},
+				"DBSecurityGroups": [{
+					"Ref": "OracleRestDBSecurityGroup"
+				}],
+				"AllocatedStorage": {
+					"Ref": "OracleRestDBAllocatedStorage"
+				},
+				"StorageType": {
+					"Ref": "OracleRestDBStorageType"
+				},
+				"Iops": {
+					"Ref": "OracleRestDBIOPS"
+				},
+				"MasterUserPassword": {
+					"Ref": "OracleRestDBPassword"
+				},
+				"DBSnapshotIdentifier": {
+					"Ref": "OracleDBSnapshotArn"
+				},
+				"DBParameterGroupName": {
+					"Ref": "OracleDBParameterGroup"
+				},
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"ORA-RDS-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					},
+					{
+						"Key": "ClientCode",
+						"Value": {
+							"Ref": "ClientCode"
+						}
+					}
+				]
+			}
+		}
+	},
+	"Outputs": {
+		"KongLoadPublicBalancerDnsName": {
+			"Description": "The Dns Name of the Kong Public ELB",
+			"Value": {
+				"Fn::GetAtt": ["KongPublicLoadBalancer", "DNSName"]
+			}
+		},
+		"RestWindowsPublicLoadBalancerDnsName": {
+			"Description": "The Dns Name of the Rest Windows Public ELB",
+			"Value": {
+				"Fn::GetAtt": ["ApiPublicLoadBalancer", "DNSName"]
+			}
+		}
+	}
+}

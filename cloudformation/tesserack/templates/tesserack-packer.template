@@ -1,0 +1,562 @@
+{
+	"AWSTemplateFormatVersion": "2010-09-09",
+	"Parameters": {
+		"NameTagValue": {
+			"Type": "String",
+			"Default": "PD-CICD-DEV",
+			"Description": "The Name Tag Value Suffix"
+		},
+		"ResourceOwner": {
+			"Type": "String",
+			"Default": "ProductDevelopment",
+			"Description": "The Cost Allocation Tag Value"
+		},
+		"Environment": {
+			"Type": "String",
+			"Default": "Development",
+			"Description": "The Cost Allocation Tag Value"
+		},
+		"AdminCidrBlock": {
+			"Type": "String",
+			"Default": "204.57.87.152/32",
+			"Description": "The VPC Cidr Block"
+		},
+		"ControlServerImageId": {
+			"Type": "String",
+			"Default": "ami-15309a6a",
+			"Description": "The Control Server AMI ID"
+		},
+		"ControlServerKeyName": {
+			"Type": "String",
+			"Default": "pd-cicd-devolopment",
+			"Description": "The Control Server Key Name"
+		},
+		"ControlServerIAMInstanceProfile": {
+			"Type": "String",
+			"Default": "cicd-admin-role",
+			"Description": "The Control Server IAM Instance Profile"
+		},
+		"ControlServerInstanceType": {
+			"Type": "String",
+			"Default": "t2.micro",
+			"Description": "The Control Server Instance Type"
+		}
+	},
+	"Resources": {
+		"CICDVPC": {
+			"Type": "AWS::EC2::VPC",
+			"Properties": {
+				"CidrBlock": "10.0.1.0/24",
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"VPC-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"CICDPubSubnet1": {
+			"Type": "AWS::EC2::Subnet",
+			"DependsOn": "CICDVPC",
+			"Properties": {
+				"CidrBlock": "10.0.1.64/26",
+				"AvailabilityZone": {
+					"Fn::Select": ["0", {
+						"Fn::GetAZs": ""
+					}]
+				},
+				"VpcId": {
+					"Ref": "CICDVPC"
+				},
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"SBNET-PUB-1-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"CICDPrivSubnet1": {
+			"Type": "AWS::EC2::Subnet",
+			"DependsOn": "CICDVPC",
+			"Properties": {
+				"CidrBlock": "10.0.1.192/26",
+				"AvailabilityZone": {
+					"Fn::Select": ["0", {
+						"Fn::GetAZs": ""
+					}]
+				},
+				"VpcId": {
+					"Ref": "CICDVPC"
+				},
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"SBNET-PRIV-1-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"CICDIGW": {
+			"Type": "AWS::EC2::InternetGateway",
+			"DependsOn": "CICDVPC",
+			"Properties": {}
+		},
+		"CICDInternetGatewayAttachment": {
+			"Type": "AWS::EC2::VPCGatewayAttachment",
+			"DependsOn": "CICDIGW",
+			"Properties": {
+				"VpcId": {
+					"Ref": "CICDVPC"
+				},
+				"InternetGatewayId": {
+					"Ref": "CICDIGW"
+				}
+			}
+		},
+		"CICDEIP1": {
+			"Type": "AWS::EC2::EIP",
+			"DependsOn": "CICDVPC",
+			"Properties": {
+				"Domain": "vpc"
+			}
+		},
+		"CICDNAT1": {
+			"Type": "AWS::EC2::NatGateway",
+			"DependsOn": "CICDPubSubnet1",
+			"Properties": {
+				"AllocationId": {
+					"Fn::GetAtt": ["CICDEIP1", "AllocationId"]
+				},
+				"SubnetId": {
+					"Ref": "CICDPubSubnet1"
+				},
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"NGW-1-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"CICDNatRoute": {
+			"Type": "AWS::EC2::Route",
+			"DependsOn": "CICDNAT1",
+			"Properties": {
+				"RouteTableId": {
+					"Ref": "CICDPrivRT1"
+				},
+				"DestinationCidrBlock": "0.0.0.0/0",
+				"NatGatewayId": {
+					"Ref": "CICDNAT1"
+				}
+			}
+		},
+		"CICDPrivRT1": {
+			"Type": "AWS::EC2::RouteTable",
+			"DependsOn": "CICDPrivSubnet1",
+			"Properties": {
+				"VpcId": {
+					"Ref": "CICDVPC"
+				},
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"RT-PRIV-1-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"CICDPrivRT1Association": {
+			"Type": "AWS::EC2::SubnetRouteTableAssociation",
+			"DependsOn": "CICDPrivRT1",
+			"Properties": {
+				"RouteTableId": {
+					"Ref": "CICDPrivRT1"
+				},
+				"SubnetId": {
+					"Ref": "CICDPrivSubnet1"
+				}
+			}
+		},
+		"CICDPubRT1IGWAttachment": {
+			"Type": "AWS::EC2::Route",
+			"DependsOn": "CICDPubRT1",
+			"Properties": {
+				"RouteTableId": {
+					"Ref": "CICDPubRT1"
+				},
+				"DestinationCidrBlock": "0.0.0.0/0",
+				"GatewayId": {
+					"Ref": "CICDIGW"
+				}
+			}
+		},
+		"CICDPubRT1": {
+			"Type": "AWS::EC2::RouteTable",
+			"DependsOn": "CICDPubSubnet1",
+			"Properties": {
+				"VpcId": {
+					"Ref": "CICDVPC"
+				},
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"RT-PUB-1-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"CICDPubRT1Association": {
+			"Type": "AWS::EC2::SubnetRouteTableAssociation",
+			"DependsOn": "CICDPubRT1",
+			"Properties": {
+				"RouteTableId": {
+					"Ref": "CICDPubRT1"
+				},
+				"SubnetId": {
+					"Ref": "CICDPubSubnet1"
+				}
+			}
+		},
+		"ControlServerPublicLBSG": {
+			"Type": "AWS::EC2::SecurityGroup",
+			"DependsOn": "CICDPubRT1Association",
+			"Properties": {
+				"GroupDescription": "Allow access to Control Server Load Balancer",
+				"VpcId": {
+					"Ref": "CICDVPC"
+				},
+				"SecurityGroupIngress": [{
+					"IpProtocol": "tcp",
+					"FromPort": "22",
+					"ToPort": "22",
+					"CidrIp": {
+						"Ref": "AdminCidrBlock"
+					}
+				}],
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"CS-PUB-LB-SG-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"ControlServerSG": {
+			"Type": "AWS::EC2::SecurityGroup",
+			"DependsOn": "ControlServerPublicLBSG",
+			"Properties": {
+				"GroupDescription": "Allow access to Control Server instance",
+				"VpcId": {
+					"Ref": "CICDVPC"
+				},
+				"SecurityGroupIngress": [{
+					"IpProtocol": "tcp",
+					"FromPort": "22",
+					"ToPort": "22",
+					"SourceSecurityGroupId": {
+						"Ref": "ControlServerPublicLBSG"
+					}
+				}],
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"CS-EC2-SG-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"ControlServerPublicLB": {
+			"Type": "AWS::ElasticLoadBalancing::LoadBalancer",
+			"DependsOn": "ControlServerPublicLBSG",
+			"Properties": {
+				"LoadBalancerName": "ControlServerPublicLoadBalancer",
+				"Scheme": "internet-facing",
+				"Listeners": [{
+					"LoadBalancerPort": "22",
+					"InstancePort": "22",
+					"Protocol": "TCP",
+					"InstanceProtocol": "TCP"
+				}],
+				"Instances": [],
+				"ConnectionSettings": {
+					"IdleTimeout": "300"
+				},
+				"SecurityGroups": [{
+					"Ref": "ControlServerPublicLBSG"
+				}],
+				"Subnets": [{
+					"Ref": "CICDPubSubnet1"
+				}],
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"CS-PUB-LB-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"CSLaunchConfiguration": {
+			"Type": "AWS::AutoScaling::LaunchConfiguration",
+			"DependsOn": "ControlServerPublicLB",
+			"Properties": {
+				"ImageId": {
+					"Ref": "ControlServerImageId"
+				},
+				"IamInstanceProfile" : {
+					"Ref": "ControlServerIAMInstanceProfile"
+				},
+				"InstanceType": {
+					"Ref": "ControlServerInstanceType"
+				},
+				"KeyName": {
+					"Ref": "ControlServerKeyName"
+				},
+				"SecurityGroups": [{
+					"Ref": "ControlServerSG"
+				}]
+			}
+		},
+		"CSAutoScalingGroup": {
+			"Type": "AWS::AutoScaling::AutoScalingGroup",
+			"DependsOn": "CSLaunchConfiguration",
+			"Properties": {
+				"AvailabilityZones": [{
+					"Fn::Select": ["0", {
+						"Fn::GetAZs": ""
+					}]
+				}],
+				"LaunchConfigurationName": {
+					"Ref": "CSLaunchConfiguration"
+				},
+				"LoadBalancerNames": [{
+					"Ref": "ControlServerPublicLB"
+				}],
+				"MaxSize": "1",
+				"MinSize": "1",
+				"DesiredCapacity": "1",
+				"VPCZoneIdentifier": [{
+					"Ref": "CICDPrivSubnet1"
+				}],
+				"Tags": [{
+						"Key": "Name",
+						"PropagateAtLaunch": "true",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"CS-EC2-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"PropagateAtLaunch": "true",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"PropagateAtLaunch": "true",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		}
+	},
+	"Outputs": {
+		"CSLoadBalancerDnsName": {
+			"Description": "Information about the value",
+			"Value": {
+				"Fn::GetAtt": ["ControlServerPublicLB", "DNSName"]
+			}
+		}
+		}
+	}
