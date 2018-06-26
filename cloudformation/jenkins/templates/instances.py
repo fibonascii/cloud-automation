@@ -8,11 +8,6 @@ from troposphere.policies import (
 )
 
 
-import os
-username = os.environ['JENKINS_USERNAME']
-password = os.environ['JENKINS_PASSWORD']
-
-
 class Instances(BaseCloudFormation):
     def __init__(self, sceptre_user_data):
         super().__init__()
@@ -168,7 +163,7 @@ class Instances(BaseCloudFormation):
             MaxSize=2,
             VPCZoneIdentifier=[Ref(self.PrivateSubnet1)],
             LoadBalancerNames=[Ref(self.slave_loadbalancer)],
-            AvailabilityZones=['us-east-2a'],
+            AvailabilityZones=['us-east-1a'],
             HealthCheckType="EC2",
         ))
 

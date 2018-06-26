@@ -90,14 +90,6 @@
    shell: rsync -vaP /home/ec2-user/.ssh/ /home/jenkins/.ssh/
    become: True
 
- - name: Change Permissions of Jenkins SSH Directory
-   file:
-     path: /home/jenkins/.ssh
-     owner: jenkins
-     group: jenkins
-     recurse: yes
-   become: True
-
  - name: Copy Credentials File to Jenkins Server
    copy:
      src: files/credentials.xml
@@ -105,7 +97,11 @@
      owner: jenkins
      group: jenkins
    become: True
- 
+
+ - name: Change Permissions of Jenkins Home
+   shell: chmod -R 700 /home/jenkins/
+   become: True
+
  - name: Start Jenkins Service
    service:
      name: jenkins

@@ -5,5 +5,5 @@ parameters:
     PrivateSubnetA: 10.0.20.0/24
     PublicSubnetB: 10.0.30.0/24
     PrivateSubnetB: 10.0.40.0/24
-    AvailabilityZoneA: us-east-2a
-    AvailabilityZoneB: us-east-2b
+    AvailabilityZoneA: us-east-1a
+    AvailabilityZoneB: us-east-1b

@@ -1,11 +1,11 @@
 template_path: templates/instances.py
 parameters:
     LoadBalancerName: JenkinsDevELB
-    AMIID: ami-83efd1e6
-    SLAVEAMIID: ami-9ec7f9fb
+    AMIID: ami-56a5f329
+    SLAVEAMIID: ami-a5a6f0da
     PublicSubnet1: !stack_output vpc::PublicSubnetA
     PrivateSubnet1: !stack_output vpc::PrivateSubnetA
-    KeyPair: jenkins-dev-ohio
+    KeyPair: jenkins-development
     LoadBalancerSecurityGroup: !stack_output securitygroups::LoadBalancerSecurityGroup
     InstanceSecurityGroup: !stack_output securitygroups::InstanceSecurityGroup
     SlaveInstanceSecurityGroup: !stack_output securitygroups::SlaveInstanceSecurityGroup
