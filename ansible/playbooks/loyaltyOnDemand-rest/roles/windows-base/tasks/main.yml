@@ -5,3 +5,7 @@
 
 - name: Install Base Windows Software 
   include_tasks: base-windows-installs.yml
+
+- name: Enable Windows Enpoint Monitoring
+  include_tasks: monitor-windows.yml
+  when: monitor_endpoint is defined and monitor_endpoint == "true" 

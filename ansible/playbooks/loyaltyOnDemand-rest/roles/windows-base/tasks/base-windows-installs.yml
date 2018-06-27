@@ -75,49 +75,6 @@
     }
     }
 
-- name: Install Cylance Protect
-  win_shell: |
-    $file = Get-Item "./CylancePROTECT_x64.msi"
-    $DataStamp = get-date -Format yyyyMMddTHHmmss
-    $logFile = '{0}-{1}.log' -f $file.fullname,$DataStamp
-    $MSIArguments = @(
-        "/i"
-        ('"{0}"' -f $file.fullname)
-        "/qn PIDKEY=mibUCoM7R2K3enL5cBsDZcab LAUNCHAPP=0"
-        "/norestart"
-        "/L*v"
-        $logFile
-        )
-        Start-Process "msiexec.exe" -ArgumentList $MSIArguments -Wait -NoNewWindow
-  args:
-    chdir: c:\build\deployment-artifacts\common
-
-- name: Wait for Cylance Protect Install Completion
-  win_shell: |
-    $installSuccessful = $false
-    while (-Not ($installSuccessful))
-    {
-    if (Test-Path 'C:/build/deployment-artifacts/common/')
-    {
-    $logFileName = Get-ChildItem -Path 'C:/build/deployment-artifacts/common/' -Include CylancePROTECT*.log -recurse | Select-String -pattern "Product: Cylance PROTECT -- Installation completed successfully." | group path | select name
-    if ($logFileName)
-    {
-    $installSuccessful = $true
-    Write-Host "Installation is successful."
-    }
-    else
-    {
-    Write-Host "Installation is still in Progress...Pausing for 1 minute."
-    Start-Sleep -Milliseconds 60000;
-    }
-    }
-    else
-    {
-    Write-Host "Installation is still in Progress...Pausing for 1 minute."
-    Start-Sleep -Milliseconds 60000;
-    }
-    }
-
 - name: Pause for all installations to complete
   pause: minutes=2
 
