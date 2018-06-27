@@ -37,9 +37,9 @@
   win_shell: |
     & 'C:/Program Files/Amazon/AmazonCloudWatchAgent/amazon-cloudwatch-agent-ctl.ps1' -a fetch-config -m ec2 -c ssm:D1PDEV-windowsCloudWatchAgentConfig -s
 
-- name: Set Cylance Protect Key
+- name: Get Cylance Protect Key from SSM
   set_fact:
-    cylanceToken: 'mibUCoM7R2K3enL5cBsDZcab'
+    cylanceToken: "{{ lookup('aws_ssm', cylance_token_ssm, decrypt=True, region=build_region) }}"
 
 - name: Install Cylance Protect
   win_shell: |
