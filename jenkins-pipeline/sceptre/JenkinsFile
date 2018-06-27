@@ -1,0 +1,21 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Setup') {
+            steps {
+                echo 'Setup Environment'
+                sh 'echo ${Project}'
+                sh 'echo ${Environment}'
+                sh 'sceptre --version'
+
+            }
+        }
+        stage('Build') {
+            steps {
+              sh 'cd cloudformation/${Project} && sceptre launch-env ${Environment}'
+            }
+        }
+     }
+  }
+

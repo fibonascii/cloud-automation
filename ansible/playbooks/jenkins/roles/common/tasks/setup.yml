@@ -86,3 +86,13 @@
      name: jq
      state: latest 
    become: True
+
+ - name: Install Sceptre
+   pip:
+     name: sceptre
+   become: True
+
+ - name: Install Troposphere
+   pip:
+      name: troposphere
+   become: True
