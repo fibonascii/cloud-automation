@@ -8,6 +8,7 @@
 		"ssh_private_key_file" : "jenkins-development",
 		"ami_name": "Jenkins-Development-Master{{isotime | clean_ami_name}}",
 		"ami_description": "Jenkins Master running on Base Amazon Linux AMI",
+        "iam_instance_profile": "jenkins-admin-access",
 		"source_ami_filter": {
 			"filters": {
 				"virtualization-type": "hvm",
