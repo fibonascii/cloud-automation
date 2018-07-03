@@ -1,6 +1,7 @@
 from troposphere import Template, Tags 
 from abc import ABC, abstractmethod
 
+
 class BaseCloudFormation(ABC):
     def __init__(self):
         self.template = Template()

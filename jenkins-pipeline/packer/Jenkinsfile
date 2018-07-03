@@ -10,7 +10,7 @@ pipeline {
                 sh 'echo ${RELEASE_TYPE}'
                 sh 'echo ${RELEASE_SEQUENCE}'
             }
-        }    
+        }
         stage('Build Image') {
             steps {
                echo 'Build Packer Image'
@@ -40,4 +40,3 @@ pipeline {
 
     }
 }
-

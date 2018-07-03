@@ -19,7 +19,7 @@ class Instances(BaseCloudFormation):
 
         self.LoadBalancerName = self.template.add_parameter(Parameter(
             "LoadBalancerName",
-            Default=self.environment_name + "-LOADBALANCER",
+            Default=self.environment_name + "-LOADBALANCER-1",
             Type="String",
             Description="Name of Development Load Balancer",
         ))
@@ -125,36 +125,36 @@ class Instances(BaseCloudFormation):
             Instances=[Ref(self.master_instance)],
          ))
 
-        self.slave_loadbalancer = self.template.add_resource(elasticloadbalancing.LoadBalancer(
-            "SlaveLoadBalancer",
-            ConnectionDrainingPolicy=elasticloadbalancing.ConnectionDrainingPolicy(
-                Enabled=True,
-                Timeout=120,
-                ),
-            Subnets=[Ref(self.PrivateSubnet1)],
-            Listeners=[
-                elasticloadbalancing.Listener(
-                    LoadBalancerPort="22",
-                    InstancePort="22",
-                    Protocol="tcp",
-                    InstanceProtocol="tcp",
-                    ),
-                ],
-            CrossZone=True,
-            SecurityGroups=[Ref(self.LoadBalancerSecurityGroup)],
-            LoadBalancerName=Ref(self.SlaveLoadBalancerName),
-            Scheme="internal",
-         ))
+        # self.slave_loadbalancer = self.template.add_resource(elasticloadbalancing.LoadBalancer(
+        #     "SlaveLoadBalancer",
+        #     ConnectionDrainingPolicy=elasticloadbalancing.ConnectionDrainingPolicy(
+        #         Enabled=True,
+        #         Timeout=120,
+        #         ),
+        #     Subnets=[Ref(self.PrivateSubnet1)],
+        #     Listeners=[
+        #         elasticloadbalancing.Listener(
+        #             LoadBalancerPort="22",
+        #             InstancePort="22",
+        #             Protocol="tcp",
+        #             InstanceProtocol="tcp",
+        #             ),
+        #         ],
+        #     CrossZone=True,
+        #     SecurityGroups=[Ref(self.LoadBalancerSecurityGroup)],
+        #     LoadBalancerName=Ref(self.SlaveLoadBalancerName),
+        #     Scheme="internal",
+        #  ))
 
-        self.LaunchConfig = self.template.add_resource(LaunchConfiguration(
-            "LaunchConfiguration",
-            ImageId=Ref(self.SLAVEAMIID),
-            KeyName=Ref(self.KeyPair),
-            InstanceType="t2.medium",
-            LaunchConfigurationName="R1KIRB-JENKINS-SLAVELC",
-            SecurityGroups=[Ref(self.SlaveInstanceSecurityGroup)],
-        ))
-
+        # self.LaunchConfig = self.template.add_resource(LaunchConfiguration(
+        #     "LaunchConfiguration",
+        #     ImageId=Ref(self.SLAVEAMIID),
+        #     KeyName=Ref(self.KeyPair),
+        #     InstanceType="t2.medium",
+        #     LaunchConfigurationName="R1KIRB-JENKINS-SLAVELC",
+        #     SecurityGroups=[Ref(self.SlaveInstanceSecurityGroup)],
+        # ))
+        #
         self.AutoscalingGroup = self.template.add_resource(AutoScalingGroup(
             "AutoscalingGroup",
             DesiredCapacity=1,

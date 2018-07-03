@@ -1,0 +1,21 @@
+{% for job in Jobs %}
+{% for template in job['JobTemplates'] %}
+{% if 'instances.py' in template['TemplateName'] %}
+template_path: {{ template['TemplateName'] }}
+{% endif %}
+{% endfor %}
+{% endfor %}
+parameters:
+{% for job in Jobs %}
+{% for template in job['JobTemplates'] %}
+{% if 'instances.py' in template['TemplateName'] %}
+{% for file in template["ParameterFiles"] %}
+{% for param in file['Parameters'] %}
+{% for key, value in param.items() %}
+    {{ key  }}: {{ value }}
+{% endfor %}
+{% endfor %}
+{% endfor %}
+{% endif %}
+{% endfor %}
+{% endfor %}

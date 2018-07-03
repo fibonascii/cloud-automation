@@ -1,7 +1,0 @@
-template_path: templates/securitygroups.py
-parameters:
-    NatGateway: !stack_output vpc::NatGateway
-    VpcId: !stack_output vpc::VpcId
-    PublicIP: 204.57.87.152/32
-
-    
