@@ -14,12 +14,6 @@
      state: latest
    become: True
 
- - name: Install Python3 Pip
-   yum:
-     name: python36-pip
-     state: latest
-   become: True
-
  - name: Install Boto3
    pip: 
      name: boto3
@@ -87,12 +81,18 @@
      state: latest 
    become: True
 
- - name: Install Sceptre
-   pip:
-     name: sceptre
+ - name: Set python3 as default
+   shell: ln -sf /usr/bin/python3 /usr/bin/python
+   become: True
+
+ - name: Setup pip3
+   shell: easy_install-3.6 pip
+   become: True
+
+ - name: Install sceptre
+   shell: /usr/local/bin/pip3 install sceptre
    become: True
 
  - name: Install Troposphere
-   pip:
-      name: troposphere
+   shell: /usr/local/bin/pip3 install troposphere
    become: True

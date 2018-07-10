@@ -11,16 +11,33 @@ pipeline {
                 sh 'echo ${RELEASE_SEQUENCE}'
             }
         }    
-        stage('Build') {
+        stage('Build Image') {
             steps {
                echo 'Build Packer Image'
                sh '''cd packer/builds/"${IMAGE_TYPE}" && packer.io build -var lod_rest_version="${VERSION_NUMBER}" -var lod_rest_release_type="${RELEASE_TYPE}" -var lod_rest_release_type_sequence="${RELEASE_SEQUENCE}" -var lod_rest_release_name="${RELEASE_NAME}" -var lod_cicd_s3_bucket="${S3_BUCKET_NAME}" -var lod_rest_release_upload_key="${KEY_PREFIX}" ${IMAGE_TYPE}.packer'''
             }
-        }
-        stage('Notify') {
-          steps { 
-             echo '''\""${IMAGE_TYPE}" AMI created successfully by jenkins\" | hipchat_room_message -t HIPCHAT_API_TOKEN -r 4600588 -f "Jenkins"'''
+            post {
+            failure {
+            mail to: 'rkirby@brierley.com',
+                 subject: "Failed Pipeline: ${currentBuild.fullDisplayName}",
+                 body: "Something is wrong with ${env.BUILD_URL}"
+
+             }
           }
-     }
-  } 
+        }
+        stage('Create Environment') {
+        steps {
+           echo 'Creating Environment From Image'
+          }
+        }
+      }
+      post {
+            success {
+            mail to: 'rkirby@brierley.com',
+                 subject: "Successful Pipeline: ${currentBuild.fullDisplayName}",
+                 body: "Build Completed Successfully: ${env.BUILD_URL}"
+      }
+
+    }
 }
+
