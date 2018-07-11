@@ -1,0 +1,1 @@
+Start-Process C:\build\deployment-artifacts\common\OracleInstaller\client\setup.exe -ArgumentList "-silent -noconsole -waitforcompletion -nowait -responseFile C:\build\deployment-artifacts\common\client.rsp" | Out-Null

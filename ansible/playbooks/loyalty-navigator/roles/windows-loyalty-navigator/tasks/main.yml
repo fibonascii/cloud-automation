@@ -1,0 +1,6 @@
+---
+- name: Install Loyalty Navigator Windows Prerequisites
+  include_tasks: loyalty-navigator-windows-installs.yml
+
+- name: Deploy Loyalty Navigator Application
+  include_tasks: loyalty-navigator-application-deploy.yml 

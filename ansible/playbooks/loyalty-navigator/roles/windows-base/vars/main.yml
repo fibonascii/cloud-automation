@@ -1,0 +1,18 @@
+WINDOWS_FEATURES:
+  - { "DisplayName":"IIS (Web-Server only)","FeatureName":"Web-Server","IncludeSubFeatures":"False", "State":"present"}
+  - { "DisplayName":"IIS Management Console","FeatureName":"Web-Mgmt-Console","IncludeSubFeatures":"False", "State":"present"}
+  - { "DisplayName":".Net Extensibility","FeatureName":"Web-Net-Ext","IncludeSubFeatures":"False", "State":"present"}
+  - { "DisplayName":".Net 4.5 Extensibility","FeatureName":"Web-Net-Ext45","IncludeSubFeatures":"False", "State":"present"}
+  - { "DisplayName":"Application Initialization","FeatureName":"Web-AppInit","IncludeSubFeatures":"False", "State":"present"}
+  - { "DisplayName":".Net 4.5","FeatureName":"Web-Net-Ext","IncludeSubFeatures":"False", "State":"present"}
+  - { "DisplayName":"MSMQ Server","FeatureName":"MSMQ-Server","IncludeSubFeatures":"False", "State":"present"}
+  - { "DisplayName":"MSMQ Directory","FeatureName":"MSMQ-Directory","IncludeSubFeatures":"False", "State":"present"}
+  - { "DisplayName":"MSMQ Triggers","FeatureName":"MSMQ-Triggers","IncludeSubFeatures":"False", "State":"present"}
+  - { "DisplayName":"MSMQ Multicasting","FeatureName":"MSMQ-Multicasting","IncludeSubFeatures":"False", "State":"present"}
+  - { "DisplayName":"SMB 1.0/CIFS File Sharing Support","FeatureName":"FS-SMB1","IncludeSubFeatures":"False", "State":"present"}
+  - { "DisplayName":"Sever Management","FeatureName":"Server-Gui-Mgmt-Infra","IncludeSubFeatures":"False", "State":"present"}
+  - { "DisplayName":"Sever Management","FeatureName":"Server-Gui-Shell","IncludeSubFeatures":"False", "State":"present"}
+  - { "DisplayName":"WoW64","FeatureName":"WoW64-Support","IncludeSubFeatures":"False", "State":"present"}
+  - { "DisplayName":"NET Framework Features","FeatureName":"NET-Framework-Features","IncludeSubFeatures":"True", "State":"present"}
+  - { "DisplayName":"PowerShellRoot","FeatureName":"PowerShellRoot","IncludeSubFeatures":"True", "State":"present"}
+  - { "DisplayName":"WAS","FeatureName":"WAS","IncludeSubFeatures":"True", "State":"present"}

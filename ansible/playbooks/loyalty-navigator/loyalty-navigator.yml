@@ -1,0 +1,6 @@
+---
+- hosts: all
+  roles:
+     - windows-base
+     - windows-loyalty-navigator
+     - windows-cleanup
