@@ -1,0 +1,9 @@
+template_path: templates/vpc.py
+parameters:
+    VpcCidr: 10.0.0.0/16
+    PublicSubnetA: 10.0.10.0/24
+    PrivateSubnetA: 10.0.20.0/24
+    PublicSubnetB: 10.0.30.0/24
+    PrivateSubnetB: 10.0.40.0/24
+    AvailabilityZoneA: us-east-1a
+    AvailabilityZoneB: us-east-1b
