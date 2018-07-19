@@ -1,0 +1,43 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Setup') {
+            steps {
+                echo 'Setup Environment'
+                sh 'rsync -vaP /home/jenkins/.ssh/"${KEY_NAME}" packer/builds/"${IMAGE_TYPE}"'
+                sh 'echo ${VERSION_NUMBER}'
+                sh 'echo ${RELEASE_TYPE}'
+                sh 'echo ${RELEASE_SEQUENCE}'
+            }
+        }    
+        stage('Build Image') {
+            steps {
+               echo 'Build Packer Image'
+               sh '''cd packer/builds/"${IMAGE_TYPE}" && packer.io build -var lod_rest_version="${VERSION_NUMBER}" -var lod_rest_release_type="${RELEASE_TYPE}" -var lod_rest_release_type_sequence="${RELEASE_SEQUENCE}" -var lod_rest_release_name="${RELEASE_NAME}" -var cicd_artifacts_s3_bucket="${S3_BUCKET_NAME}" -var lod_rest_release_upload_key="${KEY_PREFIX}" s3_key="${s3_key}" ${IMAGE_TYPE}.packer'''
+            }
+            post {
+            failure {
+            mail to: 'rkirby@brierley.com',
+                 subject: "Failed Pipeline: ${currentBuild.fullDisplayName}",
+                 body: "Something is wrong with ${env.BUILD_URL}"
+
+             }
+          }
+        }
+        stage('Create Environment') {
+        steps {
+           echo 'Creating Environment From Image'
+          }
+        }
+      }
+      post {
+            success {
+            mail to: 'rkirby@brierley.com',
+                 subject: "Successful Pipeline: ${currentBuild.fullDisplayName}",
+                 body: "Build Completed Successfully: ${env.BUILD_URL}"
+      }
+
+    }
+}
+

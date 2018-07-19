@@ -1,0 +1,3 @@
+---
+- name: Update Ec2 Config Service
+  include_tasks: update-ec2-config.yml

@@ -7,7 +7,7 @@ class BaseCloudFormation(ABC):
         self.template = Template()
         self.default_tags = Tags(
                   ResourceOwner="ProductDevelopment",
-                  Environment="Development",
+                  Environment="Production",
                   Developer="Reagan Kirby",
                   )
         self.environment_name = "R1KIRB-JENKINS"

@@ -1,0 +1,15 @@
+ - name: Set python3 as default
+   shell: ln -sf /usr/bin/python3 /usr/bin/python
+   become: True
+
+ - name: Setup pip3
+   shell: easy_install-3.6 pip
+   become: True
+
+ - name: Install sceptre
+   shell: /usr/local/bin/pip3 install sceptre
+   become: True
+
+ - name: Install Troposphere
+   shell: /usr/local/bin/pip3 install troposphere
+   become: True

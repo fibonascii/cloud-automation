@@ -1,11 +1,11 @@
 {
-  "variables": {  
+  "variables": {
     "application_version": "",
     "application_release_type": "",
     "application_release_type_sequence": "",
     "application_release_name": "",
     "application_release_upload_key": "",
-    "application_s3_bucket": "",
+    "cicd_pipeline_s3_bucket": "",
     "monitor_endpoint": "",
     "cylance_token_ssm_key": "",
     "windows_cw_agent_config": "",
@@ -36,7 +36,7 @@
                         },
                         "most_recent": true
                 },
-    "ami_name": "LoyaltyOnDemandRestWindowsImage-{{user `application_release_name`}}-{{isotime | clean_ami_name}}",
+    "ami_name": "LoyaltyNavigatorImage-{{user `application_release_name`}}-{{isotime | clean_ami_name}}",
     "user_data_file": "userdata/windows-aws.txt",
     "communicator": "winrm",
     "winrm_username": "administrator",
@@ -57,10 +57,10 @@
   },
   {
       "type":  "ansible",
-      "playbook_file": "../../../ansible/playbooks/loyaltyOnDemand-rest/loyaltyOnDemandRest-windows.yml",
+      "playbook_file": "../../../ansible/playbooks/loyalty-navigator/loyalty-navigator.yml",
       "extra_arguments": [
         "--connection", "packer", "-vvv",
-        "--extra-vars", "ansible_shell_type=powershell ansible_shell_executable=None lod_rest_version={{user `application_version`}} lod_rest_release_type={{user `application_release_type`}} lod_rest_release_type_sequence={{user `application_release_type_sequence`}} monitor_endpoint={{user `monitor_endpoint`}} lod_rest_release_upload_key={{user `application_release_upload_key`}} cicd_pipeline_s3_bucket={{user `cicd_pipeline_s3_bucket`}} build_region={{user `build_region`}} cylance_token_ssm_key={{user `cylance_token_ssm_key`}} windows_cw_agent_config={{user `windows_cw_agent_config`}}"
+        "--extra-vars", "ansible_shell_type=powershell ansible_shell_executable=None application_version={{user `application_version`}} application_release_type={{user `application_release_type`}} application_release_type_sequence={{user `application_release_type_sequence`}} monitor_endpoint={{user `monitor_endpoint`}} application_release_upload_key={{user `application_release_upload_key`}} cicd_pipeline_s3_bucket={{user `cicd_pipeline_s3_bucket`}} build_region={{user `build_region`}} cylance_token_ssm_key={{user `cylance_token_ssm_key`}} windows_cw_agent_config={{user `windows_cw_agent_config`}}"
       ]
   }]
 }

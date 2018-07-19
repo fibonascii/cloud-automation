@@ -1,0 +1,14 @@
+ansible_password: 'C-3Ktgp!Z8e'
+ansible_user: administrator
+ansible_connection: winrm
+ansible_port: 5985
+application_version : "v1.1.2"
+application_release_type : "rc"
+application_release_type_sequence : "1"
+application_release_name: "v1.1.2"
+application_release_upload_key: "releases/loyalty-rest-poll/"
+application_s3_bucket: "pd-dev-cicd-artifacts"
+monitor_endpoint: true
+cylance_token_ssm: "D1PDEV-cylanceToken"
+build_region: "us-east-1"
+
