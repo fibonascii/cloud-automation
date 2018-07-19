@@ -1,38 +1,68 @@
+#!/usr/bin/env python3 -u
+import os
 import sys
-from sceptre.environment import Environment as environ
 from optparse import OptionParser
-from sceptreutils import TemplateHandler
+import requests
+from sceptreutils.handlers import TemplateHandler
+from sceptre.environment import Environment as environ
+
 
 parser = OptionParser()
-parser.add_option('-p', '--path', type='string',
-                  dest='project_path', default='jenkins')
 parser.add_option('-e', '--environment', type='string',
                   dest='environment', default='dev')
 parser.add_option('-r', '--region', type='string',
                   dest='region', default='us-east-1')
+parser.add_option('-p', '--procedure', type='string',
+                  dest='procedure')
 
 (options, args) = parser.parse_args()
 
-if not options.project_path and options.environment and options.region:
-    print("Missing required command line arguments")
-    sys.exit(1)
+sceptre_directory = os.path.join(os.environ['JENKINS_HOME'], 'workspace/CreateEnvironment/cloudformation')
 
 
-config_data = {'project_code': 'jenkins' + '-rkirby',
-               'region': options.region}
-
-response = {"ProductCode": "LodRest", "EnvironmentType": "Production", "Jobs": [{"JobType": "Sceptre", "JobTemplates": [{"TemplateName": "templates/vpc.py", "ParameterFiles": [{"Parameters": [{"VpcCidr": "10.0.0.0/16"}, {"PublicSubnetA": "10.0.10.0/24"}, {"PrivateSubnetA": "10.0.20.0/24"}, {"PublicSubnetB": "10.0.30.0/24"}, {"AvailabilityZoneA": "us-east-1a"}, {"AvailabilityZoneB": "us-east-1b"}]}]}, {"TemplateName": "templates/securitygroups.py", "ParameterFiles": [{"Parameters": [{"NatGateway": "!stack_output vpc::NatGateway"}, {"VpcId": "!stack_output vpc::VpcId"}, {"PublicIP": "204.57.87.152/32"}]}]}, {"TemplateName": "templates/instances.py", "ParameterFiles": [{"Parameters": [{"LoadBalancerName": "Jenkins-Test-Rkirby"}, {"AMIID": "ami-56a5f329"}, {"SLAVEAMIID": "ami-a5a6f0da"}, {"PublicSubnet1": "!stack_output vpc::PublicSubnetA"}, {"PrivateSubnet1": "!stack_output vpc::PrivateSubnetA"}, {"KeyPair": "jenkins-development"}, {"LoadBalancerSecurityGroup": "!stack_output securitygroups::LoadBalancerSecurityGroup"}, {"InstanceSecurityGroup": "!stack_output securitygroups::InstanceSecurityGroup"}, {"SlaveInstanceSecurityGroup": "!stack_output securitygroups::SlaveInstanceSecurityGroup"}, {"AvailabilityZoneA": "!stack_output vpc::AvailabilityZone1"}, {"AvailabilityZoneB": "!stack_output vpc::AvailabilityZone2"}]}]}]}]}
-env = environ(sceptre_dir=options.project_path, environment_path=options.environment, options=config_data)
-
-handler = TemplateHandler(project_path=options.project_path,
-                          environment_name=options.environment,
-                          data=response)
-handler.generate_templates()
+def get_response_data():
+    """Call API for procedure using Jenkins Parameter
+       Return procedure back as JSON"""
+    response = requests.get('http://172.18.0.4:8000/api/procedures/{}'.format(options.procedure))
+    if response.status_code == 200:
+        return response.json()
 
 
-if env.is_leaf:
-    environments = env.launch()
-    for stack_name, status in environments.items():
-        if 'failed' in status:
-            print(environments)
-            sys.exit(1)
+def generate_templates(response_data):
+    """Iterate through procedure generating sceptre config files from procedure parameters"""
+
+    handler = TemplateHandler(project_path=os.path.join(sceptre_directory, str(options.procedure).lower()),
+                              environment_name=options.environment,
+                              data=response_data)
+
+    handler.generate_templates()
+
+    return handler
+
+
+def launch_environment():
+    """Launch Cloudformation environment via sceptre using newly generated files"""
+
+    # Initialize the root level project config.yaml
+    config_data = {'project_code': str(options.procedure).lower(),
+                   'region': options.region}
+
+    # Create sceptre environment object using api response and config.yaml values
+    env = environ(sceptre_dir=os.path.join(sceptre_directory, str(options.procedure).lower()),
+                  environment_path=options.environment, options=config_data)
+
+    # Check that the environment is a leaf env (reference sceptre docs) and launch the env. If a stack fails exit script
+    if env.is_leaf:
+        environments = env.launch()
+        for stack_name, status in environments.items():
+            if 'failed' in status:
+                print(environments)
+                sys.exit(1)
+            else:
+                return environments
+
+
+if __name__ == '__main__':
+    data = get_response_data()
+    templates = generate_templates(data)
+    launch_environment()

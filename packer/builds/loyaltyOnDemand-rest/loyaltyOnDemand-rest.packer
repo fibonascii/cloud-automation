@@ -16,7 +16,11 @@
     "packer_sg_cidr" : "",
     "packer_ssh_keypair": "",
     "packer_ssh_keypair_file":"",
-    "packer_iam_profile": ""
+    "packer_iam_profile": "",
+    "aws_access_key": "{{env `AWS_ACCESS_KEY_ID`}}",
+    "aws_secret_key": "{{env `AWS_SECRET_ACCESS_KEY`}}",
+    "aws_profile": "{{env `AWS_PROFILE`}}"
+
   },
   "builders": [
   {
@@ -58,6 +62,7 @@
   },
   {
       "type":  "ansible",
+      "user": "jenkins",
       "playbook_file": "../../../ansible/playbooks/loyaltyOnDemand-rest/loyaltyOnDemandRest-windows.yml",
       "extra_arguments": [
         "--connection", "packer", "-vvv",

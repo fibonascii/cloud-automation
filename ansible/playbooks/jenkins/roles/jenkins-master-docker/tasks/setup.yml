@@ -1,0 +1,71 @@
+ - name: Update Repository List
+   shell: apt-get update -y
+   become: true
+
+ - name: Install Python3
+   shell: apt-get install -y python3
+   become: true
+
+ - name: Install Python3 Pip
+   shell: apt-get install -y python3-pip
+   become: true
+
+ - name: Install Python3 Development Tools
+   shell: apt-get install -y libssl-dev libffi-dev python-dev
+   become: true
+
+ - name: Install Boto3
+   shell: pip3 install boto3
+   become: true
+
+ - name: Install AWS CLI
+   shell: pip3 install awscli
+   become: true
+
+ - name: Install Ansible
+   shell: pip3 install ansible
+   become: true
+
+ - name: Download Packer
+   get_url:
+     url: https://releases.hashicorp.com/packer/1.2.4/packer_1.2.4_linux_amd64.zip
+     dest: /opt/packer.zip
+     checksum: sha256:258d1baa23498932baede9b40f2eca4ac363b86b32487b36f48f5102630e9fbb
+     owner: jenkins
+     group: jenkins
+   become: true
+
+ - name: Unzip Packer
+   unarchive:
+     src: /opt/packer.zip
+     dest: /opt/
+     remote_src: yes
+   become: true
+
+ - name: Change Permissions of Packer
+   file:
+     path: /opt/packer
+     owner: jenkins
+     group: jenkins
+   become: true
+
+ - name: Create Symbolic Link
+   file:
+     src: /opt/packer
+     dest: /usr/local/bin/packer.io
+     owner: jenkins
+     group: jenkins
+     state: link
+   become: true
+
+ - name: Install JQ Json Parser
+   shell: apt-get install -y jq
+   become: true
+
+ - name: Install sceptre
+   shell: pip3 install sceptre
+   become: true
+
+ - name: Install Troposphere
+   shell: pip3 install troposphere
+   become: true

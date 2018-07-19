@@ -1,0 +1,30 @@
+{
+	"builders": [
+    {
+		"type": "docker",
+        "image": "844895670466.dkr.ecr.us-east-1.amazonaws.com/jenkins-images:base-master-latest",
+        "commit": true,
+        "exec_user": "jenkins",
+        "changes": [
+        "ENTRYPOINT /usr/local/bin/jenkins.sh",
+        "ENV JAVA_OPTS -Djenkins.install.runSetupWizard=false",
+        "ENV JENKINS_HOME /home/jenkins"
+        ]
+}],
+	"provisioners": [ 
+    {
+        "type": "ansible",
+        "user": "jenkins",
+        "playbook_file": "../../../ansible/playbooks/jenkins/jenkins-master-docker.yml",
+        "extra_arguments": [
+                   "--vault-password-file", "../../../ansible/playbooks/jenkins/roles/jenkins-master/.vault_pass"
+                ]
+    }],
+    "post-processors": [ 
+     {
+       "type": "docker-tag",
+       "repository": "844895670466.dkr.ecr.us-east-1.amazonaws.com/jenkins-images",
+       "tag": "provisioned-master-latest"
+       }
+     ]
+}

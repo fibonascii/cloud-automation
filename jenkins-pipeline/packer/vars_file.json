@@ -1,0 +1,13 @@
+{
+  "packer_iam_profile": "cicd-admin-role",
+  "build_region": "us-east-1",
+  "windows_cw_agent_config": "D1PDEV-windowsCloudWatchAgentConfig",
+  "cylance_token_ssm_key": "D1PDEV-cylanceToken",
+  "monitor_endpoint": "true",
+  "application_s3_bucket": "pd-dev-cicd-artifacts",
+  "application_release_upload_key": "pd-dev-cicd-artifacts/releases/lod-rest/",
+  "application_release_name": "v1.1.0-hotfix.2",
+  "application_release_type_sequence": "2",
+  "application_release_type": "hotfix",
+  "application_version": "1.1.0"
+}

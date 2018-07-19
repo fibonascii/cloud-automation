@@ -5,36 +5,23 @@ pipeline {
         stage('Setup') {
             steps {
                 echo 'Setup Environment'
-                sh 'echo ${Project}'
+                sh 'echo ${PROCEDURE}'
                 sh 'echo ${Environment}'
             }
         }
-        stage('Create Environment') {
+        stage('Generate Config Files') {
             steps {
                echo 'Create Environment'
-               sh 'python3 jenkins-pipeline/sceptre/create_environment.py -p cloudformation/${Project} -e ${Environment}'
+               sh 'python3 jenkins-pipeline/sceptre/create_environment.py -p ${PROCEDURE} -e ${Environment}'
             }
-            post {
-            failure {
-            mail to: 'rkirby@brierley.com',
-                 subject: "Failed Pipeline: ${currentBuild.fullDisplayName}",
-                 body: "Something is wrong with ${env.BUILD_URL}"
 
-             }
           }
-        }
         stage('Cleanup Environment') {
         steps {
            echo 'Cleanup Environment'
           }
         }
       }
-      post {
-            success {
-            mail to: 'rkirby@brierley.com',
-                 subject: "Successful Pipeline: ${currentBuild.fullDisplayName}",
-                 body: "Build Completed Successfully: ${env.BUILD_URL}"
-      }
 
     }
-}
+

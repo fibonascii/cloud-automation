@@ -1,0 +1,47 @@
+ - name: Copy Jenkins Sysconfig to Remote System
+   copy:
+     src: files/jenkins
+     dest: /etc/default/jenkins
+     owner: root
+     group: root
+   become: true
+
+ - name: Copy Jenkins Users Folder to Jenkins Home
+   copy:
+     src: files/users
+     dest: /home/jenkins/
+     owner: jenkins
+     group: jenkins
+   become: true
+
+ - name: Copy Credentials File to Jenkins Server
+   copy:
+     src: files/credentials.xml
+     dest: /home/jenkins/credentials.xml
+     owner: jenkins
+     group: jenkins
+   become: true
+
+ - name: Copy Plugins to Jenkins Server
+   copy:
+     src: files/plugins
+     dest: /home/jenkins
+     owner: jenkins
+     group: jenkins
+   become: true
+
+ - name: Copy Jenkins Jobs To Jenkins Server
+   copy:
+     src: files/jobs
+     dest: /home/jenkins
+     owner: jenkins
+     group: jenkins
+   become: true
+
+ - name: Copy Root Configuration to Jenkins Server
+   copy:
+     src: files/config.xml
+     dest: /home/jenkins
+     owner: jenkins
+     group: jenkins
+   become: true

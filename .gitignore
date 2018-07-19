@@ -16,4 +16,5 @@ build.pwi
 failed-boot-attempts.txt
 identity.key.enc
 .idea
+*DS_Store
 jenkins-dev-ohio

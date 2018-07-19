@@ -1,21 +1,13 @@
-{% for job in Jobs %}
-{% for template in job['JobTemplates'] %}
-{% if 'securitygroups.py' in template['TemplateName'] %}
-template_path: {{ template['TemplateName'] }}
+{% for template in procedures['procedure_template'] %}
+{% if 'Securitygroups' in template['template_code'] %}
+template_path: templates/{{ template['template_name'] }}
 {% endif %}
-{% endfor %}
 {% endfor %}
 parameters:
-{% for job in Jobs %}
-{% for template in job['JobTemplates'] %}
-{% if 'securitygroups.py' in template['TemplateName'] %}
-{% for file in template["ParameterFiles"] %}
-{% for param in file['Parameters'] %}
-{% for key, value in param.items() %}
-    {{ key  }}: {{ value }}
-{% endfor %}
-{% endfor %}
+{% for template in procedures['procedure_template'] %}
+{% if 'Securitygroups' in template['template_code'] %}
+{% for parameters in template['template_parameters'] %}
+    {{ parameters['parameter_name'] }}: {{ parameters['parameter_value'] }}
 {% endfor %}
 {% endif %}
-{% endfor %}
 {% endfor %}
