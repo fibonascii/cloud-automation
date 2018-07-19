@@ -12,7 +12,7 @@ pipeline {
         stage('Create Environment') {
             steps {
                echo 'Create Environment'
-               sh 'python jenkins-pipeline/sceptre/create_environment.py -p cloudformation/${Project} -e ${Environment}'
+               sh 'python3 jenkins-pipeline/sceptre/create_environment.py -p cloudformation/${Project} -e ${Environment}'
             }
             post {
             failure {
