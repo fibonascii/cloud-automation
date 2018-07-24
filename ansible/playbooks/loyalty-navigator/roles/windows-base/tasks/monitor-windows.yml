@@ -41,6 +41,10 @@
   set_fact:
     cylanceToken: "{{ lookup('aws_ssm', cylance_token_ssm_key, decrypt=True, region=build_region) }}"
 
+- name: Get Cylance Protect Zone from SSM
+  set_fact:
+    cylanceZone: "{{ lookup('aws_ssm', cylance_zone_ssm_key, decrypt=True, region=build_region) }}"
+
 - name: Install Cylance Protect
   win_shell: |
     $file = Get-Item "./CylancePROTECT_x64.msi"
@@ -49,7 +53,7 @@
     $MSIArguments = @(
         "/i"
         ('"{0}"' -f $file.fullname)
-        "/qn PIDKEY={{cylanceToken}} LAUNCHAPP=0"
+        '/qn PIDKEY={{cylanceToken}} VENUEZONE="{{cylanceZone}}" LAUNCHAPP=0'
         "/norestart"
         "/L*v"
         $logFile
