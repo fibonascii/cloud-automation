@@ -1,0 +1,49 @@
+<html>
+<head>
+
+    <title>{{ release_details['APPLICATION_DISPLAY_NAME'] }} - {{release_details['CLIENT_CODE']}} Release List</title>
+
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+          integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css"
+          integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
+            integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
+            crossorigin="anonymous"></script>
+</head>
+<body>
+<div class="container">
+    <div class="row">
+        <div class="col-md-2"></div>
+        <div class="col-md-8">
+            <div class="panel panel-primary">
+                <div class="panel-heading"><h3>{{release_details['APPLICATION_DISPLAY_NAME']}}</h3>
+
+                    <p><h4>Development Team: {{release_details['CLIENT_CODE']}}</h4></p>
+                    <p><button type="button" class="btn btn-success" onclick="location.href='{{release_html_page}}'">
+                                <h5><span class="glyphicon glyphicon glyphicon-home" aria-hidden="true"></span> {{release_details['CLIENT_CODE']}} Knowledge Base</h5>
+                            </button></p>
+                </div>
+                <div class="panel-body">
+                    <div class="list-group">
+                       {%  for release in release_list %}
+                       <a href="{{ release['ReleaseNotesLink'] }}" class="list-group-item list-group-item-action list-group-item-secondary">
+                           <h3><span class="label label-{{ release['ReleaseTypeCss']}}"> {{release['ReleaseVersion']}} </span></h3> - Released On: {{release['ReleaseDate']}}
+                       </a>
+                       {% endfor %}
+
+                   </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2"></div>
+    </div>
+</div>
+
+</body>
+</html>

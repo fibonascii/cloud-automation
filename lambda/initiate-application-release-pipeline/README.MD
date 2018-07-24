@@ -1,4 +1,4 @@
-# Lambda S3 Polling
+# Initiate Application Release Pipeline
 
 ### About
 
