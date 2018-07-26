@@ -12,7 +12,7 @@ pipeline {
         stage('Generate Config Files') {
             steps {
                echo 'Create Environment'
-               sh 'python3 jenkins-pipeline/sceptre/create_environment.py -p ${PROCEDURE} -e ${Environment}'
+               sh 'python3 jenkins-pipeline/sceptre/create_environment.py -p ${PROCEDURE}'
             }
 
           }
