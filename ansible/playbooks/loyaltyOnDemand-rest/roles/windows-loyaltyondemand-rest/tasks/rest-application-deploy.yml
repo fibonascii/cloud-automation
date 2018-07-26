@@ -35,8 +35,11 @@
     {New-Item -Path $localPath -ItemType directory -Force | out-null}
 
     $releasePackage = Get-S3Object -BucketName $cicdS3Bucket -Key $s3FilePath -Region $region
-    $localFileName = $artifact.Key -replace $keyPrefix, ''
+    $localFileName = $releasePackage.Key -replace $keyPrefix, ''
     $localFilePath = Join-Path $localPath $fileName
+    $localFileName
+    $localFilePath
+    $releasePackage.Key
     Copy-S3Object -BucketName $cicdS3Bucket -Key $releasePackage.Key -LocalFile $localFilePath -Region $region
   retries: 3
   delay: 10
