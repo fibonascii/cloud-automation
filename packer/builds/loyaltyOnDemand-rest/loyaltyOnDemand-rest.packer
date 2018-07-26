@@ -16,7 +16,7 @@
     "packer_sg_cidr" : "",
     "packer_ssh_keypair": "",
     "packer_ssh_keypair_file":"",
-    "packer_iam_profile": "",
+    "packer_iam_profile": ""
 
   },
   "builders": [
