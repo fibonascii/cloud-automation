@@ -1,11 +1,5 @@
 from base import BaseCloudFormation
 from troposphere import ec2, Ref, Parameter, Output, elasticloadbalancing, Tags, GetAtt
-from troposphere import Base64, Join
-from troposphere.autoscaling import AutoScalingGroup, Tag
-from troposphere.autoscaling import LaunchConfiguration
-from troposphere.policies import (
-    AutoScalingReplacingUpdate, AutoScalingRollingUpdate, UpdatePolicy
-)
 
 
 class Instances(BaseCloudFormation):
@@ -124,49 +118,6 @@ class Instances(BaseCloudFormation):
             Scheme="internet-facing",
             Instances=[Ref(self.master_instance)],
          ))
-
-        # self.slave_loadbalancer = self.template.add_resource(elasticloadbalancing.LoadBalancer(
-        #     "SlaveLoadBalancer",
-        #     ConnectionDrainingPolicy=elasticloadbalancing.ConnectionDrainingPolicy(
-        #         Enabled=True,
-        #         Timeout=120,
-        #         ),
-        #     Subnets=[Ref(self.PrivateSubnet1)],
-        #     Listeners=[
-        #         elasticloadbalancing.Listener(
-        #             LoadBalancerPort="22",
-        #             InstancePort="22",
-        #             Protocol="tcp",
-        #             InstanceProtocol="tcp",
-        #             ),
-        #         ],
-        #     CrossZone=True,
-        #     SecurityGroups=[Ref(self.LoadBalancerSecurityGroup)],
-        #     LoadBalancerName=Ref(self.SlaveLoadBalancerName),
-        #     Scheme="internal",
-        #  ))
-
-        # self.LaunchConfig = self.template.add_resource(LaunchConfiguration(
-        #     "LaunchConfiguration",
-        #     ImageId=Ref(self.SLAVEAMIID),
-        #     KeyName=Ref(self.KeyPair),
-        #     InstanceType="t2.medium",
-        #     LaunchConfigurationName="R1KIRB-JENKINS-SLAVELC",
-        #     SecurityGroups=[Ref(self.SlaveInstanceSecurityGroup)],
-        # ))
-        #
-        self.AutoscalingGroup = self.template.add_resource(AutoScalingGroup(
-            "AutoscalingGroup",
-            DesiredCapacity=1,
-            LaunchConfigurationName=Ref(self.LaunchConfig),
-            MinSize=1,
-            MaxSize=2,
-            VPCZoneIdentifier=[Ref(self.PrivateSubnet1)],
-            LoadBalancerNames=[Ref(self.slave_loadbalancer)],
-            AvailabilityZones=['us-east-1a'],
-            HealthCheckType="EC2",
-        ))
-
 
     def add_outputs(self):
         return
