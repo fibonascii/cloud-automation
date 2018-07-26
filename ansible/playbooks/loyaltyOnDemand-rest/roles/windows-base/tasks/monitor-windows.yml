@@ -41,6 +41,9 @@
   set_fact:
     cylanceToken: "{{ lookup('aws_ssm', cylance_token_ssm_key, decrypt=True, region=build_region) }}"
 
+- debug: var=cylance_zone_ssm_key
+- pause: minutes=1
+
 - name: Get Cylance Protect Zone from SSM
   set_fact:
     cylanceZone: "{{ lookup('aws_ssm', cylance_zone_ssm_key, decrypt=True, region=build_region) }}"
