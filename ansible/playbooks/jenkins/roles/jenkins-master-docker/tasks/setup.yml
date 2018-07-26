@@ -69,3 +69,7 @@
  - name: Install Troposphere
    shell: pip3 install troposphere
    become: true
+
+ - name: Install requests
+   shell: pip3 install requests
+   become: true
