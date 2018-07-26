@@ -58,6 +58,7 @@
   },
   {
       "type":  "ansible",
+      "user": "jenkins",
       "playbook_file": "../../../ansible/playbooks/loyalty-navigator/loyalty-navigator.yml",
       "extra_arguments": [
         "--connection", "packer", "-vvv",
