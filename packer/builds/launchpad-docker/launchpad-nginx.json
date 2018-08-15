@@ -1,0 +1,24 @@
+{
+	"builders": [
+    {
+		"type": "docker",
+        "image": "nginx:latest",
+        "commit": true,
+        "changes": [
+          "WORKDIR /etc/nginx"
+        ]
+}],
+  	"provisioners": [
+    {
+        "type": "ansible",
+        "user": "root",
+        "playbook_file": "../../../ansible/playbooks/launchpad/launchpad-nginx.yml"
+    }],
+    "post-processors": [
+     {
+       "type": "docker-tag",
+       "repository": "844895670466.dkr.ecr.us-east-1.amazonaws.com/launchpad-nginx",
+       "tag": "provisioned-latest"
+       }
+     ]
+}

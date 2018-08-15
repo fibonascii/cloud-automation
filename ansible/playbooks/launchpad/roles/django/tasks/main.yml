@@ -1,0 +1,3 @@
+---
+- name: Configure
+  include: configure.yaml

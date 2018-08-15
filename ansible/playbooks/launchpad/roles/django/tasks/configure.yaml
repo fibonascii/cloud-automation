@@ -1,0 +1,22 @@
+ - name: Copy SSH Keys to system
+   copy:
+     src: files/tesseracked-development
+     dest: /root/tesseracked-development
+
+ - name: Eval SSH Agent
+   shell: eval `ssh-agent -s`
+
+ - name: Change Permissions of private key
+   shell: chmod 400 /root/tesseracked-development
+
+ - name: Clone Codebase
+   git:
+    repo: git@github.com:brierley/tesserack-rest.git
+    dest: /src/
+    clone: yes
+    accept_hostkey: yes
+    version: task/LW-6253
+    key_file: /root/tesseracked-development
+
+ - name: Install Requirements
+   shell: pip3 install -r /src/requirements.txt

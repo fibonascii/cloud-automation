@@ -1,0 +1,4 @@
+ - name: Copy nginx conf to system
+   copy:
+     src: files/launchpad.conf
+     dest: /etc/nginx/conf.d

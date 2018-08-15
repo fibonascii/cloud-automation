@@ -6,4 +6,4 @@ RUN pip install -r /config/requirements.txt
 RUN mkdir /src;
 RUN mkdir /static
 WORKDIR /src
-CMD python manage.py collectstatic --no-input;python manage.py migrate; gunicorn tesserack_core.wsgi -b 0.0.0.0:8000
+CMD python manage.py collectstatic --no-input;python manage.py migrate; gunicorn tesserack_core.wsgi:application -b 0.0.0.0:8000

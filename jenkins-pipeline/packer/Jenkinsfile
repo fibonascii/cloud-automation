@@ -18,7 +18,7 @@ pipeline {
             steps {
                echo 'Build Packer Image'
 
-               sh '''cd packer/builds/"${IMAGE_TYPE}" && packer.io build -var-file=../../../vars_file.json ${IMAGE_TYPE}.packer'''
+               sh '''cd packer/builds/"${IMAGE_TYPE}" && packer.io build -var-file=../../../vars_file.json ${PROCEDURE}.packer'''
             }
             post {
             failure {

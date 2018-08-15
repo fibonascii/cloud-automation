@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jenkins-db
+spec:
+  selector:
+    matchLabels:
+      app: launchpad
+  replicas: 1 # tells deployment to run 2 pods matching the template
+  template:
+    metadata:
+      labels:
+        app: launchpad
+    spec:
+      containers:
+      - name: launchpad-db
+        image: 844895670466.dkr.ecr.us-east-1.amazonaws.com/launchpad-postgres:latest
+        ports:
+        - name: postgres-post
+          containerPort: 5432

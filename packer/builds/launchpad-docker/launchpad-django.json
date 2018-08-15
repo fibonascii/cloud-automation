@@ -1,0 +1,25 @@
+{
+	"builders": [
+    {
+		"type": "docker",
+        "image": "844895670466.dkr.ecr.us-east-1.amazonaws.com/launchpad-django:base-latest",
+        "commit": true,
+        "changes": [
+        "WORKDIR /src",
+        "ENTRYPOINT gunicorn tesserack_core.wsgi:application -b 0.0.0.0:8000"
+        ]
+}],
+	"provisioners": [
+    {
+        "type": "ansible",
+        "user": "root",
+        "playbook_file": "../../../ansible/playbooks/launchpad/launchpad-django.yml"
+    }],
+    "post-processors": [
+     {
+       "type": "docker-tag",
+       "repository": "844895670466.dkr.ecr.us-east-1.amazonaws.com/launchpad-django",
+       "tag": "provisioned-latest"
+       }
+     ]
+}
