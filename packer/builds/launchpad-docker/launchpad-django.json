@@ -13,8 +13,10 @@
     {
         "type": "ansible",
         "user": "root",
-        "playbook_file": "../../../ansible/playbooks/launchpad/launchpad-django.yml"
-    }],
+        "playbook_file": "../../../ansible/playbooks/launchpad/launchpad-django.yml",
+        "extra_arguments": [
+                   "--vault-password-file", "../../../ansible/playbooks/launchpad/roles/django/.vault_pass"
+    ]}],
     "post-processors": [
      {
        "type": "docker-tag",

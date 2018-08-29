@@ -1,13 +1,22 @@
- - name: Copy SSH Keys to system
+ - name: Create Credentials Directory
+   shell: mkdir -p /root/.aws
+
+ - name: Copy credentials to directory
    copy:
-     src: files/tesseracked-development
-     dest: /root/tesseracked-development
+     src: files/credentials
+     dest: /root/.aws/credentials
+
+ - name: Install AWSCLI
+   shell: pip3 install awscli
+
+ - name: Get SSH Key from SSM
+   shell: aws ssm get-parameter --name {{ cicd_ssh_ssm_key }} --with-decryption --output text --query 'Parameter.Value' --region us-east-1 >> /root/lpad.pem
 
  - name: Eval SSH Agent
    shell: eval `ssh-agent -s`
 
  - name: Change Permissions of private key
-   shell: chmod 400 /root/tesseracked-development
+   shell: chmod 400 /root/lpad.pem
 
  - name: Clone Codebase
    git:
@@ -16,7 +25,7 @@
     clone: yes
     accept_hostkey: yes
     version: task/LW-6253
-    key_file: /root/tesseracked-development
+    key_file: /root/lpad.pem
 
  - name: Install Requirements
    shell: pip3 install -r /src/requirements.txt

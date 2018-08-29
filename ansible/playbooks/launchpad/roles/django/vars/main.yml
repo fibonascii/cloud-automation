@@ -1,2 +1,2 @@
 ---
-# vars file for django
+cicd_ssh_ssm_key: D1LPAD-deployKey
