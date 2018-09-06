@@ -1,0 +1,25 @@
+pipeline {
+  agent any
+  stages {
+    stage('PerformanceTestExecution') {
+      steps {
+        sh 'python3 -u jenkins-pipeline/testing/jmeter/runTestJenkins.py'
+        perfReport "/var/jenkins_home/resultRemote.jtl"
+      }
+    }
+    stage('sendEmail'){
+        steps{
+                emailext body: "${currentBuild.currentResult}: Job ${env.JOB_NAME} build ${env.BUILD_NUMBER}. <br> The performance testing execution ran successfully please approve/reject the results. <br><br> Results of the performance test: <a href=\"${env.BUILD_URL}performance\">Go to the results</a> <br> After the review please approve/reject the build <a href=\"${env.BUILD_URL}input\"> here </a> ",
+                recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']], to: 'jalmanzasaldivar@gmail.com',
+                subject: "Jenkins Build ${currentBuild.currentResult}: Job ${env.JOB_NAME}"
+        }
+    }
+    stage('performanceValidation'){
+        steps{
+            input "The Performance test satisfied the benchmarks?"
+        }
+    }
+  }
+   
+      
+}

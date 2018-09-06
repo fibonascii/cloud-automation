@@ -16,9 +16,9 @@ pipeline {
             }
 
           }
-        stage('Cleanup Environment') {
+        stage('Run JMeters Tests') {
         steps {
-           echo 'Cleanup Environment'
+           sh 'python3 jenkins-pipeline/sceptre/runTestJenkins.py'
           }
         }
       }
