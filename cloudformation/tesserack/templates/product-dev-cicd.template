@@ -1,0 +1,1210 @@
+{
+	"AWSTemplateFormatVersion": "2010-09-09",
+	"Parameters": {
+		"NameTagValue": {
+			"Type": "String",
+			"Default": "PD-CICD-DEV",
+			"Description": "The Name Tag Value Suffix"
+		},
+		"ResourceOwner": {
+			"Type": "String",
+			"Default": "ProductDevelopment",
+			"Description": "The Cost Allocation Tag Value"
+		},
+		"Environment": {
+			"Type": "String",
+			"Default": "Development",
+			"Description": "The Cost Allocation Tag Value"
+		},
+		"AdminCidrBlock": {
+			"Type": "String",
+			"Default": "204.57.87.152/32",
+			"Description": "The VPC Cidr Block"
+		},
+		"OAuthImageId": {
+			"Type": "String",
+			"Default": "ami-0f6706e5b42c53493",
+			"Description": "The OAuth AMI ID"
+		},
+		"OAuthServerKeyName": {
+			"Type": "String",
+			"Default": "pdev-ci-environment",
+			"Description": "The OAuth Key Name"
+		},
+		"OAuthIAMInstanceProfile": {
+			"Type": "String",
+			"Default": "publish-cicd-s3-role",
+			"Description": "The OAuth IAM Instance Profile"
+		},
+		"OAuthInstanceType": {
+			"Type": "String",
+			"Default": "t2.small",
+			"Description": "The OAuth Instance Type"
+		},
+		"JenkinsImageId": {
+			"Type": "String",
+			"Default": "ami-0ee7ff0051ff74eed",
+			"Description": "The Jenkins AMI ID"
+		},
+		"JenkinsServerKeyName": {
+			"Type": "String",
+			"Default": "pdev-ci-environment",
+			"Description": "The Jenkins Key Name"
+		},
+		"JenkinsIAMInstanceProfile": {
+			"Type": "String",
+			"Default": "publish-cicd-s3-role",
+			"Description": "The Jenkins IAM Instance Profile"
+		},
+		"JenkinsInstanceType": {
+			"Type": "String",
+			"Default": "t2.medium",
+			"Description": "The Jenkins Instance Type"
+		},
+		"SonarQubeServerImageId": {
+			"Type": "String",
+			"Default": "ami-06e7bea914d65b3ff",
+			"Description": "The SonarQube AMI ID"
+		},
+		"SonarQubeKeyName": {
+			"Type": "String",
+			"Default": "pdev-ci-environment",
+			"Description": "The SonarQube Key Name"
+		},
+		"SonarQubeIAMInstanceProfile": {
+			"Type": "String",
+			"Default": "publish-cicd-s3-role",
+			"Description": "The SonarQube IAM Instance Profile"
+		},
+		"SonarQubeInstanceType": {
+			"Type": "String",
+			"Default": "t2.small",
+			"Description": "The SonarQube Instance Type"
+		},
+		"OAuthDBName": {
+			"Type": "String",
+			"Default": "CICDDB",
+			"Description": "The OAuth DB Name"
+		},
+		"OAuthDBUsername": {
+			"Type": "String",
+			"Default": "oauth_admin",
+			"Description": "The OAuth Db Admin Username"
+		},
+		"OAuthDBPassword": {
+			"Type": "String",
+			"Default": "reX7They!",
+			"Description": "The OAuth DB Admin Pw"
+		},
+		"OAuthDBClass": {
+			"Type": "String",
+			"Default": "db.t2.micro",
+			"Description": "The OAuth DB Class"
+		},
+		"OAuthDBAllocatedStorage": {
+			"Type": "String",
+			"Default": "5",
+			"Description": "The OAuth DB Allocated Storage"
+		},
+		"OAuthDBSnapshotArn": {
+			"Type": "String",
+			"Default": "arn:aws:rds:us-east-2:934100536364:snapshot:kong-postgres-backend-08312018",
+			"Description": "The OAuth DB Snapshot ARN"
+		},
+		"OAuthDBStorageType": {
+			"Type": "String",
+			"Default": "standard",
+			"Description": "The OAuth DB Storage Type"
+		},
+		"OAuthDBIOPS": {
+			"Type": "Number",
+			"Default": "0",
+			"Description": "The OAuth DB Storage Type"
+		},
+		"OAuthDBParameterGroup": {
+			"Type": "String",
+			"Default": "",
+			"Description": "The OAuth DB Parameter Group"
+		},
+		"RestDBName": {
+			"Type": "String",
+			"Default": "CICDDB",
+			"Description": "The Rest DB Name"
+		},
+		"RestDBUsername": {
+			"Type": "String",
+			"Default": "oauth_admin",
+			"Description": "The Rest Db Admin Username"
+		},
+		"RestDBPassword": {
+			"Type": "String",
+			"Default": "reX7They!",
+			"Description": "The Rest DB Admin Pw"
+		},
+		"RestDBClass": {
+			"Type": "String",
+			"Default": "db.t2.medium",
+			"Description": "The Rest DB Class"
+		},
+		"RestDBAllocatedStorage": {
+			"Type": "String",
+			"Default": "10",
+			"Description": "The Rest DB Allocated Storage"
+		},
+		"RestDBSnapshotArn": {
+			"Type": "String",
+			"Default": "arn:aws:rds:us-east-2:934100536364:snapshot:lod-oracle-oltp-08312018",
+			"Description": "The Rest DB Snapshot ARN"
+		},
+		"RestDBStorageType": {
+			"Type": "String",
+			"Default": "standard",
+			"Description": "The Rest DB Storage Type"
+		},
+		"RestDBIOPS": {
+			"Type": "Number",
+			"Default": "0",
+			"Description": "The Rest DB Storage Type"
+		},
+		"RestDBParameterGroup": {
+			"Type": "String",
+			"Default": "",
+			"Description": "The Rest DB Parameter Group"
+		},
+		"RestDBRequested": {
+			"Type": "String",
+			"Default": "true",
+			"Description": "The Rest DB Requested flag"
+		},
+		"OAuthDBRequested": {
+			"Type": "String",
+			"Default": "true",
+			"Description": "The OAuth DB Requested flag"
+		},
+		"OAuthRequested": {
+			"Type": "String",
+			"Default": "true",
+			"Description": "The OAuth Requested flag"
+		},
+		"JenkinsRequested": {
+			"Type": "String",
+			"Default": "true",
+			"Description": "The Jenkins Requested flag"
+		},
+		"SonarQubeRequested": {
+			"Type": "String",
+			"Default": "true",
+			"Description": "The SonarQube Server Requested flag"
+		}
+	},
+	"Conditions": {
+		"CreateOAuthDatabase": {
+			"Fn::Equals": [{
+				"Ref": "OAuthDBRequested"
+			}, "true"]
+		},
+		"CreateRestDatabase": {
+			"Fn::Equals": [{
+				"Ref": "RestDBRequested"
+			}, "true"]
+		},
+		"CreateOAuth": {
+			"Fn::Equals": [{
+				"Ref": "OAuthRequested"
+			}, "true"]
+		},
+		"CreateJenkinsMaster": {
+			"Fn::Equals": [{
+				"Ref": "JenkinsRequested"
+			}, "true"]
+		},
+		"CreateSonarQube": {
+			"Fn::Equals": [{
+				"Ref": "SonarQubeRequested"
+			}, "true"]
+		}
+	},
+	"Resources": {
+		"CICDVPC": {
+			"Type": "AWS::EC2::VPC",
+			"Properties": {
+				"CidrBlock": "10.0.1.0/24",
+				"EnableDnsSupport": "true",
+				"EnableDnsHostnames": "true",
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"VPC-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"CICDPubSubnet1": {
+			"Type": "AWS::EC2::Subnet",
+			"DependsOn": "CICDVPC",
+			"Properties": {
+				"CidrBlock": "10.0.1.0/26",
+				"MapPublicIpOnLaunch": "true",
+				"AvailabilityZone": {
+					"Fn::Select": ["0", {
+						"Fn::GetAZs": ""
+					}]
+				},
+				"VpcId": {
+					"Ref": "CICDVPC"
+				},
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"SBNET-PUB-1-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"CICDPubSubnet2": {
+			"Type": "AWS::EC2::Subnet",
+			"DependsOn": "CICDVPC",
+			"Properties": {
+				"CidrBlock": "10.0.1.64/26",
+				"MapPublicIpOnLaunch": "true",
+				"AvailabilityZone": {
+					"Fn::Select": ["1", {
+						"Fn::GetAZs": ""
+					}]
+				},
+				"VpcId": {
+					"Ref": "CICDVPC"
+				},
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"SBNET-PUB-2-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"CICDPrivSubnet1": {
+			"Type": "AWS::EC2::Subnet",
+			"DependsOn": "CICDVPC",
+			"Properties": {
+				"CidrBlock": "10.0.1.128/26",
+				"AvailabilityZone": {
+					"Fn::Select": ["0", {
+						"Fn::GetAZs": ""
+					}]
+				},
+				"VpcId": {
+					"Ref": "CICDVPC"
+				},
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"SBNET-PRIV-1-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"CICDPrivSubnet2": {
+			"Type": "AWS::EC2::Subnet",
+			"DependsOn": "CICDVPC",
+			"Properties": {
+				"CidrBlock": "10.0.1.192/26",
+				"AvailabilityZone": {
+					"Fn::Select": ["1", {
+						"Fn::GetAZs": ""
+					}]
+				},
+				"VpcId": {
+					"Ref": "CICDVPC"
+				},
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"SBNET-PRIV-2-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"CICDIGW": {
+			"Type": "AWS::EC2::InternetGateway",
+			"DependsOn": "CICDVPC",
+			"Properties": {}
+		},
+		"CICDInternetGatewayAttachment": {
+			"Type": "AWS::EC2::VPCGatewayAttachment",
+			"DependsOn": "CICDIGW",
+			"Properties": {
+				"VpcId": {
+					"Ref": "CICDVPC"
+				},
+				"InternetGatewayId": {
+					"Ref": "CICDIGW"
+				}
+			}
+		},
+		"CICDEIP1": {
+			"Type": "AWS::EC2::EIP",
+			"DependsOn": "CICDVPC",
+			"Properties": {
+				"Domain": "vpc"
+			}
+		},
+		"CICDNAT1": {
+			"Type": "AWS::EC2::NatGateway",
+			"DependsOn": "CICDPubSubnet1",
+			"Properties": {
+				"AllocationId": {
+					"Fn::GetAtt": ["CICDEIP1", "AllocationId"]
+				},
+				"SubnetId": {
+					"Ref": "CICDPubSubnet1"
+				},
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"NGW-1-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"CICDNatRoute": {
+			"Type": "AWS::EC2::Route",
+			"DependsOn": "CICDNAT1",
+			"Properties": {
+				"RouteTableId": {
+					"Ref": "CICDPrivRT1"
+				},
+				"DestinationCidrBlock": "0.0.0.0/0",
+				"NatGatewayId": {
+					"Ref": "CICDNAT1"
+				}
+			}
+		},
+		"CICDPrivRT1": {
+			"Type": "AWS::EC2::RouteTable",
+			"DependsOn": "CICDPrivSubnet1",
+			"Properties": {
+				"VpcId": {
+					"Ref": "CICDVPC"
+				},
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"RT-PRIV-1-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"CICDPrivRT1Association": {
+			"Type": "AWS::EC2::SubnetRouteTableAssociation",
+			"DependsOn": "CICDPrivRT1",
+			"Properties": {
+				"RouteTableId": {
+					"Ref": "CICDPrivRT1"
+				},
+				"SubnetId": {
+					"Ref": "CICDPrivSubnet1"
+				}
+			}
+		},
+		"CICDPrivRT2Association": {
+			"Type": "AWS::EC2::SubnetRouteTableAssociation",
+			"DependsOn": "CICDPrivRT1",
+			"Properties": {
+				"RouteTableId": {
+					"Ref": "CICDPrivRT1"
+				},
+				"SubnetId": {
+					"Ref": "CICDPrivSubnet2"
+				}
+			}
+		},
+		"CICDPubRT1IGWAttachment": {
+			"Type": "AWS::EC2::Route",
+			"DependsOn": "CICDPubRT1",
+			"Properties": {
+				"RouteTableId": {
+					"Ref": "CICDPubRT1"
+				},
+				"DestinationCidrBlock": "0.0.0.0/0",
+				"GatewayId": {
+					"Ref": "CICDIGW"
+				}
+			}
+		},
+		"CICDPubRT1": {
+			"Type": "AWS::EC2::RouteTable",
+			"DependsOn": "CICDPubSubnet1",
+			"Properties": {
+				"VpcId": {
+					"Ref": "CICDVPC"
+				},
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"RT-PUB-1-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"CICDPubRT1Association": {
+			"Type": "AWS::EC2::SubnetRouteTableAssociation",
+			"DependsOn": "CICDPubRT1",
+			"Properties": {
+				"RouteTableId": {
+					"Ref": "CICDPubRT1"
+				},
+				"SubnetId": {
+					"Ref": "CICDPubSubnet1"
+				}
+			}
+		},
+		"CICDPubRT2Association": {
+			"Type": "AWS::EC2::SubnetRouteTableAssociation",
+			"DependsOn": "CICDPubRT1",
+			"Properties": {
+				"RouteTableId": {
+					"Ref": "CICDPubRT1"
+				},
+				"SubnetId": {
+					"Ref": "CICDPubSubnet2"
+				}
+			}
+		},
+		"OAuthSG": {
+			"Type": "AWS::EC2::SecurityGroup",
+			"Condition": "CreateOAuth",
+			"DependsOn": "CICDPubRT2Association",
+			"Properties": {
+				"GroupDescription": "Allow access to OAuth instance",
+				"VpcId": {
+					"Ref": "CICDVPC"
+				},
+				"SecurityGroupIngress": [{
+						"IpProtocol": "tcp",
+						"FromPort": "22",
+						"ToPort": "22",
+						"CidrIp": {
+							"Ref": "AdminCidrBlock"
+						}
+					},
+					{
+						"IpProtocol": "tcp",
+						"FromPort": "8000",
+						"ToPort": "8444",
+						"CidrIp": {
+							"Ref": "AdminCidrBlock"
+						}
+					}
+				],
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"OAUTH-EC2-SG-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"OAuthEc2Instance": {
+			"Type": "AWS::EC2::Instance",
+			"DependsOn": "OAuthSG",
+			"Properties": {
+				"ImageId": {
+					"Ref": "OAuthImageId"
+				},
+				"IamInstanceProfile": {
+					"Ref": "OAuthIAMInstanceProfile"
+				},
+				"InstanceType": {
+					"Ref": "OAuthInstanceType"
+				},
+				"KeyName": {
+					"Ref": "OAuthServerKeyName"
+				},
+				"SecurityGroupIds": [{
+					"Ref": "OAuthSG"
+				}],
+				"SubnetId": {
+					"Ref": "CICDPubSubnet1"
+				},
+				"BlockDeviceMappings": [{
+					"DeviceName": "/dev/sda1",
+					"Ebs": {
+						"DeleteOnTermination": true
+					}
+				}],
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"OAUTH-EC2-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"JenkinsSG": {
+			"Type": "AWS::EC2::SecurityGroup",
+			"Condition": "CreateJenkinsMaster",
+			"DependsOn": "CICDPubRT2Association",
+			"Properties": {
+				"GroupDescription": "Allow access to Jenkins instance",
+				"VpcId": {
+					"Ref": "CICDVPC"
+				},
+				"SecurityGroupIngress": [{
+						"IpProtocol": "tcp",
+						"FromPort": "80",
+						"ToPort": "80",
+						"CidrIp": {
+							"Ref": "AdminCidrBlock"
+						}
+					},
+					{
+						"IpProtocol": "tcp",
+						"FromPort": "8080",
+						"ToPort": "8080",
+						"CidrIp": {
+							"Ref": "AdminCidrBlock"
+						}
+					},
+					{
+						"IpProtocol": "tcp",
+						"FromPort": "9000",
+						"ToPort": "9000",
+						"CidrIp": {
+							"Ref": "AdminCidrBlock"
+						}
+					},
+					{
+						"IpProtocol": "tcp",
+						"FromPort": "5000",
+						"ToPort": "5001",
+						"CidrIp": {
+							"Ref": "AdminCidrBlock"
+						}
+					},
+					{
+						"IpProtocol": "tcp",
+						"FromPort": "20",
+						"ToPort": "21",
+						"CidrIp": {
+							"Ref": "AdminCidrBlock"
+						}
+					}
+				],
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"JENKINS-EC2-SG-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"JenkinsEc2Instance": {
+			"Type": "AWS::EC2::Instance",
+			"DependsOn": "JenkinsSG",
+			"Properties": {
+				"ImageId": {
+					"Ref": "JenkinsImageId"
+				},
+				"IamInstanceProfile": {
+					"Ref": "JenkinsIAMInstanceProfile"
+				},
+				"InstanceType": {
+					"Ref": "JenkinsInstanceType"
+				},
+				"KeyName": {
+					"Ref": "JenkinsServerKeyName"
+				},
+				"SecurityGroupIds": [{
+					"Ref": "JenkinsSG"
+				}],
+				"SubnetId": {
+					"Ref": "CICDPubSubnet1"
+				},
+				"BlockDeviceMappings": [{
+					"DeviceName": "/dev/sda1",
+					"Ebs": {
+						"DeleteOnTermination": true
+					}
+				}],
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"JENKINS-EC2-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"SonarQubeSG": {
+			"Type": "AWS::EC2::SecurityGroup",
+			"Condition": "CreateSonarQube",
+			"DependsOn": "JenkinsEc2Instance",
+			"Properties": {
+				"GroupDescription": "Allow access to SonarQube instance",
+				"VpcId": {
+					"Ref": "CICDVPC"
+				},
+				"SecurityGroupIngress": [{
+						"IpProtocol": "tcp",
+						"FromPort": "3389",
+						"ToPort": "3389",
+						"CidrIp": {
+							"Ref": "AdminCidrBlock"
+						}
+					},
+					{
+						"IpProtocol": "tcp",
+						"FromPort": "9000",
+						"ToPort": "9000",
+						"CidrIp": {
+							"Ref": "AdminCidrBlock"
+						}
+					}
+				],
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"SONARQUBE-EC2-SG-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"SonarQubeEc2Instance": {
+			"Type": "AWS::EC2::Instance",
+			"DependsOn": "SonarQubeSG",
+			"Properties": {
+				"ImageId": {
+					"Ref": "SonarQubeServerImageId"
+				},
+				"IamInstanceProfile": {
+					"Ref": "SonarQubeIAMInstanceProfile"
+				},
+				"InstanceType": {
+					"Ref": "SonarQubeInstanceType"
+				},
+				"KeyName": {
+					"Ref": "SonarQubeKeyName"
+				},
+				"SecurityGroupIds": [{
+					"Ref": "SonarQubeSG"
+				}],
+				"SubnetId": {
+					"Ref": "CICDPubSubnet1"
+				},
+				"BlockDeviceMappings": [{
+					"DeviceName": "/dev/sda1",
+					"Ebs": {
+						"DeleteOnTermination": true
+					}
+				}],
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"SONARQUBE-EC2-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"OAuthDBSecurityGroup": {
+			"Type": "AWS::EC2::SecurityGroup",
+			"Condition": "CreateOAuthDatabase",
+			"DependsOn": "SonarQubeEc2Instance",
+			"DeletionPolicy": "Delete",
+			"Properties": {
+				"VpcId": {
+					"Ref": "CICDVPC"
+				},
+				"GroupDescription": "Allow Access to OAuth DB"
+			}
+		},
+		"OAuthToOAuthDBCommunicationIngressMain": {
+			"Type": "AWS::EC2::SecurityGroupIngress",
+			"Condition": "CreateOAuthDatabase",
+			"DependsOn": ["OAuthSG", "OAuthDBSecurityGroup"],
+			"Properties": {
+				"GroupId": {
+					"Ref": "OAuthDBSecurityGroup"
+				},
+				"IpProtocol": "tcp",
+				"ToPort": "5432",
+				"FromPort": "5432",
+				"SourceSecurityGroupId": {
+					"Ref": "OAuthSG"
+				}
+			}
+		},
+		"OAuthToOAuthDBCommunicationIngressSecondary": {
+			"Type": "AWS::EC2::SecurityGroupIngress",
+			"Condition": "CreateOAuthDatabase",
+			"DependsOn": ["OAuthSG", "OAuthDBSecurityGroup"],
+			"Properties": {
+				"GroupId": {
+					"Ref": "OAuthDBSecurityGroup"
+				},
+				"IpProtocol": "tcp",
+				"ToPort": "1521",
+				"FromPort": "1521",
+				"SourceSecurityGroupId": {
+					"Ref": "OAuthSG"
+				}
+			}
+		},
+		"OAuthDBSubnetGroup": {
+			"Type": "AWS::RDS::DBSubnetGroup",
+			"Condition": "CreateOAuthDatabase",
+			"DependsOn": "OAuthDBSecurityGroup",
+			"Properties": {
+				"DBSubnetGroupDescription": "OAuth RDS DB Subnet Group",
+				"SubnetIds": [{
+						"Ref": "CICDPrivSubnet1"
+					},
+					{
+						"Ref": "CICDPrivSubnet2"
+					}
+				]
+			}
+		},
+		"OAuthDBInstance": {
+			"Type": "AWS::RDS::DBInstance",
+			"DependsOn": "OAuthDBSubnetGroup",
+			"Condition": "CreateOAuthDatabase",
+			"DeletionPolicy": "Delete",
+			"Properties": {
+				"Engine": "postgres",
+				"DBInstanceClass": {
+					"Ref": "OAuthDBClass"
+				},
+				"EngineVersion": "9.4",
+				"LicenseModel": "postgresql-license",
+				"BackupRetentionPeriod": "7",
+				"DBSubnetGroupName": {
+					"Ref": "OAuthDBSubnetGroup"
+				},
+				"VPCSecurityGroups": [{
+					"Ref": "OAuthDBSecurityGroup"
+				}],
+				"AllocatedStorage": {
+					"Ref": "OAuthDBAllocatedStorage"
+				},
+				"StorageType": {
+					"Ref": "OAuthDBStorageType"
+				},
+				"Iops": {
+					"Ref": "OAuthDBIOPS"
+				},
+				"DBSnapshotIdentifier": {
+					"Ref": "OAuthDBSnapshotArn"
+				},
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"OAUTH-RDS-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"RestDBSecurityGroup": {
+			"Type": "AWS::EC2::SecurityGroup",
+			"Condition": "CreateRestDatabase",
+			"DependsOn": "SonarQubeEc2Instance",
+			"DeletionPolicy": "Delete",
+			"Properties": {
+				"VpcId": {
+					"Ref": "CICDVPC"
+				},
+				"GroupDescription": "Allow Access to Rest DB"
+			}
+		},
+		"JenkinsToRestDBCommunicationIngressMain": {
+			"Type": "AWS::EC2::SecurityGroupIngress",
+			"Condition": "CreateRestDatabase",
+			"DependsOn": ["JenkinsSG", "RestDBSecurityGroup"],
+			"Properties": {
+				"GroupId": {
+					"Ref": "RestDBSecurityGroup"
+				},
+				"IpProtocol": "tcp",
+				"ToPort": "1521",
+				"FromPort": "1521",
+				"SourceSecurityGroupId": {
+					"Ref": "JenkinsSG"
+				}
+			}
+		},
+		"RestDBSubnetGroup": {
+			"Type": "AWS::RDS::DBSubnetGroup",
+			"Condition": "CreateRestDatabase",
+			"DependsOn": "RestDBSecurityGroup",
+			"Properties": {
+				"DBSubnetGroupDescription": "Rest RDS DB Subnet Group",
+				"SubnetIds": [{
+						"Ref": "CICDPrivSubnet1"
+					},
+					{
+						"Ref": "CICDPrivSubnet2"
+					}
+				]
+			}
+		},
+		"RestDBInstance": {
+			"Type": "AWS::RDS::DBInstance",
+			"DependsOn": "RestDBSubnetGroup",
+			"Condition": "CreateRestDatabase",
+			"DeletionPolicy": "Delete",
+			"Properties": {
+				"Engine": "oracle-se2",
+				"DBInstanceClass": {
+					"Ref": "RestDBClass"
+				},
+				"EngineVersion": "12.1.0.2.v8",
+				"LicenseModel": "license-included",
+				"BackupRetentionPeriod": "7",
+				"DBSubnetGroupName": {
+					"Ref": "RestDBSubnetGroup"
+				},
+				"VPCSecurityGroups": [{
+					"Ref": "RestDBSecurityGroup"
+				}],
+				"AllocatedStorage": {
+					"Ref": "RestDBAllocatedStorage"
+				},
+				"StorageType": {
+					"Ref": "RestDBStorageType"
+				},
+				"Iops": {
+					"Ref": "RestDBIOPS"
+				},
+				"DBSnapshotIdentifier": {
+					"Ref": "RestDBSnapshotArn"
+				},
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"REST-RDS-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		}
+	},
+	"Outputs": {}
+}
