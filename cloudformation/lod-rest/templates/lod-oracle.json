@@ -97,7 +97,7 @@
 		},
 		"CassandraServerInstanceType": {
 			"Type": "String",
-			"Default": "m4.large",
+			"Default": "t2.medium",
 			"Description": "The Cassandra DB Instance Type",
 			"AllowedValues": [
 				"t2.small",
@@ -138,7 +138,7 @@
 		"KongInstanceType": {
 			"Description": "Kong EC2 instance type. Note: T2 instance is not supported on the EC2-Classic platform",
 			"Type": "String",
-			"Default": "c3.large",
+			"Default": "t2.medium",
 			"AllowedValues": [
 				"t2.small",
 				"t2.micro",
@@ -207,6 +207,11 @@
 			"Default": "ami-1d43c062",
 			"Description": "The Windows Server AMI ID"
 		},
+		"LoyaltyNavigatorImageId": {
+			"Type": "String",
+			"Default": "ami-e0538f9f",
+			"Description": "The Loyalty Navigator AMI ID"
+		},
 		"WindowsServerKeyName": {
 			"Type": "String",
 			"Default": "pd-cicd-devolopment",
@@ -220,6 +225,11 @@
 		"WindowsServerInstanceType": {
 			"Type": "String",
 			"Default": "m4.xlarge",
+			"Description": "The Windows Server Instance Type"
+		},
+		"LoyaltyNavigatorInstanceType": {
+			"Type": "String",
+			"Default": "t2.medium",
 			"Description": "The Windows Server Instance Type"
 		},
 		"OracleRestDBName": {
@@ -261,8 +271,34 @@
 			"Type": "Number",
 			"Default": "1000",
 			"Description": "The Oracle DB Storage Type"
+		},
+		"OracleDBParameterGroup": {
+			"Type": "String",
+			"Default": "bp-m4large-oracle-se2-12-1",
+			"Description": "The Oracle DB Parameter Group"
+		},
+		"OracleDBRequested": {
+			"Type": "String",
+			"Default": "true",
+			"Description": "The Oracle DB Requested flag"
+		},
+		"PostgresDBRequested": {
+			"Type": "String",
+			"Default": "false",
+			"Description": "The Postgres DB Requested flag"
 		}
-
+	},
+	"Conditions": {
+		"CreateOracleResources": {
+			"Fn::Equals": [{
+				"Ref": "OracleDBRequested"
+			}, "true"]
+		},
+		"CreatePostgresResources": {
+			"Fn::Equals": [{
+				"Ref": "PostgresDBRequested"
+			}, "true"]
+		}
 	},
 	"Mappings": {
 		"RegionKongAmiMap": {
@@ -1249,7 +1285,16 @@
 				"Matcher": {
 					"HttpCode": "200,404"
 				},
-				"Name": "KongPubSecProxyTG",
+				"Name": {
+					"Fn::Join": [
+						"", [
+							"KongPubSecProxyTG-",
+							{
+								"Ref": "NameTagValue"
+							}
+						]
+					]
+				},
 				"Port": 8443,
 				"Protocol": "HTTPS",
 				"UnhealthyThresholdCount": 3,
@@ -1295,7 +1340,16 @@
 				"Matcher": {
 					"HttpCode": "200"
 				},
-				"Name": "KongPubSecAdminTG",
+				"Name": {
+					"Fn::Join": [
+						"", [
+							"KongPubSecAdminTG-",
+							{
+								"Ref": "NameTagValue"
+							}
+						]
+					]
+				},
 				"Port": 8444,
 				"Protocol": "HTTPS",
 				"UnhealthyThresholdCount": 3,
@@ -1341,7 +1395,16 @@
 				"Matcher": {
 					"HttpCode": "200,404"
 				},
-				"Name": "KongPrivSecProxyTG",
+				"Name": {
+					"Fn::Join": [
+						"", [
+							"KongPrivSecProxyTG-",
+							{
+								"Ref": "NameTagValue"
+							}
+						]
+					]
+				},
 				"Port": 8443,
 				"Protocol": "HTTPS",
 				"UnhealthyThresholdCount": 3,
@@ -1387,7 +1450,16 @@
 				"Matcher": {
 					"HttpCode": "200"
 				},
-				"Name": "KongPrivSecAdminTG",
+				"Name": {
+					"Fn::Join": [
+						"", [
+							"KongPrivSecAdminTG-",
+							{
+								"Ref": "NameTagValue"
+							}
+						]
+					]
+				},
 				"Port": 8444,
 				"Protocol": "HTTPS",
 				"UnhealthyThresholdCount": 3,
@@ -1433,7 +1505,16 @@
 				"Matcher": {
 					"HttpCode": "200"
 				},
-				"Name": "KongPubNonSecAdminTG",
+				"Name": {
+					"Fn::Join": [
+						"", [
+							"KongPubNonSecAdminTG-",
+							{
+								"Ref": "NameTagValue"
+							}
+						]
+					]
+				},
 				"Port": 8001,
 				"Protocol": "HTTP",
 				"UnhealthyThresholdCount": 3,
@@ -2556,25 +2637,304 @@
 				"HeartbeatTimeout": 3600
 			}
 		},
+		"LoyaltyNavigatorPublicLoadBalancerSecurityGroup": {
+			"Type": "AWS::EC2::SecurityGroup",
+			"DependsOn": "RESTPubRT1",
+			"Properties": {
+				"GroupDescription": "Allow access to Windows LoyaltyNavigator Server Load Balancer",
+				"VpcId": {
+					"Ref": "RESTVPC"
+				},
+				"SecurityGroupIngress": [{
+						"IpProtocol": "tcp",
+						"FromPort": "3389",
+						"ToPort": "3389",
+						"CidrIp": {
+							"Ref": "AdminCidrBlock"
+						}
+					},
+					{
+						"IpProtocol": "tcp",
+						"FromPort": "80",
+						"ToPort": "80",
+						"CidrIp": {
+							"Ref": "AdminCidrBlock"
+						}
+					}
+				],
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"WIN-LN-PUB-LB-SG-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"LoyaltyNavigatorEC2SecurityGroup": {
+			"Type": "AWS::EC2::SecurityGroup",
+			"DependsOn": "LoyaltyNavigatorPublicLoadBalancerSecurityGroup",
+			"Properties": {
+				"GroupDescription": "Allow access to Windows LoyaltyNavigator Server instance",
+				"VpcId": {
+					"Ref": "RESTVPC"
+				},
+				"SecurityGroupIngress": [{
+						"IpProtocol": "tcp",
+						"FromPort": "3389",
+						"ToPort": "3389",
+						"SourceSecurityGroupId": {
+							"Ref": "LoyaltyNavigatorPublicLoadBalancerSecurityGroup"
+						}
+					},
+					{
+						"IpProtocol": "tcp",
+						"FromPort": "80",
+						"ToPort": "80",
+						"SourceSecurityGroupId": {
+							"Ref": "LoyaltyNavigatorPublicLoadBalancerSecurityGroup"
+						}
+					}
+				],
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"WIN-LN-EC2-SG-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"LoyaltyNavigatorPublicLoadBalancer": {
+			"Type": "AWS::ElasticLoadBalancing::LoadBalancer",
+			"DependsOn": "LoyaltyNavigatorPublicLoadBalancerSecurityGroup",
+			"Properties": {
+				"LoadBalancerName": {
+					"Fn::Join": [
+						"", [
+							"LN-PUB-LB-",
+							{
+								"Ref": "NameTagValue"
+							}
+						]
+					]
+				},
+				"Scheme": "internet-facing",
+				"Listeners": [{
+						"LoadBalancerPort": "3389",
+						"InstancePort": "3389",
+						"Protocol": "TCP",
+						"InstanceProtocol": "TCP"
+					},
+					{
+						"LoadBalancerPort": "80",
+						"InstancePort": "81",
+						"Protocol": "HTTP",
+						"InstanceProtocol": "HTTP"
+					}
+				],
+				"Instances": [],
+				"ConnectionSettings": {
+					"IdleTimeout": "300"
+				},
+				"SecurityGroups": [{
+					"Ref": "LoyaltyNavigatorPublicLoadBalancerSecurityGroup"
+				}],
+				"Subnets": [{
+					"Ref": "RESTPubSubnet1"
+				}],
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"LN-PUB-LB-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"LoyaltyNavigatorLaunchConfiguration": {
+			"Type": "AWS::AutoScaling::LaunchConfiguration",
+			"DependsOn": "LoyaltyNavigatorPublicLoadBalancer",
+			"Properties": {
+				"ImageId": {
+					"Ref": "LoyaltyNavigatorImageId"
+				},
+				"IamInstanceProfile": {
+					"Ref": "WindowsServerIAMInstanceProfile"
+				},
+				"InstanceType": {
+					"Ref": "LoyaltyNavigatorInstanceType"
+				},
+				"KeyName": {
+					"Ref": "WindowsServerKeyName"
+				},
+				"SecurityGroups": [{
+					"Ref": "LoyaltyNavigatorEC2SecurityGroup"
+				}]
+			}
+		},
+		"LoyaltyNavigatorAutoScalingGroup": {
+			"Type": "AWS::AutoScaling::AutoScalingGroup",
+			"DependsOn": "LoyaltyNavigatorLaunchConfiguration",
+			"Properties": {
+				"AutoScalingGroupName": {
+					"Fn::Join": [
+						"", [
+							"LN-ASG-",
+							{
+								"Ref": "NameTagValue"
+							}
+						]
+					]
+				},
+				"AvailabilityZones": [{
+					"Fn::Select": ["2", {
+						"Fn::GetAZs": ""
+					}]
+				}],
+				"LaunchConfigurationName": {
+					"Ref": "LoyaltyNavigatorLaunchConfiguration"
+				},
+				"LoadBalancerNames": [{
+					"Ref": "LoyaltyNavigatorPublicLoadBalancer"
+				}],
+				"MaxSize": "1",
+				"MinSize": "1",
+				"DesiredCapacity": "1",
+				"Cooldown": "30",
+				"HealthCheckGracePeriod": 300,
+				"HealthCheckType": "EC2",
+				"VPCZoneIdentifier": [{
+					"Ref": "RESTPrivSubnet1"
+				}],
+				"Tags": [{
+						"Key": "Name",
+						"PropagateAtLaunch": "true",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"LN-EC2-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"PropagateAtLaunch": "true",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"PropagateAtLaunch": "true",
+						"Value": {
+							"Ref": "Environment"
+						}
+					},
+					{
+						"Key": "ClientCode",
+						"PropagateAtLaunch": "true",
+						"Value": {
+							"Ref": "ClientCode"
+						}
+					}
+				]
+			}
+		},
 		"OracleRestDBSecurityGroup": {
-			"Type": "AWS::RDS::DBSecurityGroup",
+			"Type": "AWS::EC2::SecurityGroup",
+			"Condition": "CreatePostgresResources",
 			"DependsOn": "ApiAutoScalingGroup",
 			"DeletionPolicy": "Delete",
 			"Properties": {
-				"EC2VpcId": {
+				"VpcId": {
 					"Ref": "RESTVPC"
 				},
-				"DBSecurityGroupIngress": {
-					"EC2SecurityGroupId": {
-						"Ref": "ApiServerEC2SecurityGroup"
+				"SecurityGroupIngress": [{
+						"IpProtocol": "tcp",
+						"FromPort": "1521",
+						"ToPort": "1521",
+						"SourceSecurityGroupId": {
+							"Ref": "ApiServerEC2SecurityGroup"
+						}
+					},
+					{
+						"IpProtocol": "tcp",
+						"FromPort": "1521",
+						"ToPort": "1521",
+						"SourceSecurityGroupId": {
+							"Ref": "LoyaltyNavigatorEC2SecurityGroup"
+						}
 					}
-				},
+				],
 				"GroupDescription": "Allow Access to DB"
 			}
 		},
 		"OracleRestDBSubnetGroup": {
 			"Type": "AWS::RDS::DBSubnetGroup",
 			"DependsOn": "OracleRestDBSecurityGroup",
+			"Condition": "CreateOracleResources",
 			"Properties": {
 				"DBSubnetGroupDescription": "RDS DB Subnet Group",
 				"SubnetIds": [{
@@ -2589,6 +2949,7 @@
 		"OracleRestDBInstance": {
 			"Type": "AWS::RDS::DBInstance",
 			"DependsOn": "KongScalingGroup",
+			"Condition": "CreateOracleResources",
 			"DeletionPolicy": "Delete",
 			"Properties": {
 				"DBName": {
@@ -2607,7 +2968,7 @@
 				"DBSubnetGroupName": {
 					"Ref": "OracleRestDBSubnetGroup"
 				},
-				"DBSecurityGroups": [{
+				"VPCSecurityGroups": [{
 					"Ref": "OracleRestDBSecurityGroup"
 				}],
 				"AllocatedStorage": {
@@ -2624,6 +2985,9 @@
 				},
 				"DBSnapshotIdentifier": {
 					"Ref": "OracleDBSnapshotArn"
+				},
+				"DBParameterGroupName": {
+					"Ref": "OracleDBParameterGroup"
 				},
 				"Tags": [{
 						"Key": "Name",

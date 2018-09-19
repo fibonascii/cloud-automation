@@ -23,7 +23,7 @@ sceptre_directory = os.path.join(os.environ['JENKINS_HOME'], 'workspace/CreateEn
 def get_response_data():
     """Call API for procedure using Jenkins Parameter
        Return procedure back as JSON"""
-    response = requests.get('http://ad61f8e6da64711e8aec9126f91d1c13-1106296355.us-east-1.elb.amazonaws.com:8080/api/procedures/{}'.format(options.procedure))
+    response = requests.get('http://172.18.0.4:8000/api/procedures/{}'.format(options.procedure))
     if response.status_code == 200:
         return response.json()
 

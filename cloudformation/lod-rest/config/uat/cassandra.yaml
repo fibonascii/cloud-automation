@@ -1,0 +1,11 @@
+template_path: templates/cassandra.py
+parameters:
+    VpcId: !stack_output vpc::VpcId
+    RESTPubSubnet1: !stack_output vpc::RESTPubSubnet1
+    RESTPrivSubnet1: !stack_output vpc::RESTPrivSubnet1
+    AdminCidrBlock: !stack_output vpc::AdminCidrBlock
+    CassandraImageId: ami-fd3ce980
+    CassandraServerKeyName: pd-cicd-devolopment
+    CassandraServerInstanceType: t2.medium
+    CassandraServerIAMInstanceProfile: cicd-admin-role
+    CassandraServerSeedList: 10.0.1.132

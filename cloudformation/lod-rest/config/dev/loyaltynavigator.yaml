@@ -1,0 +1,19 @@
+template_path: templates/loyalty_navigator.py
+parameters:
+    VpcId: !stack_output vpc::VpcId
+    AdminCidrBlock: !stack_output vpc::AdminCidrBlock
+    RESTPrivSubnet1: !stack_output vpc::RESTPrivSubnet1
+    RESTPrivSubnet2: !stack_output vpc::RESTPrivSubnet2
+    RESTPubSubnet1: !stack_output vpc::RESTPubSubnet1
+    RESTPubSubnet2: !stack_output vpc::RESTPubSubnet2
+    LoyaltyNavigatorImageId: ami-47d6bd38
+    LoyaltyNavigatorKeyName: pd-cicd-devolopment
+    LoyaltyNavigatorInstanceType: t2.medium
+    LoyaltyNavigatorIAMInstanceProfile: cicd-admin-role
+    LoyaltyNavigatorASGGroupMinSize: "1"
+    LoyaltyNavigatorASGGroupDesiredSize: "1"
+    LoyaltyNavigatorASGGroupMaxSize: "1"
+    LoyaltyNavigatorASGHealthCheckType: ELB
+    LoyaltyNavigatorASGHealthCheckGracePeriod: "300"
+    LoyaltyNavigatorASGCoolDown: "120"
+

@@ -1,0 +1,18 @@
+template_path: templates/database.py
+parameters:
+    VpcId: !stack_output vpc::VpcId
+    ApiServerEC2SecurityGroup: !stack_output restapi::ApiServerEC2SecurityGroup
+    LoyaltyNavigatorEC2SecurityGroup: !stack_output loyaltynavigator::LoyaltyNavigatorEC2SecurityGroup 
+    RESTPrivSubnet1: !stack_output vpc::RESTPrivSubnet1
+    RESTPrivSubnet2: !stack_output vpc::RESTPrivSubnet2
+    OracleRestDBUsername: brier_admin
+    OracleRestDBName: PDRSTDB
+    OracleRestDBClass: db.m4.large
+    OracleRestDBAllocatedStorage: "100"
+    OracleRestDBStorageType: io1
+    OracleRestDBIOPS: "1000"
+    OracleRestDBPassword: reX7They!
+    OracleDBSnapshotArn: arn:aws:rds:us-east-1:844895670466:snapshot:loyaltyresttcprulesconfigured-041120181528
+    OracleDBParameterGroup: bp-m4large-oracle-se2-12-1
+
+   

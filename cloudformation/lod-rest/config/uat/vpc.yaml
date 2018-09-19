@@ -1,0 +1,9 @@
+template_path: templates/vpc.py
+parameters:
+    AdminCidrBlock: "204.57.87.152/32"
+    VpcCidr: "10.0.1.0/24"
+    RESTPubSub1Cidr: "10.0.1.0/26"
+    RESTPubSub2Cidr: "10.0.1.64/26"
+    RESTPrivSub1Cidr: "10.0.1.128/26"
+    RESTPrivSub2Cidr: "10.0.1.192/26"
+    BootstrapRepositorySSMParameterValue: pd-dev-cicd-artifacts

@@ -1,0 +1,20 @@
+template_path: templates/kong.py
+parameters: 
+    VpcId: !stack_output vpc::VpcId
+    KongProxyAccess: !stack_output vpc::AdminCidrBlock
+    KongAdminAccess: !stack_output vpc::AdminCidrBlock
+    AdminCidrBlock: !stack_output vpc::AdminCidrBlock
+    RESTPubSubnet1: !stack_output vpc::RESTPubSubnet1
+    RESTPubSubnet2: !stack_output vpc::RESTPubSubnet2
+    RESTPrivSubnet1: !stack_output vpc::RESTPrivSubnet1
+    RESTPrivSubnet2: !stack_output vpc::RESTPrivSubnet2
+    CassandraSG: !stack_output cassandra::CassandraSG
+    KongSSLCertificate: arn:aws:acm:us-east-1:844895670466:certificate/cdc97859-e602-4d07-a3db-8120267f1daf
+    CassandraPort: "9042"
+    KongInstanceType: t2.medium
+    KongKeyName: pd-cicd-devolopment
+    KongIAMInstanceProfile: cicd-admin-role
+    KongVersionSSMParameterValue: 0.14.1
+    KongExecuteMigrationsSSMParameterValue: "true"
+    CassandraSeedListSSMParameterValue: !stack_output cassandra::CassandraServerSeedList
+
