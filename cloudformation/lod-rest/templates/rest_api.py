@@ -130,6 +130,16 @@ class RestApi(BaseCloudFormation):
             Type="String",
         ))
 
+        self.OAuthRestApiKongConsumerClientIdSSMParameterValue = self.template.add_parameter(Parameter(
+            "OAuthRestApiKongConsumerClientIdSSMParameterValue",
+            Type="String",
+        ))
+
+        self.OAuthRestApiKongConsumerClientSecretSSMParameterValue = self.template.add_parameter(Parameter(
+            "OAuthRestApiKongConsumerClientSecretSSMParameterValue",
+            Type="String",
+        ))
+
         self.LoyaltyOnDemandOrganizationSSMParameterValue = self.template.add_parameter(Parameter(
             "LoyaltyOnDemandOrganizationSSMParameterValue",
             Type="String",
@@ -301,6 +311,22 @@ class RestApi(BaseCloudFormation):
             Name=self.environment_parameters["ClientEnvironmentKey"] + "-restKongProvisionKey",
             Type="String",
             Value=Ref(self.OAuthRestApiProvisionKeySSMParameterValue),
+        ))
+
+        self.OAuthRestApiKongConsumerClientIdSSMParameter = self.template.add_resource(SSMParameter(
+            "OAuthRestApiKongConsumerClientIdSSMParameter",
+            Description="The OAuth Rest Api Kong Consumer Client Id Key",
+            Name=self.environment_parameters["ClientEnvironmentKey"] + "-restKongConsumerClientId",
+            Type="String",
+            Value=Ref(self.OAuthRestApiKongConsumerClientIdSSMParameterValue),
+        ))
+
+        self.OAuthRestApiKongConsumerClientSecretSSMParameter = self.template.add_resource(SSMParameter(
+            "OAuthRestApiKongConsumerClientSecretSSMParameter",
+            Description="The OAuth Rest Api Kong Consumer Client Secret Key",
+            Name=self.environment_parameters["ClientEnvironmentKey"] + "-restKongConsumerClientSecret",
+            Type="String",
+            Value=Ref(self.OAuthRestApiKongConsumerClientSecretSSMParameterValue),
         ))
 
         self.LoyaltyOnDemandOrganizationSSMParameter = self.template.add_resource(SSMParameter(

@@ -6,4 +6,9 @@ parameters:
     RESTPubSub2Cidr: "10.0.1.64/26"
     RESTPrivSub1Cidr: "10.0.1.128/26"
     RESTPrivSub2Cidr: "10.0.1.192/26"
-    BootstrapRepositorySSMParameterValue: pd-dev-cicd-artifacts
+    CoreBootStrapRepositoryS3BucketName: pd-dev-cicd-artifacts
+hooks:
+    after_create:
+        - !sync_core_and_client_artifacts_buckets "dev/vpc"
+    before_delete:
+        - !delete_objects_from_client_artifacts_bucket "dev/vpc"

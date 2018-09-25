@@ -44,8 +44,8 @@ class VPC(BaseCloudFormation):
             Type="String",
         ))
 
-        self.BootstrapRepositorySSMParameterValue = self.template.add_parameter(Parameter(
-            "BootstrapRepositorySSMParameterValue",
+        self.CoreBootStrapRepositoryS3BucketName = self.template.add_parameter(Parameter(
+            "CoreBootStrapRepositoryS3BucketName",
             Type="String",
         ))
 
@@ -99,7 +99,7 @@ class VPC(BaseCloudFormation):
         ))
 
         self.RESTIGWAttachment = self.template.add_resource(ec2.VPCGatewayAttachment(
-            "IGWAttachment",
+            "RESTIGWAttachment",
             VpcId=Ref(self.vpc),
             InternetGatewayId=Ref(self.RESTIGW),
         ))
@@ -180,6 +180,7 @@ class VPC(BaseCloudFormation):
 
         self.RESTPubRT1IGWattachment = self.template.add_resource(ec2.Route(
             "RESTPubRT1IGWAttachment",
+            DependsOn=["RESTIGWAttachment"],
             RouteTableId=Ref(self.RESTPubRT1),
             DestinationCidrBlock="0.0.0.0/0",
             GatewayId=Ref(self.RESTIGW),
@@ -187,6 +188,7 @@ class VPC(BaseCloudFormation):
 
         self.RESTPubRT2IGWattachment = self.template.add_resource(ec2.Route(
             "RESTPubRT2IGWAttachment",
+            DependsOn=["RESTIGWAttachment"],
             RouteTableId=Ref(self.RESTPubRT2),
             DestinationCidrBlock="0.0.0.0/0",
             GatewayId=Ref(self.RESTIGW),
@@ -218,7 +220,7 @@ class VPC(BaseCloudFormation):
             Description="The Bootstrap Repository",
             Name=self.environment_parameters["ClientEnvironmentKey"] + "-bootstrapRepository",
             Type="String",
-            Value=Ref(self.BootstrapRepositorySSMParameterValue),
+            Value=(self.environment_parameters["ClientEnvironmentKey"] + "-environment-artifacts").lower(),
         ))
 
     def add_outputs(self):
