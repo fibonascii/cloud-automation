@@ -17,10 +17,10 @@ parameters:
     KongVersionSSMParameterValue: 0.14.1
     KongExecuteMigrationsSSMParameterValue: "true"
     CassandraSeedListSSMParameterValue: !stack_output cassandra::CassandraServerSeedList
-    OAuthRestApiProvisionKeySSMParameterValue: ""
+    OAuthRestApiProvisionKeySSMParameterValue: "1"
     OAuthRestApiKongConsumerClientId: ""
     OAuthRestApiKongConsumerClientSecret: ""
 hooks:
-    after_create:
-        - !execute_http_requests dev/kong::configure # The argument is accessible via self.argument
+    before_update:
+        - !execute_http_requests configure # The argument is accessible via self.argument
 

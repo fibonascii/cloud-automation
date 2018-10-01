@@ -20,16 +20,10 @@ parameters:
     RestApiASGCoolDown: "120"
     RestApiASGLifeCycleTransition: autoscaling:EC2_INSTANCE_LAUNCHING
     RestApiASGLifeCycleHeartBeatTimeout: "900"
-    RestApiPrefixSSMParameterValue: lod
-    OAuthRestApiProvisionKeySSMParameterValue: "12"
-    OAuthRestApiKongConsumerClientIdSSMParameterValue: "33"
-    OAuthRestApiKongConsumerClientSecretSSMParameterValue: "34"
-    LoyaltyOnDemandOrganizationSSMParameterValue: D1PDEV
-    LoyaltyOnDemandEnvironmentSSMParameterValue: Development
 hooks:
     #before_create:
     #    - !execute_http_requests uat/restapi::configure # The argument is accessible via self.argument
     after_create:
-        - !refresh_lod_rest_api_servers "dev::restapi"
+        - !refresh_lod_rest_api_servers
     after_update:
-        - !refresh_lod_rest_api_servers "dev::restapi"
+        - !refresh_lod_rest_api_servers

@@ -115,42 +115,6 @@ class RestApi(BaseCloudFormation):
             Type="String",
         ))
 
-        self.RestApiPrefixSSMParameterValue = self.template.add_parameter(Parameter(
-            "RestApiPrefixSSMParameterValue",
-            Type="String",
-        ))
-
-        self.OAuthInternalLoadBalancerSSMParameterValue = self.template.add_parameter(Parameter(
-            "OAuthInternalLoadBalancerSSMParameterValue",
-            Type="String",
-        ))
-
-        self.OAuthRestApiProvisionKeySSMParameterValue = self.template.add_parameter(Parameter(
-            "OAuthRestApiProvisionKeySSMParameterValue",
-            Type="String",
-        ))
-
-        self.OAuthRestApiKongConsumerClientIdSSMParameterValue = self.template.add_parameter(Parameter(
-            "OAuthRestApiKongConsumerClientIdSSMParameterValue",
-            Type="String",
-        ))
-
-        self.OAuthRestApiKongConsumerClientSecretSSMParameterValue = self.template.add_parameter(Parameter(
-            "OAuthRestApiKongConsumerClientSecretSSMParameterValue",
-            Type="String",
-        ))
-
-        self.LoyaltyOnDemandOrganizationSSMParameterValue = self.template.add_parameter(Parameter(
-            "LoyaltyOnDemandOrganizationSSMParameterValue",
-            Type="String",
-        ))
-
-        self.LoyaltyOnDemandEnvironmentSSMParameterValue = self.template.add_parameter(Parameter(
-            "LoyaltyOnDemandEnvironmentSSMParameterValue",
-            Type="String",
-        ))
-
-
     def add_resources(self):
         self.RestApiPublicLBSG = self.template.add_resource(ec2.SecurityGroup(
             "RestApiPublicLBSG",
@@ -289,62 +253,6 @@ class RestApi(BaseCloudFormation):
             Tags=self.base_tags + Tags(Name=self.environment_parameters["ClientEnvironmentKey"] + "-LoyaltyRestApiPrivLB"),
             ))
 
-        self.RestApiPrefixSSMParameter = self.template.add_resource(SSMParameter(
-            "RestApiPrefixSSMParameter",
-            Description="The Rest API Prefix",
-            Name=self.environment_parameters["ClientEnvironmentKey"] + "-restApiPrefix",
-            Type="String",
-            Value=Ref(self.RestApiPrefixSSMParameterValue),
-        ))
-
-        self.OAuthInternalLoadBalancerSSMParameter = self.template.add_resource(SSMParameter(
-            "OAuthInternalLoadBalancerParameter",
-            Description="The OAuth Internal Load Balancer",
-            Name=self.environment_parameters["ClientEnvironmentKey"] + "-restKongEndpoint",
-            Type="String",
-            Value=Ref(self.OAuthInternalLoadBalancerSSMParameterValue),
-        ))
-
-        self.OAuthRestApiProvisionKeySSMParameter = self.template.add_resource(SSMParameter(
-            "OAuthProvisionKeySSMParameter",
-            Description="The OAuth Rest Api Provision Key",
-            Name=self.environment_parameters["ClientEnvironmentKey"] + "-restKongProvisionKey",
-            Type="String",
-            Value=Ref(self.OAuthRestApiProvisionKeySSMParameterValue),
-        ))
-
-        self.OAuthRestApiKongConsumerClientIdSSMParameter = self.template.add_resource(SSMParameter(
-            "OAuthRestApiKongConsumerClientIdSSMParameter",
-            Description="The OAuth Rest Api Kong Consumer Client Id Key",
-            Name=self.environment_parameters["ClientEnvironmentKey"] + "-restKongConsumerClientId",
-            Type="String",
-            Value=Ref(self.OAuthRestApiKongConsumerClientIdSSMParameterValue),
-        ))
-
-        self.OAuthRestApiKongConsumerClientSecretSSMParameter = self.template.add_resource(SSMParameter(
-            "OAuthRestApiKongConsumerClientSecretSSMParameter",
-            Description="The OAuth Rest Api Kong Consumer Client Secret Key",
-            Name=self.environment_parameters["ClientEnvironmentKey"] + "-restKongConsumerClientSecret",
-            Type="String",
-            Value=Ref(self.OAuthRestApiKongConsumerClientSecretSSMParameterValue),
-        ))
-
-        self.LoyaltyOnDemandOrganizationSSMParameter = self.template.add_resource(SSMParameter(
-            "LoyaltyOnDemandOrganizationSSMParameter",
-            Description="The Loyalty On Demand Organization",
-            Name=self.environment_parameters["ClientEnvironmentKey"] + "-loyaltyWareOrganization",
-            Type="String",
-            Value=Ref(self.LoyaltyOnDemandOrganizationSSMParameterValue),
-        ))
-
-        self.LoyaltyOnDemandEnvironmentSSMParameter = self.template.add_resource(SSMParameter(
-            "LoyaltyOnDemandEnvironmentSSMParameter",
-            Description="The Loyalty On Demand Environment",
-            Name=self.environment_parameters["ClientEnvironmentKey"] + "-loyaltyWareEnvironment",
-            Type="String",
-            Value=Ref(self.LoyaltyOnDemandEnvironmentSSMParameterValue),
-        ))
-
         self.RestApiLaunchConfiguration = self.template.add_resource(LaunchConfiguration(
             "RestApiLaunchConfiguration",
             ImageId=Ref(self.RestApiImageId),
@@ -405,6 +313,21 @@ class RestApi(BaseCloudFormation):
         self.template.add_output(Output(
             "ApiServerEC2SecurityGroup",
             Value=Ref(self.RestApiSG),
+        ))
+
+        self.template.add_output(Output(
+            "RestApiPublicLoadBalancer",
+            Value=GetAtt(self.RestApiPublicLoadBalancer, "DNSName"),
+        ))
+
+        self.template.add_output(Output(
+            "RestApiPrivateLoadBalancerDNS",
+            Value=GetAtt(self.RestApiPrivateLoadBalancer, "DNSName"),
+        ))
+
+        self.template.add_output(Output(
+            "RestApiAutoScalingGroup",
+            Value=Ref(self.RestApiAutoScalingGroup),
         ))
 
 def sceptre_handler(sceptre_user_data):

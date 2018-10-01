@@ -9,6 +9,8 @@ parameters:
     CoreBootStrapRepositoryS3BucketName: pd-dev-cicd-artifacts
 hooks:
     after_create:
-        - !sync_core_and_client_artifacts_buckets "uat/vpc"
+        - !sync_core_and_client_artifacts_buckets
+    after_update:
+        - !sync_core_and_client_artifacts_buckets
     before_delete:
-        - !delete_objects_from_client_artifacts_bucket "uat/vpc"
+        - !delete_objects_from_client_artifacts_bucket

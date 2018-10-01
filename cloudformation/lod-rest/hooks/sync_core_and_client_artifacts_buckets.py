@@ -21,7 +21,8 @@ class SyncCoreAndClientArtifactsBuckets(Hook):
         self.environment_config  (A dict of data from config.yaml)
         self.connection_manager (A connection_manager)
         """
-        stack = Stack(name=self.argument, environment_config=self.environment_config,
+        environment = self.environment_config.environment_path + "/" + self.stack_config.name
+        stack = Stack(name=environment, environment_config=self.environment_config,
                       connection_manager=self.connection_manager)
 
         outputs = stack.describe_outputs()

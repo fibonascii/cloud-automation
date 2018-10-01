@@ -1,0 +1,27 @@
+template_path: templates/deployrest.py
+parameters:
+    AdminCidrBlock: !stack_output vpc::AdminCidrBlock
+    EnvironmentArtifactsS3Bucket: !stack_output vpc::EnvironmentArtifactsS3Bucket
+    OAuthConfigurationFilesLocation: "bootstrap/rest/postman/"
+    OAuthPublicLoadBalancerSecurityGroup: !stack_output kong::KongPublicLoadBalancerSecurityGroup
+    OAuthPublicLoadBalancerDNS: !stack_output kong::KongPublicLoadBalancerDNS
+    OAuthPrivateLoadBalancerDNS: !stack_output kong::KongPrivateInternalLoadBalancerDNS
+    RestApiPrivateLoadBalancerDNS: !stack_output restapi::RestApiPrivateLoadBalancerDNS
+    RestApiAutoScalingGroupName: !stack_output restapi::RestApiAutoScalingGroup
+    RestApiPrefix: "lod"
+    OAuthAdminPort: "8444"
+    LoyaltyOnDemandOrganization: "D1PDEV"
+    LoyaltyOnDemandEnvironment: "Development"
+    OAuthRestApiProvisionKey: ""
+    OAuthRestApiKongConsumerClientId: ""
+    OAuthRestApiKongConsumerClientSecret: ""
+
+hooks:
+    before_create:
+        - !execute_http_requests configure
+    before_update:
+        - !execute_http_requests configure
+    after_create:
+        - !refresh_lod_rest_api_servers
+    after_update:
+        - !refresh_lod_rest_api_servers

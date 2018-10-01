@@ -113,22 +113,6 @@ class Kong(BaseCloudFormation):
             Type="String",
         ))
 
-        self.OAuthRestApiProvisionKeySSMParameterValue = self.template.add_parameter(Parameter(
-            "OAuthRestApiProvisionKeySSMParameterValue",
-            Type="String",
-        ))
-
-        self.OAuthRestApiKongConsumerClientId = self.template.add_parameter(Parameter(
-            "OAuthRestApiKongConsumerClientId",
-            Type="String",
-        ))
-
-        self.OAuthRestApiKongConsumerClientSecret = self.template.add_parameter(Parameter(
-            "OAuthRestApiKongConsumerClientSecret",
-            Type="String",
-        ))
-
-
     def add_resources(self):
 
         self.KongPublicLoadBalancerSecurityGroup = self.template.add_resource(ec2.SecurityGroup(
@@ -541,22 +525,7 @@ class Kong(BaseCloudFormation):
             Value=GetAtt(self.KongPublicLoadBalancer, "DNSName"),
         ))
 
-        self.template.add_output(Output(
-            "OAuthRestApiProvisionKeySSMParameterValue",
-            Value=Ref(self.OAuthRestApiProvisionKeySSMParameterValue),
-        ))
 
-        self.template.add_output(Output(
-            "OAuthRestApiKongConsumerClientId",
-            Value=Ref(self.OAuthRestApiKongConsumerClientId),
-        ))
-
-        self.template.add_output(Output(
-            "OAuthRestApiKongConsumerClientSecret",
-            Value=Ref(self.OAuthRestApiKongConsumerClientSecret),
-        ))
-
-        
 def sceptre_handler(sceptre_user_data):
     kong = Kong(sceptre_user_data)
     return kong.template.to_json()

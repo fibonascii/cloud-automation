@@ -19,7 +19,7 @@ class BaseCloudFormation(ABC):
 
         self.environment_parameters = {"EnvironmentName": "UserAcceptance",
                                        "ClientCode": "NIKE",
-                                       "ClientEnvironmentKey": "D1NIKE",
+                                       "ClientEnvironmentKey": "U1NIKE",
                                        "EnvironmentRegion": "us-east-1",
                                        "ResourceOwner": "ProductDevelopment"}
    

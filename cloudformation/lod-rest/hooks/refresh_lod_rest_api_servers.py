@@ -22,18 +22,18 @@ class RefreshLodRestApiServers(Hook):
         self.environment_config  (A dict of data from config.yaml)
         self.connection_manager (A connection_manager)
         """
-        environment, stack = self.argument.split("::")
-        print("Environment: " + environment)
-        print("Stack: " + stack)
 
-        stack = Stack(name=environment + "/" + stack, environment_config=self.environment_config,
+        environment = self.environment_config.environment_path + "/" + self.stack_config.name
+        stack = Stack(name=environment, environment_config=self.environment_config,
                       connection_manager=self.connection_manager)
 
-        resources = stack.describe_resources()
+        description = stack.describe()
 
-        if resources:
-            rest_api_autoscaling_group_name = [resource['PhysicalResourceId'] for resource in resources if
-                                               resource['LogicalResourceId'] == 'RestApiAutoscalingGroup']
+        if description:
+            rest_api_autoscaling_group_name = [parameter['ParameterValue'] for parameter in description['Stacks'][0]['Parameters'] if
+                                parameter['ParameterKey'] == 'RestApiAutoScalingGroupName']
+
+
             print("AutoScaling-Group to be Refreshed: " + rest_api_autoscaling_group_name[0])
 
             autoscaling = boto3.client('autoscaling')

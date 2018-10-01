@@ -7,7 +7,6 @@ parameters:
     RESTPubSubnet1: !stack_output vpc::RESTPubSubnet1
     RESTPubSubnet2: !stack_output vpc::RESTPubSubnet2
     KongPrivateLoadBalancerSecurityGroup: !stack_output kong::KongPrivateLoadBalancerSecurityGroup
-    OAuthInternalLoadBalancerSSMParameterValue: !stack_output kong::KongPrivateInternalLoadBalancerDNS
     RestApiImageId: ami-02446b7963e3dee94
     RestApiKeyName: pd-cicd-devolopment
     RestApiInstanceType: t2.medium
@@ -20,16 +19,5 @@ parameters:
     RestApiASGCoolDown: "120"
     RestApiASGLifeCycleTransition: autoscaling:EC2_INSTANCE_LAUNCHING
     RestApiASGLifeCycleHeartBeatTimeout: "900"
-    RestApiPrefixSSMParameterValue: lod
-    OAuthRestApiProvisionKeySSMParameterValue: "12"
-    OAuthRestApiKongConsumerClientIdSSMParameterValue: "32"
-    OAuthRestApiKongConsumerClientSecretSSMParameterValue: "34"
-    LoyaltyOnDemandOrganizationSSMParameterValue: D1PDEV
-    LoyaltyOnDemandEnvironmentSSMParameterValue: Development
-hooks:
-    #before_create:
-    #    - !execute_http_requests uat/restapi::configure # The argument is accessible via self.argument
-    after_create:
-        - !refresh_lod_rest_api_servers "uat::restapi"
 
 
