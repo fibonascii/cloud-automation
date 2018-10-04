@@ -19,5 +19,3 @@ parameters:
     RestApiASGCoolDown: "120"
     RestApiASGLifeCycleTransition: autoscaling:EC2_INSTANCE_LAUNCHING
     RestApiASGLifeCycleHeartBeatTimeout: "900"
-
-

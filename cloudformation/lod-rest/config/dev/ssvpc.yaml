@@ -1,0 +1,8 @@
+template_path: templates/shared_services_vpc.py
+parameters:
+    AdminCidrBlock: "204.57.87.152/32"
+    VpcCidr: "192.168.0.0/16"
+    PubSub1Cidr: "192.168.0.0/18"
+    PubSub2Cidr: "192.168.64.0/18"
+    PrivSub1Cidr: "192.168.128.0/18"
+    PrivSub2Cidr: "192.168.192.0/18"

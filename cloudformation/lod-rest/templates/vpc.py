@@ -13,6 +13,30 @@ class VPC(BaseCloudFormation):
 
     def add_parameters(self):
 
+        self.SharedServicesVpcId = self.template.add_parameter(Parameter(
+            "SharedServicesVpcId",
+            Type="String",
+            Description="The Shared Services VPC Id",
+        ))
+
+        self.SharedServicesVpcCidrBlock = self.template.add_parameter(Parameter(
+            "SharedServicesVpcCidrBlock",
+            Type="String",
+            Description="The Shared Services Block",
+        ))
+
+        self.SharedServicesPrivateRouteTable1 = self.template.add_parameter(Parameter(
+            "SharedServicesPrivateRouteTable1",
+            Type="String",
+            Description="The Shared Services Private Route Table 1",
+        ))
+
+        self.SharedServicesPrivateRouteTable2 = self.template.add_parameter(Parameter(
+            "SharedServicesPrivateRouteTable2",
+            Type="String",
+            Description="The Shared Services Private Route Table 2",
+        ))
+
         self.AdminCidrBlock = self.template.add_parameter(Parameter(
             "AdminCidrBlock",
             Type="String",
@@ -204,6 +228,46 @@ class VPC(BaseCloudFormation):
             "RESTPubR2Associate",
             SubnetId=Ref(self.RESTPubSubnet2),
             RouteTableId=Ref(self.RESTPubRT2),
+        ))
+
+        self.VPCPeeringBetweenSharedVPCAndClientVPC = self.template.add_resource(ec2.VPCPeeringConnection(
+            "VPCPeeringBetweenSharedVPCAndClientVPC",
+            DependsOn=["RESTPrivRT1", "RESTPrivRT2"],
+            VpcId=Ref(self.SharedServicesVpcId),
+            PeerVpcId=Ref(self.vpc),
+            Tags=self.base_tags + Tags(Name=self.environment_parameters["ClientEnvironmentKey"] + "-SSTOCLIENTVPCPEER"),
+        ))
+
+        self.PeeringRouteForClientVPCPriv1 = self.template.add_resource(ec2.Route(
+            "PeeringRouteForClientVPCPriv1",
+            DependsOn=["VPCPeeringBetweenSharedVPCAndClientVPC"],
+            RouteTableId=Ref(self.RESTPrivRT1),
+            DestinationCidrBlock=Ref(self.SharedServicesVpcCidrBlock),
+            VpcPeeringConnectionId=Ref(self.VPCPeeringBetweenSharedVPCAndClientVPC),
+        ))
+
+        self.PeeringRouteForClientVPCPriv2 = self.template.add_resource(ec2.Route(
+            "PeeringRouteForClientVPCPriv2",
+            DependsOn=["VPCPeeringBetweenSharedVPCAndClientVPC"],
+            RouteTableId=Ref(self.RESTPrivRT2),
+            DestinationCidrBlock=Ref(self.SharedServicesVpcCidrBlock),
+            VpcPeeringConnectionId=Ref(self.VPCPeeringBetweenSharedVPCAndClientVPC),
+        ))
+
+        self.PeeringRouteForSharedServicesVPCPriv1 = self.template.add_resource(ec2.Route(
+            "PeeringRouteForSharedServicesVPCPriv1",
+            DependsOn=["VPCPeeringBetweenSharedVPCAndClientVPC"],
+            RouteTableId=Ref(self.SharedServicesPrivateRouteTable1),
+            DestinationCidrBlock=Ref(self.VpcCidr),
+            VpcPeeringConnectionId=Ref(self.VPCPeeringBetweenSharedVPCAndClientVPC),
+        ))
+
+        self.PeeringRouteForSharedServicesVPCPriv2 = self.template.add_resource(ec2.Route(
+            "PeeringRouteForSharedServicesVPCPriv2",
+            DependsOn=["VPCPeeringBetweenSharedVPCAndClientVPC"],
+            RouteTableId=Ref(self.SharedServicesPrivateRouteTable2),
+            DestinationCidrBlock=Ref(self.VpcCidr),
+            VpcPeeringConnectionId=Ref(self.VPCPeeringBetweenSharedVPCAndClientVPC),
         ))
 
         self.EnvironmentArtifactsBucket = self.template.add_resource(Bucket(

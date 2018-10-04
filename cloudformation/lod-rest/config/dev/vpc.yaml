@@ -7,6 +7,10 @@ parameters:
     RESTPrivSub1Cidr: "10.0.1.128/26"
     RESTPrivSub2Cidr: "10.0.1.192/26"
     CoreBootStrapRepositoryS3BucketName: pd-dev-cicd-artifacts
+    SharedServicesVpcId: !stack_output ssvpc::VpcId
+    SharedServicesVpcCidrBlock: !stack_output ssvpc::VpcCidr
+    SharedServicesPrivateRouteTable1: !stack_output ssvpc::PrivateRouteTable1
+    SharedServicesPrivateRouteTable2: !stack_output ssvpc::PrivateRouteTable2
 hooks:
     after_create:
         - !sync_core_and_client_artifacts_buckets
