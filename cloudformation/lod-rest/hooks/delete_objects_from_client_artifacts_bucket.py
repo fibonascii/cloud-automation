@@ -25,7 +25,10 @@ class DeleteObjectsFromClientArtifactsBucket(Hook):
         stack = Stack(name=environment, environment_config=self.environment_config,
                       connection_manager=self.connection_manager)
 
-        outputs = stack.describe_outputs()
+        try:
+            outputs = stack.describe_outputs()
+        except:
+            return
 
         if outputs:
             client_artifacts_s3_bucket_name = [output['OutputValue'] for output in outputs if
