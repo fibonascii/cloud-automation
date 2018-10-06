@@ -3,11 +3,12 @@ from troposphere import ec2, Ref, Tags, Parameter, GetAtt, Output, Base64, Join,
 from troposphere.autoscaling import AutoScalingGroup, LaunchConfiguration, LifecycleHookSpecification
 from troposphere.autoscaling import Tag as AutoScalingTag
 from troposphere.ssm import Parameter as SSMParameter
+from fetch_ami import get_ami_id
 
 class RestApi(BaseCloudFormation):
     def __init__(self, sceptre_user_data):
         super().__init__()
-
+        self.ami_id = get_ami_id()
         self.add_parameters()
         self.add_resources()
         self.add_outputs()
@@ -255,7 +256,7 @@ class RestApi(BaseCloudFormation):
 
         self.RestApiLaunchConfiguration = self.template.add_resource(LaunchConfiguration(
             "RestApiLaunchConfiguration",
-            ImageId=Ref(self.RestApiImageId),
+            ImageId=self.ami_id,
             InstanceType=Ref(self.RestApiInstanceType),
             IamInstanceProfile=Ref(self.RestApiIAMInstanceProfile),
             KeyName=Ref(self.RestApiKeyName),

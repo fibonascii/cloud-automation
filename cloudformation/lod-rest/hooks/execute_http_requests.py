@@ -22,8 +22,8 @@ class ExecuteHttpRequests(Hook):
                 GroupId=security_group_id,
                 IpProtocol="tcp",
                 CidrIp=cidr_block,
-                FromPort=9100,
-                ToPort=9200)
+                FromPort=8443,
+                ToPort=8444)
 
             print(response)
 
@@ -32,8 +32,8 @@ class ExecuteHttpRequests(Hook):
             response = client.revoke_security_group_ingress(
                 GroupId=security_group_id,
                 IpProtocol="tcp",
-                FromPort=9100,
-                ToPort=9200,
+                FromPort=8443,
+                ToPort=8444,
                 CidrIp=cidr_block)
 
             print(response)

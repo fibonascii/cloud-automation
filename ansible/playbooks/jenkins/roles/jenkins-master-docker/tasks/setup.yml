@@ -73,3 +73,51 @@
  - name: Install requests
    shell: pip3 install requests
    become: true
+
+ - name: Install Awacs
+   shell: pip3 install awacs
+   become: true
+
+ - name: Add NodeJS PPA
+   shell: curl -sL https://deb.nodesource.com/setup_10.x | sudo bash -
+   become: true
+
+ - name: Install NodeJS and NPM
+   shell: apt-get install nodejs
+   become: true
+
+ - name: Install Newman
+   shell: npm install -g newman
+   become: true
+
+ - name: Add kubectl Google GPG Ring
+   shell: curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+   become: true
+
+ - name: Update Sources List
+   shell: echo "deb http://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee -a /etc/apt/sources.list.d/kubernetes.list
+   become: true
+
+ - name: Update Repository
+   shell: apt-get update -y
+   become: true
+
+ - name: Install Kubectl
+   shell: apt-get install -y kubectl
+   become: true
+
+ - name: Download AWS Iam Authenticator
+   shell: curl -o /opt/aws-iam-authenticator  https://amazon-eks.s3-us-west-2.amazonaws.com/1.10.3/2018-07-26/bin/linux/amd64/aws-iam-authenticator
+   become: true
+
+ - name: Add Execute Permissions Bit
+   shell: chmod +x /opt/aws-iam-authenticator
+   become: true
+
+ - name: Change Ownership of Authenticator
+   shell: chown jenkins.jenkins /opt/aws-iam-authenticator
+   become: true
+
+ - name: Move Authenticator to Path
+   shell: mv /opt/aws-iam-authenticator /usr/local/bin/
+   become: true
