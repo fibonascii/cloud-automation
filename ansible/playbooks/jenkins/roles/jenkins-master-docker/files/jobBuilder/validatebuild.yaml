@@ -1,0 +1,25 @@
+- job:
+    name: ValidateRestBuild
+    parameters:
+      - string:
+          name: PROCEDURE
+          default: lod-rest
+      - string:
+          name: ENVIRONMENT
+          default: dev
+    project-type: pipeline
+    description: 'CD to verify LOD Rest Build'
+    logrotate:
+      daysToKeep: 3
+      numToKeep: 20
+      artifactDaysToKeep: -1
+      artifactNumToKeep: -1
+    pipeline-scm:
+      scm:
+        - git:
+             url: https://github.com/brierley/cloud-automation.git
+             credentials-id: c8d48617-863b-44b5-b71f-1aa9e9c24c8e
+             branches:
+              - origin/master
+             clean: true
+      script-path: jenkins-pipeline/validatebuild/Jenkinsfile.groovy

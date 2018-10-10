@@ -121,3 +121,26 @@
  - name: Move Authenticator to Path
    shell: mv /opt/aws-iam-authenticator /usr/local/bin/
    become: true
+
+ - name: Create Jenkins Job Builder Directory
+   shell: mkdir /etc/jenkins_jobs
+   become: true
+
+ - name: Create Jenkins Jobs Directory
+   shell: mkdir /etc/jenkins_jobs/jobs
+   become: true
+
+ - name: Change Permissions of Job Builder
+   shell: chmown -R jenkins:jenkins /etc/jenkins_jobs
+   become: true
+
+ - name: Copy Job Builder Config to Server
+   copy:
+     src: files/jobBuilder/jenkins_jobs.ini
+     dest: /etc/jenkins_jobs/
+   become: true
+
+ - name: Copy Validate Build to Server
+   copy:
+     src: files/jobBuilder/validatebuild.yaml
+     dest: /etc/jenkins_jobs/jobs/validatebuild.yaml

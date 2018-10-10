@@ -30,8 +30,8 @@ node {
         echo "Environment: ${ENVIRONMENT}"
 
         // Clone Repository
-        git branch: 'task/LW-7501',
-            credentialsId: 'bf894a98-07e7-449a-8c35-2627eab42a5e',
+        git branch: 'master',
+            credentialsId: 'c8d48617-863b-44b5-b71f-1aa9e9c24c8e',
             url: 'https://github.com/brierley/cloud-automation.git'
 
         // Build Image With Packer and Generate Build Manifest
@@ -52,7 +52,7 @@ node {
         stage('Create Environment') {
             dir("cloudformation/${PROCEDURE}") {
                 try { 
-                    if (fileExists("manifest.json")) {
+                    if (fileExists("../../jenkins-pipeline/validatebuild/manifest.json")) {
                         echo "Manifest File Exists. Launching Environment"
                         sh "sceptre launch-env ${ENVIRONMENT}"
                     }
@@ -62,10 +62,7 @@ node {
                 }
                 catch(exc) {
                     error("Environment Failed To Create")
-                }
             }
-           else {
-            echo "Manifest file not present. Exiting"
         }
     }
 }
