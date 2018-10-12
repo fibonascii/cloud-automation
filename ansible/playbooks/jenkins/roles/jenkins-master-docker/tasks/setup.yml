@@ -131,7 +131,7 @@
    become: true
 
  - name: Change Permissions of Job Builder
-   shell: chmown -R jenkins:jenkins /etc/jenkins_jobs
+   shell: chown -R jenkins:jenkins /etc/jenkins_jobs
    become: true
 
  - name: Copy Job Builder Config to Server

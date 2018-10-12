@@ -31,7 +31,7 @@ node {
 
         // Clone Repository
         git branch: 'master',
-            credentialsId: 'c8d48617-863b-44b5-b71f-1aa9e9c24c8e',
+            credentialsId: 'cd3283c2-6d74-4a60-9631-e81e5ddeb439',
             url: 'https://github.com/brierley/cloud-automation.git'
 
         // Build Image With Packer and Generate Build Manifest
