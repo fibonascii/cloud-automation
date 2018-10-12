@@ -1,0 +1,24 @@
+template_path: templates/shared_services_eks.py
+parameters:
+    SharedServicesVpcId: !stack_output ssvpc::VpcId
+    SharedServicesPrivSubnet1: !stack_output ssvpc::PrivSubnet1
+    SharedServicesPrivSubnet2: !stack_output ssvpc::PrivSubnet2
+    SharedServicesPubSubnet1: !stack_output ssvpc::PubSubnet1
+    SharedServicesPubSubnet2: !stack_output ssvpc::PubSubnet2
+    EksClusterVersion: "1.10"
+    WorkerNodeImageId: ami-0440e4f6b9713faf6
+    WorkerNodeKeyName: pd-cicd-devolopment
+    WorkerNodeInstanceType: t2.medium
+    WorkerNodeASGGroupMinSize: "1"
+    WorkerNodeASGGroupDesiredSize: "2"
+    WorkerNodeASGGroupMaxSize: "3"
+    WorkerNodeASGHealthCheckType: EC2
+    WorkerNodeASGHealthCheckGracePeriod: "300"
+    WorkerNodeASGCoolDown: "120"
+hooks:
+    after_create:
+        - !join_worker_nodes_to_cluster
+    after_update:
+        - !join_worker_nodes_to_cluster
+
+

@@ -1,0 +1,20 @@
+template_path: templates/vpc.py
+parameters:
+    AdminCidrBlock: "204.57.87.152/32"
+    VpcCidr: "10.0.1.0/24"
+    RESTPubSub1Cidr: "10.0.1.0/26"
+    RESTPubSub2Cidr: "10.0.1.64/26"
+    RESTPrivSub1Cidr: "10.0.1.128/26"
+    RESTPrivSub2Cidr: "10.0.1.192/26"
+    CoreBootStrapRepositoryS3BucketName: pd-dev-cicd-artifacts
+    SharedServicesVpcId: !stack_output ssvpc::VpcId
+    SharedServicesVpcCidrBlock: !stack_output ssvpc::VpcCidr
+    SharedServicesPrivateRouteTable1: !stack_output ssvpc::PrivateRouteTable1
+    SharedServicesPrivateRouteTable2: !stack_output ssvpc::PrivateRouteTable2
+hooks:
+    after_create:
+        - !sync_core_and_client_artifacts_buckets
+    after_update:
+        - !sync_core_and_client_artifacts_buckets
+    before_delete:
+        - !delete_objects_from_client_artifacts_bucket
