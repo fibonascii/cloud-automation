@@ -1,0 +1,990 @@
+{
+	"AWSTemplateFormatVersion": "2010-09-09",
+	"Parameters": {
+		"NameTagValue": {
+			"Type": "String",
+			"Default": "D1DP-JM",
+			"Description": "The Name Tag Value Suffix"
+		},
+		"ResourceOwner": {
+			"Type": "String",
+			"Default": "ProductDevelopment",
+			"Description": "The Resource Owner Group, Used as a Cost Allocation Tag"
+		},
+		"Environment": {
+			"Type": "String",
+			"Default": "Development",
+			"Description": "The Environment, Used as a Cost Allocation Tag",
+			"AllowedValues": [
+				"Development",
+				"QualityAssurance",
+				"UserAcceptanceTesting",
+				"Production",
+				"Performance",
+				"Spectre"
+			],
+			"ConstraintDescription": "must be a valid Environment type."
+		},
+		"ClientCode": {
+			"Type": "String",
+			"Default": "D1DP",
+			"Description": "The Resource Owner Group, Used as a Cost Allocation Tag"
+		},
+		"ClientRegion": {
+			"Type": "String",
+			"Default": "us-east-2",
+			"Description": "The Resource Owner Group, Used as a Cost Allocation Tag"
+		},
+		"AdminCidrBlock": {
+			"Type": "String",
+			"Default": "204.57.87.152/32",
+			"Description": "The Cidr Block of the Administrator for Access Purposes"
+		},
+		"JMeterMasterImageId": {
+			"Type": "String",
+			"Default": "ami-0ce6dc69"
+		},
+		"JMeterSlaveImageId": {
+			"Type": "String",
+			"Default": "ami-0ce6dc69"
+		},
+		"SlaveCount": {
+			"Type": "Number",
+			"Default": "3",
+			"MinValue": "1"
+		},
+		"ServerKeyName": {
+			"Type": "String",
+			"Default": "jmeter",
+			"Description": "The Key Name"
+		},
+		"IAMInstanceProfile": {
+			"Type": "String",
+			"Default": "cicd-admin-role",
+			"Description": "The IAM Instance Profile"
+		},
+		"MasterInstanceType": {
+			"Type": "String",
+			"Default": "t2.medium",
+			"Description": "The Instance Type",
+			"AllowedValues": [
+				"t2.small",
+				"t2.micro",
+				"t2.medium",
+				"m4.large",
+				"m4.xlarge"
+			],
+			"ConstraintDescription": "must be a valid EC2 instance type."
+		},
+		"SlaveInstanceType": {
+			"Type": "String",
+			"Default": "t2.medium",
+			"Description": "The Instance Type",
+			"AllowedValues": [
+				"t2.small",
+				"t2.micro",
+				"t2.medium",
+				"m4.large",
+				"m4.xlarge"
+			],
+			"ConstraintDescription": "must be a valid EC2 instance type."
+		},
+		"SlaveRequested": {
+			"Type": "String",
+			"Default": "true",
+			"Description": "The Slave Requested flag"
+		}
+	},
+	"Conditions": {
+		"CreateSlaves": {
+			"Fn::Equals": [{
+				"Ref": "SlaveRequested"
+			}, "true"]
+		}
+	},
+	"Resources": {
+		"VPC": {
+			"Type": "AWS::EC2::VPC",
+			"Properties": {
+				"CidrBlock": "10.0.1.0/24",
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"VPC-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"PubSubnet1": {
+			"Type": "AWS::EC2::Subnet",
+			"DependsOn": "VPC",
+			"Properties": {
+				"CidrBlock": "10.0.1.0/26",
+				"AvailabilityZone": {
+					"Fn::Select": ["0", {
+						"Fn::GetAZs": ""
+					}]
+				},
+				"VpcId": {
+					"Ref": "VPC"
+				},
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"SBNET-PUB-1-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"PubSubnet2": {
+			"Type": "AWS::EC2::Subnet",
+			"DependsOn": "VPC",
+			"Properties": {
+				"CidrBlock": "10.0.1.64/26",
+				"AvailabilityZone": {
+					"Fn::Select": ["1", {
+						"Fn::GetAZs": ""
+					}]
+				},
+				"VpcId": {
+					"Ref": "VPC"
+				},
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"SBNET-PUB-2-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"PrivSubnet1": {
+			"Type": "AWS::EC2::Subnet",
+			"DependsOn": "VPC",
+			"Properties": {
+				"CidrBlock": "10.0.1.128/26",
+				"AvailabilityZone": {
+					"Fn::Select": ["0", {
+						"Fn::GetAZs": ""
+					}]
+				},
+				"VpcId": {
+					"Ref": "VPC"
+				},
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"SBNET-PRIV-1-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"PrivSubnet2": {
+			"Type": "AWS::EC2::Subnet",
+			"DependsOn": "VPC",
+			"Properties": {
+				"CidrBlock": "10.0.1.192/26",
+				"AvailabilityZone": {
+					"Fn::Select": ["1", {
+						"Fn::GetAZs": ""
+					}]
+				},
+				"VpcId": {
+					"Ref": "VPC"
+				},
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"SBNET-PRIV-2-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"InternetGateway": {
+			"Type": "AWS::EC2::InternetGateway",
+			"DependsOn": "VPC",
+			"Properties": {}
+		},
+		"InternetGatewayAttachment": {
+			"Type": "AWS::EC2::VPCGatewayAttachment",
+			"DependsOn": "InternetGateway",
+			"Properties": {
+				"VpcId": {
+					"Ref": "VPC"
+				},
+				"InternetGatewayId": {
+					"Ref": "InternetGateway"
+				}
+			}
+		},
+		"EIP1": {
+			"Type": "AWS::EC2::EIP",
+			"DependsOn": "VPC",
+			"Properties": {
+				"Domain": "vpc"
+			}
+		},
+		"NAT1": {
+			"Type": "AWS::EC2::NatGateway",
+			"DependsOn": "PubSubnet1",
+			"Properties": {
+				"AllocationId": {
+					"Fn::GetAtt": ["EIP1", "AllocationId"]
+				},
+				"SubnetId": {
+					"Ref": "PubSubnet1"
+				},
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"NGW-1-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"NatRoute": {
+			"Type": "AWS::EC2::Route",
+			"DependsOn": "NAT1",
+			"Properties": {
+				"RouteTableId": {
+					"Ref": "PrivRT1"
+				},
+				"DestinationCidrBlock": "0.0.0.0/0",
+				"NatGatewayId": {
+					"Ref": "NAT1"
+				}
+			}
+		},
+		"PrivRT1": {
+			"Type": "AWS::EC2::RouteTable",
+			"DependsOn": "PrivSubnet1",
+			"Properties": {
+				"VpcId": {
+					"Ref": "VPC"
+				},
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"RT-PRIV-1-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"PrivRT1Association": {
+			"Type": "AWS::EC2::SubnetRouteTableAssociation",
+			"DependsOn": "PrivRT1",
+			"Properties": {
+				"RouteTableId": {
+					"Ref": "PrivRT1"
+				},
+				"SubnetId": {
+					"Ref": "PrivSubnet1"
+				}
+			}
+		},
+		"PrivRT2Association": {
+			"Type": "AWS::EC2::SubnetRouteTableAssociation",
+			"DependsOn": "PrivRT1",
+			"Properties": {
+				"RouteTableId": {
+					"Ref": "PrivRT1"
+				},
+				"SubnetId": {
+					"Ref": "PrivSubnet2"
+				}
+			}
+		},
+		"PubRT1IGWAttachment": {
+			"Type": "AWS::EC2::Route",
+			"DependsOn": "PubRT1",
+			"Properties": {
+				"RouteTableId": {
+					"Ref": "PubRT1"
+				},
+				"DestinationCidrBlock": "0.0.0.0/0",
+				"GatewayId": {
+					"Ref": "InternetGateway"
+				}
+			}
+		},
+		"PubRT1": {
+			"Type": "AWS::EC2::RouteTable",
+			"DependsOn": "PubSubnet1",
+			"Properties": {
+				"VpcId": {
+					"Ref": "VPC"
+				},
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"RT-PUB-1-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"PubRT1Association": {
+			"Type": "AWS::EC2::SubnetRouteTableAssociation",
+			"DependsOn": "PubRT1",
+			"Properties": {
+				"RouteTableId": {
+					"Ref": "PubRT1"
+				},
+				"SubnetId": {
+					"Ref": "PubSubnet1"
+				}
+			}
+		},
+		"PubRT2Association": {
+			"Type": "AWS::EC2::SubnetRouteTableAssociation",
+			"DependsOn": "PubRT1",
+			"Properties": {
+				"RouteTableId": {
+					"Ref": "PubRT1"
+				},
+				"SubnetId": {
+					"Ref": "PubSubnet2"
+				}
+			}
+		},
+		"MasterPublicLBSG": {
+			"Type": "AWS::EC2::SecurityGroup",
+			"DependsOn": "PubRT1Association",
+			"Properties": {
+				"GroupDescription": "Allow SSH",
+				"VpcId": {
+					"Ref": "VPC"
+				},
+				"SecurityGroupIngress": [{
+					"IpProtocol": "tcp",
+					"FromPort": "22",
+					"ToPort": "22",
+					"CidrIp": {
+						"Ref": "AdminCidrBlock"
+					}
+				}],
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"M-JM-PUB-LB-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"MasterEc2SG": {
+			"Type": "AWS::EC2::SecurityGroup",
+			"DependsOn": "MasterPublicLBSG",
+			"Properties": {
+				"GroupDescription": "Allow communication from Public ELB to Master Node",
+				"VpcId": {
+					"Ref": "VPC"
+				},
+				"SecurityGroupIngress": [{
+					"IpProtocol": "tcp",
+					"FromPort": "22",
+					"ToPort": "22",
+					"SourceSecurityGroupId": {
+						"Ref": "MasterPublicLBSG"
+					}
+				}],
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"M-JM-EC2-SG-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"SlavePrivateLBSG": {
+			"Type": "AWS::EC2::SecurityGroup",
+			"DependsOn": "MasterEc2SG",
+			"Properties": {
+				"GroupDescription": "Allow SSH",
+				"VpcId": {
+					"Ref": "VPC"
+				},
+				"SecurityGroupIngress": [{
+						"IpProtocol": "tcp",
+						"FromPort": "24000",
+						"ToPort": "26999",
+						"SourceSecurityGroupId": {
+							"Ref": "MasterEc2SG"
+						}
+					},
+					{
+						"IpProtocol": "tcp",
+						"FromPort": "22",
+						"ToPort": "22",
+						"SourceSecurityGroupId": {
+							"Ref": "MasterEc2SG"
+						}
+					}
+				],
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"S-JM-PRIV-LB-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"SlaveEc2SG": {
+			"Type": "AWS::EC2::SecurityGroup",
+			"DependsOn": "SlavePrivateLBSG",
+			"Properties": {
+				"GroupDescription": "Allow communication from Public ELB to Master Node",
+				"VpcId": {
+					"Ref": "VPC"
+				},
+				"SecurityGroupIngress": [{
+						"IpProtocol": "tcp",
+						"FromPort": "22",
+						"ToPort": "22",
+						"SourceSecurityGroupId": {
+							"Ref": "SlavePrivateLBSG"
+						}
+					},
+					{
+						"IpProtocol": "tcp",
+						"FromPort": "24000",
+						"ToPort": "26999",
+						"SourceSecurityGroupId": {
+							"Ref": "SlavePrivateLBSG"
+						}
+					},
+					{
+						"IpProtocol": "tcp",
+						"FromPort": "22",
+						"ToPort": "22",
+						"SourceSecurityGroupId": {
+							"Ref": "MasterEc2SG"
+						}
+					}
+				],
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"S-JM-EC2-SG-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"SlaveSGInterNodeCommunicationIngress": {
+			"Type": "AWS::EC2::SecurityGroupIngress",
+			"Properties": {
+				"GroupId": {
+					"Ref": "SlaveEc2SG"
+				},
+				"IpProtocol": "tcp",
+				"ToPort": "22",
+				"FromPort": "22",
+				"SourceSecurityGroupId": {
+					"Ref": "SlaveEc2SG"
+				}
+			},
+			"DependsOn": "SlaveEc2SG"
+		},
+
+		"MasterPublicLoadBalancer": {
+			"Type": "AWS::ElasticLoadBalancing::LoadBalancer",
+			"DependsOn": "MasterPublicLBSG",
+			"Properties": {
+				"LoadBalancerName": {
+					"Fn::Join": [
+						"", [
+							"M-JM-PUB-LB-",
+							{
+								"Ref": "NameTagValue"
+							}
+						]
+					]
+				},
+				"Scheme": "internet-facing",
+				"Listeners": [{
+					"LoadBalancerPort": "22",
+					"InstancePort": "22",
+					"Protocol": "TCP",
+					"InstanceProtocol": "TCP"
+				}],
+				"Instances": [],
+				"ConnectionSettings": {
+					"IdleTimeout": "3600"
+				},
+				"SecurityGroups": [{
+					"Ref": "MasterPublicLBSG"
+				}],
+				"Subnets": [{
+					"Ref": "PubSubnet1"
+				}, {
+					"Ref": "PubSubnet2"
+				}],
+				"Tags": [{
+						"Key": "Name",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"M-JM-PUB-LB-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"MasterLaunchConfiguration": {
+			"Type": "AWS::AutoScaling::LaunchConfiguration",
+			"DependsOn": "MasterPublicLoadBalancer",
+			"Properties": {
+				"ImageId": {
+					"Ref": "JMeterMasterImageId"
+				},
+				"InstanceType": {
+					"Ref": "MasterInstanceType"
+				},
+				"IamInstanceProfile": {
+					"Ref": "IAMInstanceProfile"
+				},
+				"KeyName": {
+					"Ref": "ServerKeyName"
+				},
+				"SecurityGroups": [{
+					"Ref": "MasterEc2SG"
+				}],
+				"UserData": {
+					"Fn::Base64": {
+						"Fn::Join": ["", [
+							"#!/bin/bash -x\n"
+						]]
+					}
+				}
+			}
+		},
+		"MasterAutoScalingGroup": {
+			"Type": "AWS::AutoScaling::AutoScalingGroup",
+			"DependsOn": "MasterLaunchConfiguration",
+			"Properties": {
+				"AutoScalingGroupName": {
+					"Fn::Join": [
+						"", [
+							"M-JM-ASG-",
+							{
+								"Ref": "NameTagValue"
+							}
+						]
+					]
+				},
+				"AvailabilityZones": [{
+					"Fn::Select": ["0", {
+						"Fn::GetAZs": ""
+					}]
+				}],
+				"LaunchConfigurationName": {
+					"Ref": "MasterLaunchConfiguration"
+				},
+				"LoadBalancerNames": [{
+					"Ref": "MasterPublicLoadBalancer"
+				}],
+				"MaxSize": "1",
+				"MinSize": "1",
+				"DesiredCapacity": "1",
+				"VPCZoneIdentifier": [{
+					"Ref": "PrivSubnet1"
+				}],
+				"Tags": [{
+						"Key": "Name",
+						"PropagateAtLaunch": "true",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"M-JM-EC2-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"PropagateAtLaunch": "true",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"PropagateAtLaunch": "true",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		},
+		"SlaveLaunchConfiguration": {
+			"Type": "AWS::AutoScaling::LaunchConfiguration",
+			"DependsOn": "MasterAutoScalingGroup",
+			"Properties": {
+				"ImageId": {
+					"Ref": "JMeterSlaveImageId"
+				},
+				"InstanceType": {
+					"Ref": "SlaveInstanceType"
+				},
+				"IamInstanceProfile": {
+					"Ref": "IAMInstanceProfile"
+				},
+				"KeyName": {
+					"Ref": "ServerKeyName"
+				},
+				"SecurityGroups": [{
+					"Ref": "SlaveEc2SG"
+				}],
+				"UserData": {
+					"Fn::Base64": {
+						"Fn::Join": ["", [
+							"#!/bin/bash -x\n"
+						]]
+					}
+				}
+			}
+		},
+		"SlaveAutoScalingGroup": {
+			"Type": "AWS::AutoScaling::AutoScalingGroup",
+			"DependsOn": "SlaveLaunchConfiguration",
+			"Properties": {
+				"AutoScalingGroupName": {
+					"Fn::Join": [
+						"", [
+							"S-JM-ASG-",
+							{
+								"Ref": "NameTagValue"
+							}
+						]
+					]
+				},
+				"AvailabilityZones": [{
+						"Fn::Select": ["0", {
+							"Fn::GetAZs": ""
+						}]
+					},
+					{
+						"Fn::Select": ["1", {
+							"Fn::GetAZs": ""
+						}]
+					}
+				],
+				"LaunchConfigurationName": {
+					"Ref": "SlaveLaunchConfiguration"
+				},
+				"LoadBalancerNames": [],
+				"MaxSize": {
+					"Ref": "SlaveCount"
+				},
+				"MinSize": {
+					"Ref": "SlaveCount"
+				},
+				"DesiredCapacity": {
+					"Ref": "SlaveCount"
+				},
+				"VPCZoneIdentifier": [{
+						"Ref": "PrivSubnet1"
+					},
+					{
+						"Ref": "PrivSubnet2"
+					}
+				],
+				"Tags": [{
+						"Key": "Name",
+						"PropagateAtLaunch": "true",
+						"Value": {
+							"Fn::Join": [
+								"", [
+									"S-JM-EC2-",
+									{
+										"Ref": "NameTagValue"
+									}
+								]
+							]
+						}
+					},
+					{
+						"Key": "ResourceOwner",
+						"PropagateAtLaunch": "true",
+						"Value": {
+							"Ref": "ResourceOwner"
+						}
+					},
+					{
+						"Key": "Environment",
+						"PropagateAtLaunch": "true",
+						"Value": {
+							"Ref": "Environment"
+						}
+					}
+				]
+			}
+		}
+	},
+	"Outputs": {
+		"JmeterMasterPublicLoadBalancerDnsName": {
+			"Description": "The Dns Name of the JMeter Master Public ELB",
+			"Value": {
+				"Fn::GetAtt": ["MasterPublicLoadBalancer", "DNSName"]
+			}
+		}
+	}
+}
