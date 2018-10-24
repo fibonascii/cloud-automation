@@ -56,6 +56,12 @@ class RestApi(BaseCloudFormation):
             Type="String",
         ))
 
+        # KongEc2SecurityGroup is a KONG Output
+        self.KongEC2SecurityGroup = self.template.add_parameter(Parameter(
+            "KongEC2SecurityGroup",
+            Type="String",
+        ))
+
         self.RestApiImageId = self.template.add_parameter(Parameter(
             "RestApiImageId",
             Type="String",
@@ -148,6 +154,12 @@ class RestApi(BaseCloudFormation):
                     FromPort=80,
                     ToPort=80,
                     CidrIp=Ref(self.AdminCidrBlock),
+                ),
+                ec2.SecurityGroupRule(
+                    IpProtocol="tcp",
+                    FromPort=80,
+                    ToPort=80,
+                    SourceSecurityGroupId=Ref(self.KongEC2SecurityGroup),
                 ),
             ],
             Tags=self.base_tags + Tags(Name=self.environment_parameters["ClientEnvironmentKey"] + "-LoyaltyRestApiPrivLBSG"),

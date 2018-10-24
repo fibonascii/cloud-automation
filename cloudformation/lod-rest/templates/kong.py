@@ -122,21 +122,15 @@ class Kong(BaseCloudFormation):
             SecurityGroupIngress=[
                 ec2.SecurityGroupRule(
                     IpProtocol="tcp",
-                    FromPort=8443,
-                    ToPort=8443,
-                    CidrIp=Ref(self.KongProxyAccess),
-                ),
-                ec2.SecurityGroupRule(
-                    IpProtocol="tcp",
                     FromPort=8000,
-                    ToPort=8000,
-                    CidrIp=Ref(self.KongProxyAccess),
+                    ToPort=8001,
+                    CidrIp=Ref(self.KongAdminAccess),
                 ),
                 ec2.SecurityGroupRule(
                     IpProtocol="tcp",
-                    FromPort=8444,
+                    FromPort=8443,
                     ToPort=8444,
-                    CidrIp=Ref(self.KongAdminAccess),
+                    CidrIp=Ref(self.KongProxyAccess),
                 ),
                 ec2.SecurityGroupRule(
                     IpProtocol="tcp",
@@ -152,30 +146,24 @@ class Kong(BaseCloudFormation):
             GroupDescription="Enable HTTP access on port 8000 and 8001",
             VpcId=Ref(self.VpcId),
              SecurityGroupIngress=[
-                ec2.SecurityGroupRule(
-                    IpProtocol="tcp",
-                    FromPort=8443,
-                    ToPort=8443,
-                    CidrIp=Ref(self.KongProxyAccess),
-                ),
-                ec2.SecurityGroupRule(
-                    IpProtocol="tcp",
-                    FromPort=8000,
-                    ToPort=8000,
-                    CidrIp=Ref(self.KongProxyAccess),
-                ),
-                ec2.SecurityGroupRule(
-                    IpProtocol="tcp",
-                    FromPort=8444,
-                    ToPort=8444,
-                    CidrIp=Ref(self.KongAdminAccess),
-                ),
-                ec2.SecurityGroupRule(
-                    IpProtocol="tcp",
-                    FromPort=22,
-                    ToPort=22,
-                    CidrIp=Ref(self.KongAdminAccess),
-                )],
+                 ec2.SecurityGroupRule(
+                     IpProtocol="tcp",
+                     FromPort=8000,
+                     ToPort=8001,
+                     CidrIp=Ref(self.KongAdminAccess),
+                 ),
+                 ec2.SecurityGroupRule(
+                     IpProtocol="tcp",
+                     FromPort=8443,
+                     ToPort=8444,
+                     CidrIp=Ref(self.KongProxyAccess),
+                 ),
+                 ec2.SecurityGroupRule(
+                     IpProtocol="tcp",
+                     FromPort=22,
+                     ToPort=22,
+                     CidrIp=Ref(self.KongAdminAccess),
+                 )],
             Tags=self.base_tags + Tags(Name=self.environment_parameters["ClientEnvironmentKey"] + "-KongPrivateLBSG"),
             ))
 
@@ -523,6 +511,11 @@ class Kong(BaseCloudFormation):
         self.template.add_output(Output(
             "KongPublicLoadBalancerDNS",
             Value=GetAtt(self.KongPublicLoadBalancer, "DNSName"),
+        ))
+
+        self.template.add_output(Output(
+            "KongEC2SecurityGroup",
+            Value=Ref(self.KongEC2SecurityGroup),
         ))
 
 
