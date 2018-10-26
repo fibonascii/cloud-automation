@@ -324,7 +324,7 @@ class JMeter(BaseCloudFormation):
         self.TestExecutionLengthSSMParameter = self.template.add_resource(SSMParameter(
             "TestExecutionLengthSSMParameter",
             Description="The length of time the JMeter Test can Run",
-            Name=self.environment_parameters["ClientEnvironmentKey"] + "JMeterTestExecutionLength",
+            Name=self.environment_parameters["ClientEnvironmentKey"] + "-JMeterTestExecutionLength",
             Type="String",
             Value=Ref(self.TestExecutionLengthSSMParameterValue),
         ))
@@ -332,7 +332,7 @@ class JMeter(BaseCloudFormation):
         self.JMXFileNameSSMParameter = self.template.add_resource(SSMParameter(
             "JMXFileNameSSMParameter",
             Description="The Name of the JMX File",
-            Name=self.environment_parameters["ClientEnvironmentKey"] + "JMeterJMXFileName",
+            Name=self.environment_parameters["ClientEnvironmentKey"] + "-JMeterJMXFileName",
             Type="String",
             Value=Ref(self.JMXFileNameSSMParameterValue),
         ))
@@ -340,7 +340,7 @@ class JMeter(BaseCloudFormation):
         self.S3JMXFileLocationSSMParameter = self.template.add_resource(SSMParameter(
             "S3JMXFileLocationSSMParameter",
             Description="Location of the JMX File in S3",
-            Name=self.environment_parameters["ClientEnvironmentKey"] + "JMeterS3JMXFileLocation",
+            Name=self.environment_parameters["ClientEnvironmentKey"] + "-JMeterS3JMXFileLocation",
             Type="String",
             Value=Ref(self.S3JMXFileLocationSSMParameterValue),
         ))
@@ -348,11 +348,10 @@ class JMeter(BaseCloudFormation):
         self.JMXResultsFileNameSSMParameter = self.template.add_resource(SSMParameter(
             "JMXResultsFileNameSSMParameter",
             Description="The Name of The JMX Results File",
-            Name=self.environment_parameters["ClientEnvironmentKey"] + "JMeterJMXResultsFileName",
+            Name=self.environment_parameters["ClientEnvironmentKey"] + "-JMeterJMXResultsFileName",
             Type="String",
             Value=Ref(self.JMXResultsFileNameSSMParameterValue),
         ))
-
 
 
     def add_outputs(self):
