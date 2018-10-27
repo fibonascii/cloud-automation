@@ -1,6 +1,7 @@
 import boto3
-from sceptre.environment import Environment
+from sceptre.environment import Environment as Environ
 from optparse import OptionParser
+from jinja2 import Template, Environment, FileSystemLoader
 import os
 
 parser = OptionParser()
@@ -29,36 +30,43 @@ def get_ssm_parameters(client_code):
             WithDecryption=True
         )
 
-    parameter_list = []
-    parameter_list.append(parameters['Parameters'][0]['Value'])
-    parameter_list.append(parameters['Parameters'][1]['Value'])
-    parameter_list.append(parameters['Parameters'][2]['Value'])
-    parameter_list.append(parameters['Parameters'][3]['Value'])
-    parameter_list.append(parameters['Parameters'][4]['Value'])
 
-    return parameter_list
+    parameter_dict = {}
+    parameter_dict['JMeterJMXFilename'] = parameters['Parameters'][0]['Value'] 
+    parameter_dict['JMeterTestExecutionLength'] = parameters['Parameters'][1]['Value'] 
+    parameter_dict['restApiPrefix'] = parameters['Parameters'][2]['Value'] 
+    parameter_dict['restKongConsumerClientSecret'] = parameters['Parameters'][3]['Value'] 
+    parameter_dict['restKongConsumerClientId'] = parameters['Parameters'][4]['Value'] 
+
+    return parameter_dict
 
 def get_environment_stack_outputs():
-    env = Environment(sceptre_dir=os.path.join(cloudformation_root, str(options.procedure)),
+    env = Environ(sceptre_dir=os.path.join(cloudformation_root, str(options.procedure)),
                     environment_path=options.environment)
     stack = env.stacks['jmeter']
     outputs = stack.describe_outputs()
 
-    stack_output_list = []
+    stack_output_dict = {}
     for output in outputs:
         if output['OutputKey'] == 'JmeterMasterPublicLoadBalancerDnsName':
-            stack_output_list.append(output['OutputValue']) 
+            stack_output_dict[output['OutputKey']] = output['OutputValue'] 
     
     stack = env.stacks['kong']
     outputs = stack.describe_outputs()
     for output in outputs:
         if output['OutputKey'] == 'KongPublicLoadBalancerDNS':
-            stack_output_list.append(output['OutputValue']) 
+            stack_output_dict[output['OutputKey']] = output['OutputValue'] 
 
-    return stack_output_list
+    return stack_output_dict
 
-    
+def create_jmx_file(parameters, outputs):
+    parameters.update(outputs)
+    j2_env = Environment(loader=FileSystemLoader(os.getcwd()), trim_blocks=True)
+    template = j2_env.get_template('ProdDev-Latest_LoadTest.jmx.j2')
+    rendered = template.render(parameters)  
+    with open('ProdDev-Latest_LoadTest.jmx', 'w') as file:
+        file.write(rendered)
+
 parameters = get_ssm_parameters(client_code)
 outputs = get_environment_stack_outputs()
-print(outputs)
-print(parameters)
+create_jmx_file(parameters, outputs)
