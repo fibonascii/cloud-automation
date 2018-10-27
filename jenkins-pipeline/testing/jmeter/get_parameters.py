@@ -2,7 +2,9 @@ import boto3
 from sceptre.environment import Environment as Environ
 from optparse import OptionParser
 from jinja2 import Template, Environment, FileSystemLoader
+from fabric import Connection
 import os
+
 
 parser = OptionParser()
 parser.add_option('-p', '--procedure', type="string",
@@ -16,7 +18,9 @@ client_code = 'U1NIKE'
 #cloudformation_root = os.path.join(os.environ['JENKINS_HOME'], 'workspace/ValidateBuild/cloudformation')
 cloudformation_root = '/Users/rkirby/repo/cloud-automation/cloudformation' 
 
+
 def get_ssm_parameters(client_code):
+    """ Fetch the SSM Parameters needed to template out to JMX File """
     client = boto3.client('ssm')
     parameters = client.get_parameters(
             Names=[
@@ -40,7 +44,10 @@ def get_ssm_parameters(client_code):
 
     return parameter_dict
 
+
 def get_environment_stack_outputs():
+    """ Use the Sceptre API to grab stack outputs from Kong and Jmeter """
+
     env = Environ(sceptre_dir=os.path.join(cloudformation_root, str(options.procedure)),
                     environment_path=options.environment)
     stack = env.stacks['jmeter']
@@ -59,7 +66,11 @@ def get_environment_stack_outputs():
 
     return stack_output_dict
 
+
 def create_jmx_file(parameters, outputs):
+    """ Updated the parameters dictionary with stack outputs, and render the JMX template with parameters
+    and write the file to the filesystem """
+    
     parameters.update(outputs)
     j2_env = Environment(loader=FileSystemLoader(os.getcwd()), trim_blocks=True)
     template = j2_env.get_template('ProdDev-Latest_LoadTest.jmx.j2')
@@ -67,6 +78,36 @@ def create_jmx_file(parameters, outputs):
     with open('ProdDev-Latest_LoadTest.jmx', 'w') as file:
         file.write(rendered)
 
-parameters = get_ssm_parameters(client_code)
-outputs = get_environment_stack_outputs()
-create_jmx_file(parameters, outputs)
+
+def fetch_jmeter_server_details():
+    """ Use Boto3 to fetch the private IP of master and slave and the name of the ssh key to
+    connect to the servers """
+    pass
+
+
+def execute_jmeter_tests(parameters, outputs):
+    """ Connect to the JMeter Master and Slave using the values grabbed in other steps
+    and execute the JMeter Load Testsi """
+
+    JMeterMasterELB = outputs['JmeterMasterPublicLoadBalancerDnsName']
+    JMeterMasterPrivateIP = '10.0.1.44'
+    JMeterResultsFile = parameters['JMeterJMXResultsFileName']
+    JMXFile = parameters = ['JMeterJMXFileName']
+    connect_kwargs = {"key_filename":['jenkins-development.pem']}
+    
+    launch_master = './apache-jmeter-4.0/bin/jmeter.sh -R {} -n -t ~/{} -l ~/{} -Djava.rmi.server.hostname={}'.format(
+            JMeterMasterELB, JMXFile, JMeterResultsFile, JMeterMasterPrivateIP) 
+    
+    with Connection(JMeterMasterELB, user='ec2-user', connect_kwargs=connect_kwargs) as conn:
+            conn.run('rm -f ProdDev-Latest_LoadTest.jmx')
+            conn.put('ProdDev-Latest_LoadTest.jmx')
+            conn.run('ls -la ProdDev-Latest_LoadTest.jmx')
+            #conn.run(launch_slave)
+            conn.run(launch_master)
+
+
+if __name__ == '__main__':
+    parameters = get_ssm_parameters(client_code)
+    outputs = get_environment_stack_outputs()
+    create_jmx_file(parameters, outputs)
+    execute_jmeter_tests(parameters, outputs)
