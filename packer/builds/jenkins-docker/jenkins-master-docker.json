@@ -22,10 +22,13 @@
                 ]
     }],
     "post-processors": [
+    [
      {
        "type": "docker-tag",
        "repository": "844895670466.dkr.ecr.us-east-1.amazonaws.com/jenkins-images",
        "tag": "provisioned-master-latest"
-       }
+       },
+      "docker-push"
      ]
+   ]
 }
