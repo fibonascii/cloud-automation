@@ -70,7 +70,7 @@ node {
         stage("Execute Performance Test") {
             dir("jenkins-pipeline/validatebuild") {
                 try {
-                    sh "python3 jenkins-pipeline/sceptre/get_parameters.py -p ${PROCEDURE} -e ${ENVIRONMENT}"
+                    sh "python3 get_parameters.py -p ${PROCEDURE} -e ${ENVIRONMENT}"
                 }
                 catch(exc) {
                     error("Executing Performance Test Failed.")
