@@ -150,8 +150,8 @@ class JMeter(BaseCloudFormation):
             Tags=self.base_tags + Tags(Name=self.environment_parameters["ClientEnvironmentKey"] + "-JMeterMasterEC2InstanceSG"),
         ))
 
-        self.SlavePrivateLBSG = self.template.add_resource(ec2.SecurityGroup(
-            "SlavePrivateLBSG",
+        self.SlavePublicLBSG = self.template.add_resource(ec2.SecurityGroup(
+            "SlavePublicLBSG",
             GroupDescription="Security Group for Private JMeter Slave Load Balancer",
             VpcId=Ref(self.VpcId),
             SecurityGroupIngress=[
@@ -168,7 +168,7 @@ class JMeter(BaseCloudFormation):
                     SourceSecurityGroupId=Ref(self.MasterEc2SG),
                 ),
             ],
-            Tags=self.base_tags + Tags(Name=self.environment_parameters["ClientEnvironmentKey"] + "-JMeterSlavePrivateLBSG"),
+            Tags=self.base_tags + Tags(Name=self.environment_parameters["ClientEnvironmentKey"] + "-JMeterSlavePublicLBSG"),
 
         ))
 
@@ -181,7 +181,7 @@ class JMeter(BaseCloudFormation):
                     IpProtocol="tcp",
                     FromPort=22,
                     ToPort=22,
-                    SourceSecurityGroupId=Ref(self.SlavePrivateLBSG),
+                    SourceSecurityGroupId=Ref(self.SlavePublicLBSG),
                 ),
                 ec2.SecurityGroupRule(
                     IpProtocol="tcp",
@@ -193,7 +193,7 @@ class JMeter(BaseCloudFormation):
                     IpProtocol="tcp",
                     FromPort=24000,
                     ToPort=26999,
-                    SourceSecurityGroupId=Ref(self.SlavePrivateLBSG),
+                    SourceSecurityGroupId=Ref(self.SlavePublicLBSG),
                 ),
             ],
             Tags=self.base_tags + Tags(Name=self.environment_parameters["ClientEnvironmentKey"] + "-JMeterSlaveEC2InstanceSG"),
@@ -241,10 +241,10 @@ class JMeter(BaseCloudFormation):
 
         ))
 
-        self.SlavePrivateLoadBalancer = self.template.add_resource(elasticloadbalancing.LoadBalancer(
-            "SlavePrivateLoadBalancer",
+        self.SlavePublicLoadBalancer = self.template.add_resource(elasticloadbalancing.LoadBalancer(
+            "SlavePublicLoadBalancer",
             LoadBalancerName=self.environment_parameters["ClientEnvironmentKey"] + "-JMeterSlavePubELB",
-            Scheme="internal",
+            Scheme="internet-facing",
             Listeners=[
                 elasticloadbalancing.Listener(
                     LoadBalancerPort="22",
@@ -254,7 +254,7 @@ class JMeter(BaseCloudFormation):
                 )
             ],
             Instances=[],
-            SecurityGroups=[Ref(self.SlavePrivateLBSG)],
+            SecurityGroups=[Ref(self.SlavePublicLBSG)],
             Subnets=[Ref(self.RESTPrivSubnet1)],
             CrossZone=True,
             HealthCheck=elasticloadbalancing.HealthCheck(
@@ -263,7 +263,7 @@ class JMeter(BaseCloudFormation):
                 UnhealthyThreshold="10",
                 Interval="10",
                 Timeout="5", ),
-            Tags=self.base_tags + Tags(Name=self.environment_parameters["ClientEnvironmentKey"] + "-JMeterSlavePrivateLB"),
+            Tags=self.base_tags + Tags(Name=self.environment_parameters["ClientEnvironmentKey"] + "-JMeterSlavePublicLB"),
 
         ))
 
@@ -308,7 +308,7 @@ class JMeter(BaseCloudFormation):
             AutoScalingGroupName=self.environment_parameters[
                                      "ClientEnvironmentKey"] + "JMeterSlaveAutoScalingGroup",
             LaunchConfigurationName=Ref(self.SlaveLaunchConfiguration),
-            LoadBalancerNames=[Ref(self.SlavePrivateLoadBalancer)],
+            LoadBalancerNames=[Ref(self.SlavePublicLoadBalancer)],
             MaxSize="1",
             MinSize="1",
             DesiredCapacity="1",
@@ -357,6 +357,11 @@ class JMeter(BaseCloudFormation):
     def add_outputs(self):
         self.template.add_output(Output(
             "JmeterMasterPublicLoadBalancerDnsName",
+            Value=GetAtt(self.MasterPublicLoadBalancer, "DNSName"),
+        ))
+
+        self.template.add_output(Output(
+            "JmeterSlavePublicLoadBalancerDnsName",
             Value=GetAtt(self.MasterPublicLoadBalancer, "DNSName"),
         ))
 

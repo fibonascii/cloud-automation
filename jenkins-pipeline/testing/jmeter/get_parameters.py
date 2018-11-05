@@ -4,6 +4,8 @@ from optparse import OptionParser
 from jinja2 import Template, Environment, FileSystemLoader
 from fabric import Connection
 import os
+import logging
+
 
 
 parser = OptionParser()
@@ -75,7 +77,7 @@ def create_jmx_file(parameters, outputs):
     j2_env = Environment(loader=FileSystemLoader(os.getcwd()), trim_blocks=True)
     template = j2_env.get_template('ProdDev-Latest_LoadTest.jmx.j2')
     rendered = template.render(parameters)  
-    with open('ProdDev-Latest_LoadTest.jmx', 'w') as file:
+    with open(parameters['JMeterJMXFilename'], 'w') as file:
         file.write(rendered)
 
 
@@ -91,18 +93,22 @@ def execute_jmeter_tests(parameters, outputs):
 
     JMeterMasterELB = outputs['JmeterMasterPublicLoadBalancerDnsName']
     JMeterMasterPrivateIP = '10.0.1.44'
-    JMeterResultsFile = parameters['JMeterJMXResultsFileName']
-    JMXFile = parameters = ['JMeterJMXFileName']
+    JMeterSlaveELB = 'U1NIKE-JMeterSlavePubELB-86711008.us-east-1.elb.amazonaws.com'
+#    JMeterResultsFile = parameters['JMeterJMXResultsFileName']
+    JMeterResultsFile = 'myresultsfile.jlt' 
+    JMXFile = parameters['JMeterJMXFilename']
     connect_kwargs = {"key_filename":['jenkins-development.pem']}
+
+    launch_slave = './apache-jmeter-4.0/bin/jmeter-server >&- 2>&- <&- &'
     
-    launch_master = './apache-jmeter-4.0/bin/jmeter.sh -R {} -n -t ~/{} -l ~/{} -Djava.rmi.server.hostname={}'.format(
-            JMeterMasterELB, JMXFile, JMeterResultsFile, JMeterMasterPrivateIP) 
+    launch_master = './apache-jmeter-4.0/bin/jmeter.sh -n -t ~/{} -R {} -l ~/{} -Djava.rmi.server.hostname={}'.format(
+            JMXFile, JMeterMasterELB, JMeterResultsFile, JMeterMasterPrivateIP) 
+
+    with Connection(JMeterSlaveELB, user='ec2-user', connect_kwargs=connect_kwargs) as conn:
+            conn.run(launch_slave)
     
     with Connection(JMeterMasterELB, user='ec2-user', connect_kwargs=connect_kwargs) as conn:
-            conn.run('rm -f ProdDev-Latest_LoadTest.jmx')
-            conn.put('ProdDev-Latest_LoadTest.jmx')
-            conn.run('ls -la ProdDev-Latest_LoadTest.jmx')
-            #conn.run(launch_slave)
+            conn.put('{}'.format(JMXFile))
             conn.run(launch_master)
 
 
