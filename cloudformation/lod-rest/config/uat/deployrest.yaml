@@ -2,6 +2,7 @@ template_path: templates/deployrest.py
 parameters:
     AdminCidrBlock: !stack_output vpc::AdminCidrBlock
     EnvironmentArtifactsS3Bucket: !stack_output vpc::EnvironmentArtifactsS3Bucket
+    DatabaseSecurityGroup: !stack_output database::OracleRestDBSecurityGroup
     OAuthConfigurationFilesLocation: "bootstrap/rest/postman/"
     OAuthPublicLoadBalancerSecurityGroup: !stack_output kong::KongPublicLoadBalancerSecurityGroup
     OAuthPublicLoadBalancerDNS: !stack_output kong::KongPublicLoadBalancerDNS
