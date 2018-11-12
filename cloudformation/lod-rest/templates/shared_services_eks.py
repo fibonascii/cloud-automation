@@ -283,11 +283,6 @@ class SharedServicesEks(BaseCloudFormation):
             Value=Ref(self.WorkerNodeAutoScalingGroup),
         ))
 
-        self.template.add_output(Output(
-            "WorkerNodeEc2SG",
-            Value=Ref(self.WorkerNodeEc2SG),
-        ))
-
 def sceptre_handler(sceptre_user_data):
     sseks = SharedServicesEks(sceptre_user_data)
     return sseks.template.to_json()

@@ -1,0 +1,22 @@
+template_path: templates/rest_api.py
+parameters:
+    VpcId: !stack_output vpc::VpcId
+    AdminCidrBlock: !stack_output vpc::AdminCidrBlock
+    RESTPrivSubnet1: !stack_output vpc::RESTPrivSubnet1
+    RESTPrivSubnet2: !stack_output vpc::RESTPrivSubnet2
+    RESTPubSubnet1: !stack_output vpc::RESTPubSubnet1
+    RESTPubSubnet2: !stack_output vpc::RESTPubSubnet2
+    KongPrivateLoadBalancerSecurityGroup: !stack_output kong::KongPrivateLoadBalancerSecurityGroup
+    KongEC2SecurityGroup: !stack_output kong::KongEC2SecurityGroup
+    RestApiImageId: ami-0a5f582c2ff67db7a
+    RestApiKeyName: pd-cicd-devolopment
+    RestApiInstanceType: t2.medium
+    RestApiIAMInstanceProfile: cicd-admin-role
+    RestApiASGGroupMinSize: "1"
+    RestApiASGGroupDesiredSize: "1"
+    RestApiASGGroupMaxSize: "1"
+    RestApiASGHealthCheckType: ELB
+    RestApiASGHealthCheckGracePeriod: "300"
+    RestApiASGCoolDown: "120"
+    RestApiASGLifeCycleTransition: autoscaling:EC2_INSTANCE_LAUNCHING
+    RestApiASGLifeCycleHeartBeatTimeout: "900"

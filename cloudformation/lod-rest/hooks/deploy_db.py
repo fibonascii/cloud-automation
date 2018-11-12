@@ -344,13 +344,14 @@ class DeployDb(Hook):
 
             # Monitor Execution for success
 
-            # Delete temp folder
-            shutil.rmtree(basepath + "/temp/")
 
             # Remove Temporary DB Access
-            sleep(30)
+            sleep(300)
             self.handle_temporary_access(ec2, "revoke", db_sg[0],
                                          eks_worker_node_sg[0])
+
+            # Delete temp folder
+            shutil.rmtree(basepath + "/temp/")
 
 
 

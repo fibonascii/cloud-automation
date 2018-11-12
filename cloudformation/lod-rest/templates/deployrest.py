@@ -87,6 +87,10 @@ class DeployRest(BaseCloudFormation):
             Type="String",
         ))
 
+        self.DatabaseSecurityGroup = self.template.add_parameter(Parameter(
+            "DatabaseSecurityGroup",
+            Type="String",
+        ))
 
     def add_resources(self):
         self.RestApiPrefixSSMParameter = self.template.add_resource(SSMParameter(

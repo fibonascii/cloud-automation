@@ -95,6 +95,11 @@ class Database(BaseCloudFormation):
             Type="String",
         ))
 
+        self.SSEksWorkerNodeEc2SG = self.template.add_parameter(Parameter(
+            "SSEksWorkerNodeEc2SG",
+            Type="String",
+        ))
+
     def add_resources(self):
         
         self.OracleRestDBSecurityGroup = self.template.add_resource(ec2.SecurityGroup(
