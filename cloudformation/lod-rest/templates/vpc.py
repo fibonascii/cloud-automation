@@ -330,6 +330,12 @@ class VPC(BaseCloudFormation):
             Value=Ref(self.EnvironmentArtifactsBucket)
         ))
 
+        self.template.add_output(Output(
+            "CoreBootStrapRepositoryS3BucketName",
+            Description="S3 Bucket for Core Artifacts",
+            Value=Ref(self.CoreBootStrapRepositoryS3BucketName)
+        ))
+
 
 def sceptre_handler(sceptre_user_data):
     vpc = VPC(sceptre_user_data)

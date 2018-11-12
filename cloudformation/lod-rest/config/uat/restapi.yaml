@@ -8,7 +8,7 @@ parameters:
     RESTPubSubnet2: !stack_output vpc::RESTPubSubnet2
     KongPrivateLoadBalancerSecurityGroup: !stack_output kong::KongPrivateLoadBalancerSecurityGroup
     KongEC2SecurityGroup: !stack_output kong::KongEC2SecurityGroup
-    RestApiImageId: ami-010f1e2e5ddcd7d42
+    RestApiImageId: ami-0a5f582c2ff67db7a
     RestApiKeyName: pd-cicd-devolopment
     RestApiInstanceType: t2.medium
     RestApiIAMInstanceProfile: cicd-admin-role

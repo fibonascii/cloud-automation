@@ -1,0 +1,7 @@
+---
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: {{ client_namespace }}
+  labels:
+    name: {{ client_namespace }}

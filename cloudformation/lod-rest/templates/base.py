@@ -9,17 +9,17 @@ class BaseCloudFormation(ABC):
         self.template = Template()
         self.base_tags = Tags(
                   ResourceOwner="ProductDevelopment",
-                  Environment="UserAcceptance",
-                  Developer="David Preble",
+                  Environment="Performance",
+                  Developer="Jenkins",
                   )
 
         # self.base_asg_tags = AutoScalingTags(AutoScalingTag("ResourceOwner", "ProductDevelopment", True),
         #                        AutoScalingTag("Environment", "Production", True),
         #                        AutoScalingTag("Developer", "DPreb", True))
 
-        self.environment_parameters = {"EnvironmentName": "UserAcceptance",
-                                       "ClientCode": "NIKE",
-                                       "ClientEnvironmentKey": "U1NIKE",
+        self.environment_parameters = {"EnvironmentName": "Performance",
+                                       "ClientCode": "LODPF",
+                                       "ClientEnvironmentKey": "D1LODPF",
                                        "EnvironmentRegion": "us-east-1",
                                        "ResourceOwner": "ProductDevelopment"}
    

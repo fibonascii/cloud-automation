@@ -1,0 +1,40 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ db_ora_deploy_job_name }}
+  namespace: {{ client_namespace }}
+spec:
+  template:
+    spec:
+      containers:
+        - name: oracle-init-worker
+          image: tautonic/oracle-instantclient:18.3.0
+          volumeMounts:
+            - name: execution-scripts
+              mountPath: /tmp/data/scripts
+            - name: lf-schema
+              mountPath: /tmp/data/schema
+            - name: lf-oracle-objects
+              mountPath: /tmp/data/objects
+            - name: perf-tuning
+              mountPath: /tmp/data/perf
+          env:
+          - name: CLIENT_ID
+            value: client-x
+          command: ['sh', '-c', 'bash /tmp/data/scripts/execute_sql.sh admin schema && bash /tmp/data/scripts/execute_sql.sh loyalty_fw object && bash /tmp/data/scripts/execute_sql.sh admin perf']
+      restartPolicy: Never
+      
+
+      volumes:
+      - name: execution-scripts
+        configMap:
+          name: execution-scripts
+      - name: lf-schema
+        configMap:
+          name: lf-schema
+      - name: lf-oracle-objects
+        configMap:
+          name: lf-oracle-objects
+      - name: perf-tuning
+        configMap:
+          name: perf-tuning

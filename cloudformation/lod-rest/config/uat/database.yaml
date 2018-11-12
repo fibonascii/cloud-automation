@@ -5,8 +5,10 @@ parameters:
     LoyaltyNavigatorEC2SecurityGroup: !stack_output loyaltynavigator::LoyaltyNavigatorEC2SecurityGroup 
     RESTPrivSubnet1: !stack_output vpc::RESTPrivSubnet1
     RESTPrivSubnet2: !stack_output vpc::RESTPrivSubnet2
+    DatabaseBaseFrameworkScriptsLocation: "bootstrap/rest/loyalty-framework/"
+    DatabaseReleaseFrameworkScriptsLocation: "releases/loyalty-framework/5.2.0.12/db-scripts/loyalty-framework/"
     OracleRestDBUsername: brier_admin
-    OracleRestDBName: PDRSTDB
+    OracleRestDBName: lodprfd1
     OracleRestDBClass: db.m4.large
     OracleRestDBAllocatedStorage: "100"
     OracleRestDBStorageType: io1
@@ -14,5 +16,7 @@ parameters:
     OracleRestDBPassword: reX7They!
     OracleDBSnapshotArn: arn:aws:rds:us-east-1:844895670466:snapshot:loyaltyresttcprulesconfigured-041120181528
     OracleDBParameterGroup: bp-m4large-oracle-se2-12-1
-
+hooks:
+    after_create:
+        - !deploy_db
    

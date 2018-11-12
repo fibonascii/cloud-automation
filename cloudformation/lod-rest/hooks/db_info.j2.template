@@ -1,0 +1,12 @@
+admin_username: {{ db_admin_username }}
+admin_password: {{ db_admin_password }}
+ln_username: loyaltynav2
+ln_password: password
+lf_username: loyaltyframework2
+lf_password: password
+endpoint: {{ db_endpoint }}
+dbname: {{ db_name }}
+schema_path: /tmp/data/schema/
+perf_path: /tmp/data/perf/
+object_path: /tmp/data/objects/
+scripts_path: /tmp/data/scripts/

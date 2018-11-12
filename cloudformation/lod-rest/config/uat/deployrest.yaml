@@ -10,7 +10,7 @@ parameters:
     RestApiAutoScalingGroupName: !stack_output restapi::RestApiAutoScalingGroup
     RestApiPrefix: "lod"
     OAuthAdminPort: "8444"
-    LoyaltyOnDemandOrganization: "D1PDEV"
+    LoyaltyOnDemandOrganization: "D1PERF"
     LoyaltyOnDemandEnvironment: "Development"
     OAuthRestApiProvisionKey: ""
     OAuthRestApiKongConsumerClientId: ""

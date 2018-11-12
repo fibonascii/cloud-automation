@@ -85,6 +85,16 @@ class Database(BaseCloudFormation):
             Type="String",
         ))
 
+        self.DatabaseBaseFrameworkScriptsLocation = self.template.add_parameter(Parameter(
+            "DatabaseBaseFrameworkScriptsLocation",
+            Type="String",
+        ))
+
+        self.DatabaseReleaseFrameworkScriptsLocation = self.template.add_parameter(Parameter(
+            "DatabaseReleaseFrameworkScriptsLocation",
+            Type="String",
+        ))
+
     def add_resources(self):
         
         self.OracleRestDBSecurityGroup = self.template.add_resource(ec2.SecurityGroup(
@@ -117,6 +127,7 @@ class Database(BaseCloudFormation):
         self.OracleRestDBInstance = self.template.add_resource(DBInstance(
             "OracleRestDBInstance",
             DBName=Ref(self.OracleRestDBName),
+            DBInstanceIdentifier=Ref(self.OracleRestDBName),
             Engine="oracle-se2",
             MasterUsername=Ref(self.OracleRestDBUsername),
             DBInstanceClass=Ref(self.OracleRestDBClass),
@@ -129,19 +140,25 @@ class Database(BaseCloudFormation):
             StorageType=Ref(self.OracleRestDBStorageType),
             Iops=Ref(self.OracleRestDBIOPS),
             MasterUserPassword=Ref(self.OracleRestDBPassword),
-            DBSnapshotIdentifier=Ref(self.OracleDBSnapshotArn),
             DBParameterGroupName=Ref(self.OracleDBParameterGroup),
             Tags=self.base_tags + Tags(Name=self.environment_parameters["ClientEnvironmentKey"] + "-OracleRDS"),
         ))
 
-
-
-        
-
-
-    
     def add_outputs(self):
-        pass
+        self.template.add_output(Output(
+            "OracleRestDBSecurityGroup",
+            Value=Ref(self.OracleRestDBSecurityGroup),
+        ))
+
+        self.template.add_output(Output(
+            "DatabaseBaseFrameworkScriptsLocation",
+            Value=Ref(self.DatabaseBaseFrameworkScriptsLocation),
+        ))
+
+        self.template.add_output(Output(
+            "DatabaseReleaseFrameworkScriptsLocation",
+            Value=Ref(self.DatabaseReleaseFrameworkScriptsLocation),
+        ))
 
 
 def sceptre_handler(sceptre_user_data):
