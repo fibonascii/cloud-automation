@@ -14,7 +14,7 @@ parameters:
     WorkerNodeASGGroupMaxSize: "3"
     WorkerNodeASGHealthCheckType: EC2
     WorkerNodeASGHealthCheckGracePeriod: "300"
-    WorkerNodeASGCoolDown: "120"
+    WorkerNodeASGCoolDown: "90"
 hooks:
     after_create:
         - !join_worker_nodes_to_cluster

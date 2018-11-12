@@ -5,11 +5,12 @@ parameters:
     LoyaltyNavigatorEC2SecurityGroup: !stack_output loyaltynavigator::LoyaltyNavigatorEC2SecurityGroup 
     RESTPrivSubnet1: !stack_output vpc::RESTPrivSubnet1
     RESTPrivSubnet2: !stack_output vpc::RESTPrivSubnet2
+    SSEksWorkerNodeEc2SG: !stack_output sseks::WorkerNodeEc2SG
     DatabaseBaseFrameworkScriptsLocation: "bootstrap/rest/loyalty-framework/"
     DatabaseReleaseFrameworkScriptsLocation: "releases/loyalty-framework/5.2.0.12/db-scripts/loyalty-framework/"
     OracleRestDBUsername: brier_admin
     OracleRestDBName: lodprfd1
-    OracleRestDBClass: db.m4.large
+    OracleRestDBClass: db.m4.xlarge
     OracleRestDBAllocatedStorage: "100"
     OracleRestDBStorageType: io1
     OracleRestDBIOPS: "1000"
