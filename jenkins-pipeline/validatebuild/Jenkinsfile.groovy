@@ -28,6 +28,9 @@ node {
 
         def ENVIRONMENT=params.ENVIRONMENT
         echo "Environment: ${ENVIRONMENT}"
+        
+        def EXECUTE_IMAGE_BUILD=params.EXECUTE_IMAGE_BUILD
+        echo "Execute Image Build: ${EXECUTE_IMAGE_BUILD}"
 
         // Clone Repository
         git branch: 'master',
@@ -37,8 +40,11 @@ node {
         // Build Image With Packer and Generate Build Manifest
         stage("Build Image") {
             dir("packer/builds/${PROCEDURE}") {
-                try { 
+                try {
+                    if (${EXECUTE_IMAGE_BUILD} == "true")
+		    { 
                     sh "packer.io build -var-file ../../../jenkins-pipeline/validatebuild/vars_file.json ${PROCEDURE}.json"
+		    }
                 }
                 catch(exc) {
                     error("Building Image Failed.")

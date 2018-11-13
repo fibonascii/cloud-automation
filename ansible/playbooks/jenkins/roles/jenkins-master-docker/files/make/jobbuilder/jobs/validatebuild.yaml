@@ -7,6 +7,9 @@
       - string:
           name: ENVIRONMENT
           default: performance
+      - string:
+          name: EXECUTE_IMAGE_BUILD
+          default: true
     project-type: pipeline
     description: 'CD to verify LOD Rest Build'
     logrotate:
