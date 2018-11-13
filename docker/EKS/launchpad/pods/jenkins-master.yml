@@ -15,6 +15,7 @@ spec:
       containers:
       - name: jenkins-master
         image: 844895670466.dkr.ecr.us-east-1.amazonaws.com/jenkins-images:provisioned-master-latest
+        imagePullPolicy: Always
         ports:
         - name: jenkins-port
           containerPort: 8080
