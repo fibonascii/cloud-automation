@@ -41,7 +41,7 @@ node {
         stage("Build Image") {
             dir("packer/builds/${PROCEDURE}") {
                 try {
-                    if (${EXECUTE_IMAGE_BUILD} == "true")
+                    if (EXECUTE_IMAGE_BUILD=="true")
 		    { 
                     sh "packer.io build -var-file ../../../jenkins-pipeline/validatebuild/vars_file.json ${PROCEDURE}.json"
 		    }
