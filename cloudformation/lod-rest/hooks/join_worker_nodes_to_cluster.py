@@ -47,6 +47,14 @@ class JoinWorkerNodesToCluster(Hook):
                                              output['OutputKey'] == 'WorkerNodeInstanceRoleArn']
             print(worker_node_instance_role_arn[0])
 
+            cluster_admin_role_arn = [output['OutputValue'] for output in outputs if
+                                             output['OutputKey'] == 'EKSClusterRoleArn']
+            print(cluster_admin_role_arn[0])
+
+            cluster_admin_role = [output['OutputValue'] for output in outputs if
+                                      output['OutputKey'] == 'EKSClusterRole']
+            print(cluster_admin_role[0])
+
             basepath = path.dirname(__file__)
             print(basepath)
             config_map_yaml_path = path.abspath(path.join(basepath, "ss_eks_config_map.yaml"))
@@ -59,7 +67,10 @@ class JoinWorkerNodesToCluster(Hook):
 
             j2_env = Environment(loader=FileSystemLoader(basepath), trim_blocks=True)
             template = j2_env.get_template("ss_eks_config_map.j2.template")
-            render_values = {"role_arn": worker_node_instance_role_arn[0], "EC2PrivateDNSName": "{{EC2PrivateDNSName}}"}
+            render_values = {"worker_role_arn": worker_node_instance_role_arn[0],
+                             "EC2PrivateDNSName": "{{EC2PrivateDNSName}}",
+                             "cluster_admin_role_arn": cluster_admin_role_arn[0],
+                             "cluster_admin_role": cluster_admin_role[0]}
             rendered = template.render(render_values)
 
             with open('hooks/ss_eks_config_map.yaml', 'w') as f:
@@ -67,6 +78,9 @@ class JoinWorkerNodesToCluster(Hook):
 
             connect_worker_nodes_to_cluster_cmd = "kubectl apply -f {}".format(config_map_yaml_path)
             os.system(connect_worker_nodes_to_cluster_cmd)
+
+            get_aws_auth_configmap_cmd = "kubectl get configmaps aws-auth -o yaml --namespace='kube-system'"
+            os.system(get_aws_auth_configmap_cmd)
 
             worker_node_autoscaling_group_name = [output['OutputValue'] for output in outputs if
                                              output['OutputKey'] == 'WorkerNodeAutoScalingGroupName']

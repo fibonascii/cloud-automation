@@ -8,7 +8,16 @@
           name: ENVIRONMENT
           default: performance
       - string:
+          name: BRANCH_SPECIFIER
+          default: master
+      - bool:
           name: EXECUTE_IMAGE_BUILD
+          default: true
+      - bool:
+          name: EXECUTE_PERFORMANCE_TEST
+          default: true
+      - bool:
+          name: TEAR_DOWN_ENV_DEFAULT
           default: true
     project-type: pipeline
     description: 'CD to verify LOD Rest Build'
@@ -24,5 +33,7 @@
              credentials-id: c8d48617-863b-44b5-b71f-1aa9e9c24c8e
              branches:
               - origin/master
-             clean: true
+             clean:
+               before: true
       script-path: jenkins-pipeline/validatebuild/Jenkinsfile.groovy
+

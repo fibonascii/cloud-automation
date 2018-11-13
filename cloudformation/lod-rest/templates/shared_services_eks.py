@@ -279,6 +279,16 @@ class SharedServicesEks(BaseCloudFormation):
         ))
 
         self.template.add_output(Output(
+            "EKSClusterRole",
+            Value=Ref(self.EKSClusterRole),
+        ))
+
+        self.template.add_output(Output(
+            "EKSClusterRoleArn",
+            Value=GetAtt(self.EKSClusterRole, "Arn"),
+        ))
+
+        self.template.add_output(Output(
             "WorkerNodeAutoScalingGroupName",
             Value=Ref(self.WorkerNodeAutoScalingGroup),
         ))
