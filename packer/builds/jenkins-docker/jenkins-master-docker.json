@@ -18,6 +18,7 @@
         "user": "jenkins",
         "playbook_file": "../../../ansible/playbooks/jenkins/jenkins-master-docker.yml",
         "extra_arguments": [
+                   "-vvv",
                    "--vault-password-file", "../../../ansible/playbooks/jenkins/roles/jenkins-master/.vault_pass"
                 ]
     }],

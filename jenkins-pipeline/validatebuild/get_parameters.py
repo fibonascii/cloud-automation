@@ -16,11 +16,14 @@ parser.add_option('-e', '--environment', type="string",
 
 (options, args) = parser.parse_args()
 
+# TODO: Change Client Code
 client_code = 'U1NIKE'
+
+# TODO: Uncomment cloudformation_root from Jenkins as it will pull from workspace
 #cloudformation_root = os.path.join(os.environ['JENKINS_HOME'], 'workspace/ValidateBuild/cloudformation')
 cloudformation_root = '/Users/rkirby/repo/cloud-automation/cloudformation' 
 
-
+# TODO: Check JMX SSMs are created
 def get_ssm_parameters(client_code):
     """ Fetch the SSM Parameters needed to template out to JMX File """
     client = boto3.client('ssm')
@@ -80,13 +83,13 @@ def create_jmx_file(parameters, outputs):
     with open(parameters['JMeterJMXFilename'], 'w') as file:
         file.write(rendered)
 
-
+# TODO: Retrieve JMeter Server Details
 def fetch_jmeter_server_details():
     """ Use Boto3 to fetch the private IP of master and slave and the name of the ssh key to
     connect to the servers """
     pass
 
-
+# TODO: Test issue with connections to Jmeter Master after Slave has dropped
 def execute_jmeter_tests(parameters, outputs):
     """ Connect to the JMeter Master and Slave using the values grabbed in other steps
     and execute the JMeter Load Testsi """

@@ -1,0 +1,20 @@
+template_path: templates/jmeter.py
+parameters:
+    AdminCidrBlock: !stack_output vpc::AdminCidrBlock
+    JmeterMasterImageId: ami-06cd9d50fbdfdbd56
+    JMeterSlaveImageId: ami-06cd9d50fbdfdbd56
+    SlaveCount: "3"
+    ServerKeyName: jenkins-development
+    IAMInstanceProfile: cicd-admin-role
+    MasterInstanceType: t2.medium
+    SlaveInstanceType: t2.medium
+    SlaveRequested: "true"
+    VpcId: !stack_output vpc::VpcId
+    RESTPrivSubnet1: !stack_output vpc::RESTPrivSubnet1
+    RESTPrivSubnet2: !stack_output vpc::RESTPrivSubnet2
+    RESTPubSubnet1: !stack_output vpc::RESTPubSubnet1
+    RESTPubSubnet2: !stack_output vpc::RESTPubSubnet2
+    TestExecutionLengthSSMParameterValue: NIL
+    JMXFileNameSSMParameterValue: CICD-REST-PERFTEST.jmx
+    S3JMXFileLocationSSMParameterValue: pd-dev-cicd-artifacts
+    JMXResultsFileNameSSMParameterValue: CICD-REST-PERFTEST-RESULTS.txt

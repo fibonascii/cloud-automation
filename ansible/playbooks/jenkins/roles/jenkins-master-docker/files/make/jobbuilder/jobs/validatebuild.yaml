@@ -6,7 +6,7 @@
           default: lod-rest
       - string:
           name: ENVIRONMENT
-          default: dev
+          default: performance
     project-type: pipeline
     description: 'CD to verify LOD Rest Build'
     logrotate:
