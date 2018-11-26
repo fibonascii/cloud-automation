@@ -1,0 +1,96 @@
+{
+    "interactionModel": {
+        "languageModel": {
+            "invocationName": "express next rewards",
+            "intents": [
+                {
+                    "name": "AMAZON.FallbackIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.CancelIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.HelpIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.StopIntent",
+                    "samples": []
+                },
+                {
+                    "name": "GetItems",
+                    "slots": [
+                        {
+                            "name": "QueryType",
+                            "type": "QUERY_TYPES"
+                        },
+                        {
+                            "name": "MemberId",
+                            "type": "AMAZON.NUMBER"
+                        }
+                    ],
+                    "samples": [
+                        "What are my {QueryType}",
+                        "Tell me my {QueryType}",
+                        "Give me my {QueryType}",
+                        "Do I have any {QueryType}",
+                        "Tell me my current {QueryType}",
+                        "What are my current {QueryType} "
+                    ]
+                },
+                {
+                    "name": "GetPoints",
+                    "slots": [],
+                    "samples": [
+                        "what are my point",
+                        "see my point",
+                        "see points",
+                        "how many point",
+                        "check my point",
+                        "check my points balance",
+                        "What are my current points",
+                        "How many points do I currently have",
+                        "What is my current point balance",
+                        "What is my point balance",
+                        "How many points do I have",
+                        "What are my Points",
+                        "Do I have any points",
+                        "count my points"
+                    ]
+                },
+                {
+                    "name": "JokeIntent",
+                    "slots": [],
+                    "samples": [
+                        "what's a good joke",
+                        "tell me a funny",
+                        "tell me something funny",
+                        "tell me a joke",
+                        "make me laugh",
+                        "do you know any jokes",
+                        "got any jokes today"
+                    ]
+                }
+            ],
+            "types": [
+                {
+                    "name": "QUERY_TYPES",
+                    "values": [
+                        {
+                            "name": {
+                                "value": "Offers"
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "Rewards"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}
