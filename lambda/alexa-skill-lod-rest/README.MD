@@ -1,10 +1,8 @@
-# Initiate Application Release Pipeline
+# Alexa Skill for Loyalty On Demand Rest
 
 ### About
 
-This AWS Lambda function polls an S3 bucket utilizing S3 Event Notifications.
-When a REST release zip file is uploaded to this bucket the lambda function unzips the release,
-parses metadata from the zip and passes those values to Jenkins as parameters
+This AWS Lambda function communicates with the Loyalty On Demand Rest Environment to provide interaction back to the user via an Alexa Skill.
 
 
 #### Usage 
