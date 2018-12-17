@@ -7,7 +7,7 @@
 * Create a branch of this repo for each new environment and name it with org-region-uid. All config changes specific to this environment should be only pushed to the new branch
 * Ami images to be deployed are accessible by this account in the same region.
   * If needed, copy ami's into the same region and add permission for the receiving account # to access it
-  * Replace 
+  * Replace original ami id's with their copies in desired region
 * Create a pd-cicd-devolopment key pair
 * Create IAM role cicd-admin-role with AdministratorAccess to EC2
 * Create an S3 bucket in a new account and sync pd-dev-cicd-artifacts into the new bucket. Replace pd-dev-cicd-artifacts in sceptre yaml files with the new bucket name (CoreBootStrapRepositoryS3BucketName)
