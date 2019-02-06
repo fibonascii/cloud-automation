@@ -4,7 +4,6 @@ WINDOWS_FEATURES:
   - { "DisplayName":".Net Extensibility","FeatureName":"Web-Net-Ext","IncludeSubFeatures":"False", "State":"present"}
   - { "DisplayName":".Net 4.5 Extensibility","FeatureName":"Web-Net-Ext45","IncludeSubFeatures":"False", "State":"present"}
   - { "DisplayName":"Application Initialization","FeatureName":"Web-AppInit","IncludeSubFeatures":"False", "State":"present"}
-  - { "DisplayName":".Net 4.5","FeatureName":"Web-Net-Ext","IncludeSubFeatures":"False", "State":"present"}
   - { "DisplayName":"MSMQ Server","FeatureName":"MSMQ-Server","IncludeSubFeatures":"False", "State":"present"}
   - { "DisplayName":"MSMQ Directory","FeatureName":"MSMQ-Directory","IncludeSubFeatures":"False", "State":"present"}
   - { "DisplayName":"MSMQ Triggers","FeatureName":"MSMQ-Triggers","IncludeSubFeatures":"False", "State":"present"}
